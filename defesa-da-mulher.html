@@ -623,7 +623,7 @@ if(grid){ grid.innerHTML = DUVIDAS.map(d=>`
   </article>`; }
 document.querySelectorAll('.wa').forEach(a=>{
   a.href=link(a.dataset.msg); a.target=ABRIR_NA_MESMA_ABA?'_self':'_blank'; a.rel='noopener';
-  a.addEventListener('click',()=>{ try{ if(window.fbq) fbq('track','Contact',{content_name:a.dataset.tema}); }catch(e){} });
+  a.addEventListener('click',()=>{ try{ if(window.fbq) fbq('track','Contact'); }catch(e){} });
 });
 (function(){
  var bt=document.querySelector('.menu-bt'),m=document.getElementById('menu');
