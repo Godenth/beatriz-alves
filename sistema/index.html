@@ -633,6 +633,9 @@ html,body{overflow-x:clip}
 .pill-ip{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;background:color-mix(in srgb,#A79CC6 25%,transparent);color:inherit}
 .fin-ed td{background:color-mix(in srgb,var(--ouro) 14%,transparent)}
 @media (max-width:560px){.grid2[style*="repeat(3"]{grid-template-columns:1fr 1fr!important}}
+.hn{margin:12px 0 4px;border:1px solid var(--rule);border-radius:12px;padding:10px 12px;background:var(--card)}.hn summary{cursor:pointer;font-weight:700}.hn[open] summary{margin-bottom:8px}
+.hn-prev{margin:6px 0 0;font-size:13.5px;color:var(--mut)}.hn-prev.ok{color:inherit}.hn-prev.erro{color:var(--perigo)}
+.fl-pinfo{margin:0 0 12px;padding:10px 12px;border-radius:12px;border:1px dashed var(--ouro);background:color-mix(in srgb,var(--ouro) 7%,transparent)}
 .mp-num{display:block;font-variant-numeric:tabular-nums;opacity:.75}
 .mp-drop{margin:12px 0 4px;border:1.5px dashed var(--rule);border-radius:12px;padding:16px;text-align:center;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:6px;transition:.15s}
 .mp-drop.on{border-color:var(--ouro);background:color-mix(in srgb,var(--ouro) 10%,transparent);color:inherit}
@@ -2036,7 +2039,7 @@ function catsFin(ym){const L=(D.fin||[]).filter(l=>l.tipo==='saida'&&mesISO(l.ve
   return '<div class="hb fin-cat">'+arr.map(([c,v])=>'<div class="hb-l" data-tip="'+esc(c)+': '+brl(v)+' ('+Math.round(v/tot*100)+'%)"><span class="hb-n">'+esc(c)+'</span><span class="hb-t"><i style="width:'+(v/mx*100)+'%;background:var(--graf)"></i></span><b>'+brl(v)+'</b></div>').join('')+'</div>'}
 function telaFinanceiro(){
   if(!podeFinanceiro())return '<div class="lead"><p>O financeiro é visto só pela dona do escritório.</p></div>';
-  if(!FIN.carregado){carregarFin().then(render);return '<div class="lead"><div class="carregando"><span></span><span></span><span></span></div></div>'}
+  if(!FIN.carregado||!CLI.carregado){Promise.all([FIN.carregado?null:carregarFin(),CLI.carregado?null:carregarClientes()]).then(render);return '<div class="lead"><div class="carregando"><span></span><span></span><span></span></div></div>'}
   const ym=FIN.mes||(FIN.mes=mesISO(hojeISO()));const r=resumoFin(ym);
   const k=(ic,rot,val,sub,cor)=>'<div class="ik"'+(cor?' style="--k:'+cor+'"':'')+'><span class="ik-i">'+ic+'</span><small>'+rot+'</small><b'+(cor?' style="color:'+cor+'"':'')+'>'+val+'</b>'+(sub?'<em>'+sub+'</em>':'')+'</div>';
   const L=(D.fin||[]).filter(l=>mesISO(l.vencimento)===ym||(l.pago_em&&mesISO(l.pago_em)===ym)).filter(l=>({tudo:1,entrada:l.tipo==='entrada',saida:l.tipo==='saida',aberto:!l.pago_em})[FIN.filtro]).sort((a,b)=>a.vencimento<b.vencimento?-1:1);
@@ -2056,6 +2059,7 @@ function telaFinanceiro(){
     '<p class="nota">Só a dona do escritório vê o financeiro. Valores e nomes ficam no banco protegido do escritório; não anote detalhes do caso na descrição.</p></div>'}
 function formLanc(){const ed=FIN.editar?(D.fin||[]).find(x=>x.id===FIN.editar):null;if(ed)return formEditLanc(ed);const t=FIN.tipo,h=hojeISO();const nomes=[...new Set((D.leads||[]).filter(l=>l.tema!=='violencia').map(l=>l.nome))];
   return '<div class="lead" style="margin-bottom:14px;background:var(--card2)"><div class="seg" style="margin-bottom:10px"><button data-fintipo="entrada" class="'+(t==='entrada'?'on':'')+'">⬆️ Entrada</button><button data-fintipo="saida" class="'+(t==='saida'?'on':'')+'">⬇️ Saída / despesa</button></div>'+
+    (t==='entrada'?seletorProcFin():'')+
     '<div class="grid2"><label class="f">Descrição<input class="inp" id="fl-desc" maxlength="120" placeholder="'+(t==='entrada'?'ex.: Honorários · divórcio':'ex.: Aluguel da sala')+'"></label><label class="f">Categoria<select class="inp" id="fl-cat">'+CATS[t].map(c=>'<option>'+c+'</option>').join('')+'</select></label></div>'+
     '<div class="grid2" style="grid-template-columns:repeat(3,1fr)"><label class="f">Valor (R$)<input class="inp" id="fl-valor" inputmode="decimal" placeholder="1.500,00"></label><label class="f">Vencimento<input class="inp" id="fl-venc" type="date" value="'+h+'"></label>'+
       (t==='entrada'?'<label class="f">Cliente (opcional)<input class="inp" id="fl-cli" list="fl-nomes" maxlength="80" placeholder="Nome ou iniciais"><datalist id="fl-nomes">'+nomes.map(n=>'<option value="'+esc(n)+'">').join('')+'</datalist></label>':'<label class="f">Forma<select class="inp" id="fl-forma">'+FORMAS.map(f=>'<option value="'+f[0]+'">'+f[1]+'</option>').join('')+'</select></label>')+'</div>'+
@@ -2086,16 +2090,34 @@ async function salvarEditLanc(){const l=(D.fin||[]).find(x=>x.id===FIN.editar);i
       for(const p of ps){await STORE.upd('lancamentos',p.id,{descricao:c.descricao,categoria:c.categoria,cliente:c.cliente,valor:c.valor});n++}}
     FIN.editar=null;FIN.novo=false;FIN.mes=mesISO(venc);render();toast(n?'Salvo, e mais '+n+' parcela'+(n>1?'s':'')+'.':'Lançamento atualizado.')}
   catch(e){console.error(e);toast('Não consegui salvar. Confira os campos.')}}
+
+/* lançamento de entrada: escolher o processo e ver o que já foi pago */
+function seletorProcFin(){const P=(D.processos||[]).filter(p=>!p.exemplo).map(p=>({p,c:(D.clientes||[]).find(c=>c.id===p.cliente_id)})).filter(x=>x.c)
+    .sort((a,b)=>(a.c?a.c.nome:'').localeCompare(b.c?b.c.nome:'','pt-BR'));
+  if(!P.length)return '';
+  return '<label class="f">Processo (opcional)<select class="inp" id="fl-proc"><option value="">— sem processo —</option>'+P.map(x=>'<option value="'+x.p.id+'"'+(FIN.preProc===x.p.id?' selected':'')+'>'+esc((x.c?x.c.nome+' · ':'')+x.p.titulo+(x.p.fase==='inquerito'?' (inquérito)':''))+'</option>').join('')+'</select></label><div id="fl-procinfo"></div>'}
+function infoProcFin(){const s=$('#fl-proc'),box=$('#fl-procinfo');if(!s||!box)return;const p=(D.processos||[]).find(x=>x.id===s.value);
+  if(!p){box.innerHTML='';return}
+  const c=(D.clientes||[]).find(x=>x.id===p.cliente_id)||{},L=lancDoProc(p).concat((D.processos||[]).filter(x=>x.cliente_id===p.cliente_id).length===1&&c.id?lancDe(c).filter(l=>!l.processo_id&&l.tipo==='entrada'):[]),h=hojeISO();
+  const tot=L.reduce((a,l)=>a+ +l.valor,0),rec=L.filter(l=>l.pago_em).reduce((a,l)=>a+ +l.valor,0),atr=L.filter(l=>!l.pago_em&&l.vencimento<h).reduce((a,l)=>a+ +l.valor,0);
+  const ab=L.filter(l=>!l.pago_em).sort((a,b)=>a.vencimento<b.vencimento?-1:1);
+  box.innerHTML='<div class="fl-pinfo">'+(L.length?'<div class="cl-grade" style="grid-template-columns:repeat(4,1fr)"><div class="cl-d"><small>Contratado</small><b>'+brl(tot)+'</b></div><div class="cl-d"><small>Já pago</small><b style="color:var(--ok)">'+brl(rec)+'</b></div><div class="cl-d"><small>Falta</small><b>'+brl(tot-rec)+'</b></div><div class="cl-d"><small>Atrasado</small><b style="color:'+(atr?'var(--perigo)':'inherit')+'">'+brl(atr)+'</b></div></div>'+
+      (ab.length?'<p style="margin:8px 0 0;font-size:13.5px">Em aberto: '+ab.slice(0,4).map(l=>'<b>'+brl(+l.valor)+'</b> ('+(l.parcelas>1?l.parcela+'/'+l.parcelas+' · ':'')+dataBR(l.vencimento)+') <button class="btn sm pri" data-fin="pago" data-id="'+l.id+'">Recebi</button>').join(' · ')+'</p><p class="nota" style="margin:6px 0 0">Se o pagamento é uma dessas parcelas, toque em <b>Recebi</b> nela em vez de criar um lançamento novo.</p>':'<p style="margin:8px 0 0;font-size:13.5px">✓ Tudo o que foi combinado já foi pago.</p>')
+    :'<p style="margin:0;font-size:13.5px">Nenhum honorário lançado para este processo ainda. O que você salvar aqui fica ligado a ele.</p>')+'</div>';
+  const d=$('#fl-desc');if(d&&!d.value)d.value=('Honorários · '+p.titulo).slice(0,120);
+  const cl=$('#fl-cli');if(cl&&c.nome)cl.value=c.nome.slice(0,80)}
+document.addEventListener('change',e=>{if(e.target.id==='fl-proc'){FIN.preProc=e.target.value||null;infoProcFin()}});
 async function salvarLanc(){
   const t=FIN.tipo,desc=$('#fl-desc').value.trim(),valor=num('fl-valor'),venc=$('#fl-venc').value,modo=$('#fl-modo').value,n=Math.max(1,Math.min(60,parseInt($('#fl-n').value)||1)),pago=$('#fl-pago').checked;
   if(!desc){toast('Escreva uma descrição.');return}if(!(valor>0)){toast('Informe o valor.');return}if(!venc){toast('Informe o vencimento.');return}
+  const procSel=$('#fl-proc')&&t==='entrada'?(D.processos||[]).find(p=>p.id===$('#fl-proc').value):null;
   const vezes=modo==='unico'?1:n,grupo=vezes>1?(crypto.randomUUID?crypto.randomUUID():null):null;
   const base=modo==='parcelado'?Math.floor(valor/vezes*100)/100:valor;
   const rows=[];for(let i=0;i<vezes;i++){const [y,m,d]=venc.split('-').map(Number);const dt=new Date(y,m-1+i,1,12);const ult=new Date(dt.getFullYear(),dt.getMonth()+1,0).getDate();dt.setDate(Math.min(d,ult));
     const v=modo==='parcelado'&&i===vezes-1?Math.round((valor-base*(vezes-1))*100)/100:base;
-    rows.push({tipo:t,descricao:desc.slice(0,120),categoria:$('#fl-cat').value,valor:v,vencimento:dISO(dt),pago_em:pago&&i===0?hojeISO():null,forma:t==='saida'?$('#fl-forma').value:(pago&&i===0?'pix':null),cliente:t==='entrada'?($('#fl-cli').value.trim().slice(0,80)||null):null,grupo,parcela:vezes>1?i+1:null,parcelas:vezes>1?vezes:null,cliente_id:FIN.preCliente?FIN.preCliente.id:null})}
+    rows.push({tipo:t,descricao:desc.slice(0,120),categoria:$('#fl-cat').value,valor:v,vencimento:dISO(dt),pago_em:pago&&i===0?hojeISO():null,forma:t==='saida'?$('#fl-forma').value:(pago&&i===0?'pix':null),cliente:t==='entrada'?($('#fl-cli').value.trim().slice(0,80)||null):null,grupo,parcela:vezes>1?i+1:null,parcelas:vezes>1?vezes:null,cliente_id:procSel?procSel.cliente_id:(FIN.preCliente?FIN.preCliente.id:null),processo_id:procSel?procSel.id:null})}
   try{if((D.fin||[]).some(l=>l.exemplo)){const ex=D.fin.filter(l=>l.exemplo).map(l=>l.id);if(!REAL)D.fin=D.fin.filter(l=>!l.exemplo);else await STORE.del('lancamentos',ex)}
-    await STORE.ins('lancamentos',rows);FIN.novo=false;FIN.preCliente=null;FIN.mes=mesISO(venc);render();toast(vezes>1?vezes+' lançamentos criados.':'Lançamento salvo.')}
+    await STORE.ins('lancamentos',rows);FIN.novo=false;FIN.preCliente=null;FIN.preProc=null;FIN.mes=mesISO(venc);render();toast(vezes>1?vezes+' lançamentos criados.':'Lançamento salvo.')}
   catch(e){toast('Não consegui salvar. Confira os campos.')}}
 function csvFin(){const ym=FIN.mes;const L=(D.fin||[]).filter(l=>mesISO(l.vencimento)===ym||(l.pago_em&&mesISO(l.pago_em)===ym));
   const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
@@ -2103,18 +2125,18 @@ function csvFin(){const ym=FIN.mes;const L=(D.fin||[]).filter(l=>mesISO(l.vencim
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='financeiro-'+ym+'.csv';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 document.addEventListener('click',async e=>{
   const f=e.target.closest('[data-finfil]');if(f){FIN.filtro=f.dataset.finfil;render();return}
-  const tp=e.target.closest('[data-fintipo]');if(tp){FIN.tipo=tp.dataset.fintipo;render();return}
+  const tp=e.target.closest('[data-fintipo]');if(tp){FIN.tipo=tp.dataset.fintipo;render();infoProcFin();return}
   const t=e.target.closest('[data-fin]');if(!t)return;const a=t.dataset.fin,id=t.dataset.id;
   if(a==='mes'){FIN.mes=somaMes(FIN.mes,+t.dataset.n);render();return}
   if(a==='hoje'){FIN.mes=mesISO(hojeISO());render();return}
-  if(a==='novo'){FIN.novo=!FIN.novo;FIN.editar=null;render();return}
+  if(a==='novo'){FIN.novo=!FIN.novo;FIN.editar=null;render();infoProcFin();return}
   if(a==='cancelar'){FIN.novo=false;FIN.editar=null;FIN.preCliente=null;render();return}
   if(a==='editar'){const l=(D.fin||[]).find(x=>x.id===id);if(!l)return;FIN.editar=id;FIN.novo=false;FIN.tipo=l.tipo;render();const f=$('#fl-form');if(f)f.scrollIntoView({behavior:'smooth',block:'center'});return}
   if(a==='salvaredit'){salvarEditLanc();return}
   if(a==='salvar'){salvarLanc();return}
   if(a==='csv'){csvFin();return}
   try{
-    if(a==='pago'){const l=D.fin.find(x=>x.id===id);await STORE.upd('lancamentos',id,{pago_em:hojeISO(),forma:l.forma||'pix'});toast(l.tipo==='entrada'?'Recebimento anotado.':'Pagamento anotado.');render();return}
+    if(a==='pago'){const l=D.fin.find(x=>x.id===id);await STORE.upd('lancamentos',id,{pago_em:hojeISO(),forma:l.forma||'pix'});toast(l.tipo==='entrada'?'Recebimento anotado.':'Pagamento anotado.');render();infoProcFin();return}
     if(a==='desfaz'){await STORE.upd('lancamentos',id,{pago_em:null});render();return}
     if(a==='apagar'){if(FIN.apagar!==id){FIN.apagar=id;render();setTimeout(()=>{if(FIN.apagar===id){FIN.apagar=null;render()}},4000);return}FIN.apagar=null;await STORE.del('lancamentos',id);toast('Lançamento apagado.');render();return}
   }catch(err){toast('Não consegui salvar agora.')}
@@ -2322,6 +2344,7 @@ function formProcesso(c,p){p=p||{};const ip=p.fase==='inquerito',v=k=>esc(p[k]==
   '<div class="grid3"><label class="f"><span class="so-jud">Vara / foro</span><span class="so-ip">Vara / foro (se houver)</span><input class="inp" id="pr-vara" maxlength="160" value="'+v('vara')+'"></label><label class="f">Parte contrária<input class="inp" id="pr-parte" maxlength="120" placeholder="nome ou iniciais" value="'+v('parte_contraria')+'"></label><label class="f">A cliente é<select class="inp" id="pr-polo">'+
     [['autor','Autora / vítima'],['reu','Ré / investigada'],['outro','Outro']].map(o=>'<option value="'+o[0]+'"'+(p.polo===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select></label></div>'+
   '<p class="nota so-jud" style="margin:4px 0 0">Sem número ainda (antes de distribuir)? Pode deixar em branco e completar depois.</p><p class="nota so-ip" style="margin:4px 0 0">Fase de delegacia (pré-processual). Quando virar processo, toque em Editar, mude para <b>Processo judicial</b> e coloque o número CNJ: as intimações passam a chegar sozinhas.</p>'+
+  blocoHonorarios(p)+
   '<div class="acoes"><button class="btn pri" data-cli="salvaproc" data-id="'+c.id+'"'+(p.id?' data-pid="'+p.id+'"':'')+'>'+(p.id?'Salvar alterações':'Salvar processo')+'</button><button class="btn" data-cli="cancproc">Cancelar</button></div></div>'}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-prfase]');if(!b)return;const f=b.closest('.pr-form');const ip=b.dataset.prfase==='inquerito';
   f.classList.toggle('ip',ip);f.querySelectorAll('[data-prfase]').forEach(x=>x.classList.toggle('on',x===b));f.querySelector('#pr-fase').value=b.dataset.prfase;
@@ -2371,8 +2394,12 @@ async function salvarProcesso(cid,pid){const fase=($('#pr-fase')||{}).value==='i
   const numero=d?d.replace(/(\d{7})(\d{2})(\d{4})(\d)(\d{2})(\d{4})/,'$1-$2.$3.$4.$5.$6'):null;
   const row={titulo:tit,numero,vara:$('#pr-vara').value.trim()||null,parte_contraria:$('#pr-parte').value.trim()||null,polo:$('#pr-polo').value,fase,inquerito:ip,delegacia:deleg};
   try{
-    if(pid){await STORE.upd('processos',pid,row);CLI.editProc=null;MP.editar=null;render();toast(numero&&intimDe({numero}).length?'Salvo. Já achei intimações dele.':'Alterações salvas.');return}
-    const novoP=await STORE.ins('processos',Object.assign({cliente_id:cid,situacao:'andamento'},row));CLI.novoProc=false;render();toast(numero&&intimDe({numero}).length?'Processo salvo. Já achei intimações dele.':fase==='inquerito'?'Inquérito salvo.':'Processo salvo.');if(novoP&&novoP[0]){FESTA.fila.push({proc:novoP[0]});proximaFesta()}}
+    const hnT=calcHonorarios();if(document.querySelector('details.hn[open]')&&hnT.T&&hnT.E>hnT.T){toast('A entrada é maior que o total dos honorários.');return}
+    const txtHn=r=>r?' Honorários no Financeiro: '+(r.E?'entrada':'')+(r.E&&r.n?' + ':'')+(r.n?r.n+' parcela'+(r.n>1?'s':''):'')+'.':'';
+    if(pid){await STORE.upd('processos',pid,row);let r=0;try{r=await lancarHonorarios(Object.assign({id:pid},row),cid)}catch(e){toast((e&&e.msg)||'Processo salvo, mas não consegui lançar os honorários.');}CLI.editProc=null;MP.editar=null;MP.hnAberto=false;render();toast((numero&&intimDe({numero}).length?'Salvo. Já achei intimações dele.':'Alterações salvas.')+txtHn(r));return}
+    const novoP=await STORE.ins('processos',Object.assign({cliente_id:cid,situacao:'andamento'},row));let r=0;
+    if(novoP&&novoP[0]){try{r=await lancarHonorarios(novoP[0],cid)}catch(e){console.error(e);toast('Processo salvo, mas não consegui lançar os honorários.')}}
+    CLI.novoProc=false;render();toast((numero&&intimDe({numero}).length?'Processo salvo. Já achei intimações dele.':fase==='inquerito'?'Inquérito salvo.':'Processo salvo.')+txtHn(r));if(novoP&&novoP[0]){FESTA.fila.push({proc:novoP[0]});proximaFesta()}}
   catch(e){console.error(e);toast('Não consegui salvar o processo.')}}
 document.addEventListener('input',e=>{if(e.target.id==='cli-busca'){CLI.busca=e.target.value;clearTimeout(CLI.tb);CLI.tb=setTimeout(()=>{render();const b=$('#cli-busca');if(b){b.focus();b.setSelectionRange(99,99)}},250)}
   if(e.target.id==='cf-cpf'){const d=soDig(e.target.value).slice(0,11);e.target.value=d.length>9?d.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/,'$1.$2.$3-$4'):d.length>6?d.replace(/(\d{3})(\d{3})(\d{0,3})/,'$1.$2.$3'):d.length>3?d.replace(/(\d{3})(\d{0,3})/,'$1.$2'):d}
@@ -2453,7 +2480,7 @@ async function carregarDocs(){
   catch(e){console.error(e);toast('Não consegui carregar os documentos.');MP.docs=MP.docs||[]}}
 
 function telaMeusProcessos(){
-  if(!CLI.carregado||!MP.docs){Promise.all([CLI.carregado?null:carregarClientes(),MP.docs?null:carregarDocs(),INT.itens?null:carregarIntimacoes()]).then(render);
+  if(!CLI.carregado||!MP.docs||(podeFinanceiro()&&!FIN.carregado)){Promise.all([CLI.carregado?null:carregarClientes(),MP.docs?null:carregarDocs(),INT.itens?null:carregarIntimacoes(),(podeFinanceiro()&&!FIN.carregado)?carregarFin():null]).then(render);
     return '<div class="lead"><div class="carregando"><span></span><span></span><span></span></div></div>'}
   const q=MP.busca.trim().toLowerCase(),qd=soDig(q);
   const todos=(D.processos||[]).slice();
@@ -2499,6 +2526,7 @@ function detalheProcesso(p){
         (/pdf|^image|^text/.test(d.tipo||'')?'<button class="btn sm" data-mp="klaus" data-id="'+d.id+'" title="Klaus lê e resume">Ler com Klaus</button>':'')+
         '<button class="btn sm" data-mp="apagadoc" data-id="'+d.id+'" aria-label="Apagar documento">'+(MP.apagar===d.id?'Confirmar':'×')+'</button></li>').join('')+'</ul>':'<p class="mut" style="margin:8px 0 0">Nenhum documento anexado ainda.</p>')+
       '<p class="nota" style="margin:10px 0 0">🔒 Guardados em pasta privada do escritório. Cada abertura gera um link que expira em 5 minutos.'+(REAL?'':' <b>Demonstração:</b> os arquivos ficam só nesta aba.')+'</p></div>'+
+    cartaoHonorarios(p)+
     // intimações
     '<div class="lead"><h4>📬 Intimações <small class="mut">'+I.length+'</small></h4>'+
       (I.length?'<ul class="ilst">'+I.slice(0,8).map(i=>'<li><b>'+dataBR(i.data_disp)+(i.lida?'':' · <span style="color:var(--ok)">nova</span>')+'</b><small>'+esc((i.tipo_comunicacao||(i.classe&&typeof fmtClasse==='function'?fmtClasse(i.classe):i.classe)||'Comunicação')+(i.orgao?' · '+i.orgao:''))+' <button class="lnk" data-cli="verint" data-id="'+i.id+'">abrir</button></small></li>').join('')+'</ul>'
@@ -2554,7 +2582,10 @@ document.addEventListener('click',async e=>{
   const t=e.target.closest('[data-mp]');if(!t)return;const a=t.dataset.mp,id=t.dataset.id;
   if(a!=='apagadoc'&&a!=='apagaproc')MP.apagar=null;
   if(a==='novo'){MP.novo=true;MP.pend=[];MP.editar=null;render();return}
-  if(a==='editar'){MP.editar=id;render();return}
+  if(a==='editar'){MP.editar=id;MP.hnAberto=false;render();return}
+  if(a==='hn'){MP.editar=id;MP.hnAberto=true;render();const d=document.querySelector('details.hn');if(d)d.scrollIntoView({behavior:'smooth',block:'center'});return}
+  if(a==='pagto'){UI.tela='financeiro';FIN.novo=true;FIN.editar=null;FIN.tipo='entrada';FIN.preProc=id;render();infoProcFin();scrollTo(0,0);return}
+  if(a==='verfin'){UI.tela='financeiro';render();scrollTo(0,0);return}
   if(a==='cancnovo'){MP.novo=false;MP.pend=[];render();return}
   if(a==='ircli'){MP.novo=false;UI.tela='clientes';CLI.form={};render();scrollTo(0,0);return}
   if(a==='salvar'){const cid=($('#mp-cli')||{}).value;if(!cid)return;const antes=new Set((D.processos||[]).map(p=>p.id));await salvarProcesso(cid);
@@ -2576,6 +2607,49 @@ document.addEventListener('change',e=>{if(e.target.id==='mp-arq'&&e.target.files
 document.addEventListener('dragleave',e=>{const z=e.target.closest&&e.target.closest('[data-mpdrop]');if(z&&!z.contains(e.relatedTarget)){MP.arrasta=false;z.classList.remove('on')}});
 document.addEventListener('drop',e=>{const z=e.target.closest&&e.target.closest('[data-mpdrop]');if(!z)return;e.preventDefault();MP.arrasta=false;if(e.dataTransfer.files.length)enviarDocs([...e.dataTransfer.files])});
 
+
+/* ---- Honorários do contrato, lançados junto com o processo ---- */
+const lancDoProc=p=>(D.fin||[]).filter(l=>l.processo_id===p.id);
+const brNum=v=>{v=String(v||'').trim();if(!v)return 0;if(v.includes(','))v=v.replace(/\./g,'').replace(',','.');const n=parseFloat(v.replace(/[^\d.]/g,''));return isFinite(n)?Math.round(n*100)/100:0};
+function blocoHonorarios(p){
+  if(!podeFinanceiro())return '';
+  if(p.id&&lancDoProc(p).length)return '<p class="nota" style="margin:8px 0 0">💰 Os honorários deste processo já estão no Financeiro. Para mudar valores, edite lá.</p>';
+  const h=hojeISO(),aberto=!p.id||MP.hnAberto;
+  return '<details class="hn"'+(aberto?' open':'')+'><summary>💰 Honorários do contrato <small class="mut">(opcional · vai direto para o Financeiro)</small></summary>'+
+    '<div class="grid2" style="grid-template-columns:repeat(3,1fr)"><label class="f">Valor total (R$)<input class="inp" id="hn-total" inputmode="decimal" placeholder="ex.: 6.000,00"></label>'+
+    '<label class="f">Já pago / entrada (R$)<input class="inp" id="hn-ent" inputmode="decimal" placeholder="ex.: 3.000,00"></label><label class="f">Data do pagamento<input class="inp" id="hn-entdata" type="date" value="'+h+'"></label></div>'+
+    '<div class="grid2" style="grid-template-columns:repeat(3,1fr)"><label class="f" style="flex-direction:row;align-items:center;gap:8px;margin-top:22px"><input type="checkbox" id="hn-entpago" checked> Esse valor já foi recebido</label>'+
+    '<label class="f">Restante em quantas vezes<input class="inp" id="hn-n" type="number" min="1" max="60" value="1"></label><label class="f">1ª parcela vence em<input class="inp" id="hn-venc" type="date" value="'+addDias(h,30)+'"></label></div>'+
+    '<p class="hn-prev" id="hn-prev">Preencha o valor total para ver a divisão.</p></details>'}
+function calcHonorarios(){const T=brNum(($('#hn-total')||{}).value),E=brNum(($('#hn-ent')||{}).value),n=Math.max(1,Math.min(60,parseInt(($('#hn-n')||{}).value)||1));
+  const R=Math.round((T-E)*100)/100;return {T,E,n,R,base:Math.floor(R/n*100)/100}}
+function previaHonorarios(){const el=$('#hn-prev');if(!el)return;const {T,E,n,R,base}=calcHonorarios();
+  if(!T){el.textContent='Preencha o valor total para ver a divisão.';el.className='hn-prev';return}
+  if(E>T){el.textContent='A entrada é maior que o total.';el.className='hn-prev erro';return}
+  const ult=Math.round((R-base*(n-1))*100)/100;
+  el.innerHTML='Total <b>'+brl(T)+'</b>'+(E?' · entrada <b>'+brl(E)+'</b>':'')+(R>0?' · restante <b>'+brl(R)+'</b>'+(n>1?' em <b>'+n+'× de '+brl(base)+'</b>'+(ult!==base?' (última '+brl(ult)+')':''):' em 1 parcela'):' · sem restante')+'.';el.className='hn-prev ok'}
+document.addEventListener('input',e=>{if(e.target.id&&e.target.id.startsWith('hn-'))previaHonorarios()});
+async function lancarHonorarios(proc,cid){
+  const box=document.querySelector('details.hn');if(!box||!box.open||!podeFinanceiro())return 0;
+  const {T,E,n,R,base}=calcHonorarios();if(!T)return 0;
+  if(E>T)throw {msg:'A entrada é maior que o total dos honorários.'};
+  const c=(D.clientes||[]).find(x=>x.id===cid)||{},nome=(c.nome||'').slice(0,80)||null,tit=proc.titulo||'processo';
+  const entData=$('#hn-entdata').value||hojeISO(),entPago=$('#hn-entpago').checked,v1=$('#hn-venc').value||addDias(hojeISO(),30);
+  const rows=[];
+  if(E>0)rows.push({tipo:'entrada',descricao:('Honorários · entrada · '+tit).slice(0,120),categoria:'Honorários',valor:E,vencimento:entData,pago_em:entPago?entData:null,forma:entPago?'pix':null,cliente:nome,cliente_id:cid||null,processo_id:proc.id});
+  if(R>0){const g=n>1&&crypto.randomUUID?crypto.randomUUID():null;
+    for(let i=0;i<n;i++){const [y,m,d]=v1.split('-').map(Number);const dt=new Date(y,m-1+i,1,12);dt.setDate(Math.min(d,new Date(dt.getFullYear(),dt.getMonth()+1,0).getDate()));
+      rows.push({tipo:'entrada',descricao:('Honorários · '+tit).slice(0,120),categoria:'Parcela de honorários',valor:i===n-1?Math.round((R-base*(n-1))*100)/100:base,vencimento:dISO(dt),pago_em:null,forma:null,cliente:nome,cliente_id:cid||null,processo_id:proc.id,grupo:g,parcela:n>1?i+1:null,parcelas:n>1?n:null})}}
+  if(!rows.length)return 0;
+  if((D.fin||[]).some(l=>l.exemplo)){const ex=D.fin.filter(l=>l.exemplo).map(l=>l.id);if(!REAL)D.fin=D.fin.filter(l=>!l.exemplo);else await STORE.del('lancamentos',ex)}
+  await STORE.ins('lancamentos',rows);return {E,n:R>0?n:0}}
+function cartaoHonorarios(p){if(!podeFinanceiro())return '';const L=lancDoProc(p),h=hojeISO();
+  if(!L.length)return '<div class="lead"><div style="display:flex;gap:10px;align-items:center"><h4 style="margin:0 auto 0 0">💰 Honorários</h4><button class="btn sm" data-mp="hn" data-id="'+p.id+'">+ Lançar honorários</button></div><p class="mut" style="margin:6px 0 0">Coloque o valor do contrato, a entrada e o restante: tudo vai para o Financeiro.</p></div>';
+  const tot=L.reduce((a,l)=>a+ +l.valor,0),rec=L.filter(l=>l.pago_em).reduce((a,l)=>a+ +l.valor,0),atr=L.filter(l=>!l.pago_em&&l.vencimento<h).reduce((a,l)=>a+ +l.valor,0);
+  const prox=L.filter(l=>!l.pago_em).sort((a,b)=>a.vencimento<b.vencimento?-1:1).slice(0,4);
+  return '<div class="lead"><div style="display:flex;gap:10px;align-items:center"><h4 style="margin:0 auto 0 0">💰 Honorários</h4><button class="btn sm" data-mp="pagto" data-id="'+p.id+'">+ Pagamento</button><button class="btn sm" data-mp="verfin">Ver no Financeiro</button></div>'+
+    '<div class="cl-grade" style="grid-template-columns:repeat(4,1fr)"><div class="cl-d"><small>Contratado</small><b>'+brl(tot)+'</b></div><div class="cl-d"><small>Recebido</small><b style="color:var(--ok)">'+brl(rec)+'</b></div><div class="cl-d"><small>A receber</small><b>'+brl(tot-rec)+'</b></div><div class="cl-d"><small>Atrasado</small><b style="color:'+(atr?'var(--perigo)':'inherit')+'">'+brl(atr)+'</b></div></div>'+
+    (prox.length?'<ul class="ilst">'+prox.map(l=>{const s=statusLanc(l);return '<li><b>'+brl(+l.valor)+(l.parcelas>1?' · parcela '+l.parcela+'/'+l.parcelas:l.categoria==='Honorários'?' · entrada':'')+'</b><small style="color:'+s.cor+'">'+s.txt+' <button class="btn sm pri" data-fin="pago" data-id="'+l.id+'" style="margin-left:6px">Recebi</button></small></li>'}).join('')+'</ul>':'<p class="mut" style="margin:6px 0 0">Tudo recebido. 🎉</p>')+'</div>'}
 /* ---- Novo processo: anexar a petição/capa e o Klaus preenche o formulário ---- */
 const semAcento=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
 function extrairRegex(txt){const r={};
