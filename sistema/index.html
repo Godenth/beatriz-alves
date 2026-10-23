@@ -651,6 +651,9 @@ html,body{overflow-x:clip}
 .prz-i small{font-size:11.5px;font-weight:700;text-transform:uppercase;color:var(--ouro)}.prz-i span{font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .prz-i.urg{border-color:var(--perigo)}.prz-i.urg small,.prz-i.venc small{color:var(--perigo)}.prz-i.venc{background:color-mix(in srgb,var(--perigo) 10%,transparent);border-color:var(--perigo)}
 @media (max-width:560px){.cob-t{flex-basis:100%}.prev-g{gap:6px}.tl li{grid-template-columns:64px 22px 1fr}.cob-a{margin-left:0}}
+.and-l{list-style:none;margin:6px 0 0;padding:0}.and-l li{display:grid;grid-template-columns:86px 1fr;gap:8px;padding:6px 0;border-top:1px solid var(--rule);font-size:14px}.and-l li:first-child{border-top:0}
+.and-l li.novo{background:color-mix(in srgb,var(--ok) 9%,transparent);border-radius:8px;padding-left:6px}.and-d{color:var(--mut);font-variant-numeric:tabular-nums;font-size:13px;padding-top:1px}.and-t b{font-weight:600}
+.cert-l{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}.cert-l li{border:1px solid var(--rule);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px}.cert-l a{font-weight:600;color:inherit}.cert-l small{font-size:12px}
 .mp-num{display:block;font-variant-numeric:tabular-nums;opacity:.75}
 .mp-drop{margin:12px 0 4px;border:1.5px dashed var(--rule);border-radius:12px;padding:16px;text-align:center;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:6px;transition:.15s}
 .mp-drop.on{border-color:var(--ouro);background:color-mix(in srgb,var(--ouro) 10%,transparent);color:inherit}
@@ -2349,6 +2352,7 @@ function fichaCliente(c){
         return '<div class="cl-proc"><div style="flex:1;min-width:0"><b>'+esc(p.titulo)+'</b>'+(p.exemplo?' <span class="mut" style="font-size:12px">exemplo</span>':'')+'<div class="mut" style="font-size:13px">'+numLinha(p)+(p.vara?' · '+esc(p.vara):'')+(p.parte_contraria?' · parte contrária: '+esc(p.parte_contraria):'')+'</div>'+
           ((MP.docs&&docsDe(p).length)?'<div style="font-size:13px;margin-top:4px">📎 '+docsDe(p).length+' documento'+(docsDe(p).length>1?'s':'')+' <button class="lnk" data-cli="verdocs" data-id="'+p.id+'">ver</button></div>':'<div style="font-size:13px;margin-top:4px"><button class="lnk" data-cli="verdocs" data-id="'+p.id+'">📎 anexar documentos</button></div>')+(I.length?'<div style="font-size:13px;margin-top:4px">📬 '+I.length+' intimaç'+(I.length===1?'ão':'ões')+(nl?' · <b style="color:var(--ok)">'+nl+' nova'+(nl>1?'s':'')+'</b>':'')+' · última em '+dataBR(I[0].data_disp)+' <button class="lnk" data-cli="verint" data-id="'+I[0].id+'">abrir</button></div>':'')+'</div>'+
           '<select class="inp sm" data-procsit="'+p.id+'" aria-label="Situação" style="width:auto;color:'+s[1]+'">'+Object.entries(SIT_PROC).map(([k,v])=>'<option value="'+k+'"'+(k===p.situacao?' selected':'')+'>'+v[0]+'</option>').join('')+'</select><button class="btn sm" data-cli="editproc" data-id="'+p.id+'" aria-label="Editar processo" title="Editar">✎</button><button class="btn sm" data-cli="apagaproc" data-id="'+p.id+'" aria-label="Tirar processo">×</button></div>'}).join(''):'<p class="mut" style="margin:0">Nenhum processo ligado. Com o número cadastrado, as intimações do DJEN aparecem aqui sozinhas.</p>')+'</div>'+
+    cartaoCertidoes(c)+
     '<div class="igrade">'+(podeFinanceiro()?'<div class="lead"><div style="display:flex;gap:10px;align-items:center"><h4 style="margin-right:auto">Honorários</h4><button class="btn sm" data-cli="lancar" data-id="'+c.id+'">+ Lançar</button></div>'+
       '<div class="cl-grade" style="grid-template-columns:repeat(3,1fr)"><div class="cl-d"><small>Recebido</small><b style="color:var(--ok)">'+brl(rec)+'</b></div><div class="cl-d"><small>A receber</small><b>'+brl(abe)+'</b></div><div class="cl-d"><small>Atrasado</small><b style="color:'+(atr?'var(--perigo)':'inherit')+'">'+brl(atr)+'</b></div></div>'+
       (Lc.length?'<ul class="ilst">'+Lc.sort((a,b)=>a.vencimento<b.vencimento?-1:1).slice(-6).map(l=>{const s=statusLanc(l);return '<li><b>'+esc(l.descricao)+(l.parcelas>1?' ('+l.parcela+'/'+l.parcelas+')':'')+' · '+brl(+l.valor)+'</b><small style="color:'+s.cor+'">'+s.txt+'</small></li>'}).join('')+'</ul>':'<p class="mut" style="margin:6px 0 0">Nenhum honorário lançado.</p>')+'</div>':'')+
@@ -2544,7 +2548,7 @@ function detalheProcesso(p){
         (/pdf|^image|^text/.test(d.tipo||'')?'<button class="btn sm" data-mp="klaus" data-id="'+d.id+'" title="Klaus lê e resume">Ler com Klaus</button>':'')+
         '<button class="btn sm" data-mp="apagadoc" data-id="'+d.id+'" aria-label="Apagar documento">'+(MP.apagar===d.id?'Confirmar':'×')+'</button></li>').join('')+'</ul>':'<p class="mut" style="margin:8px 0 0">Nenhum documento anexado ainda.</p>')+
       '<p class="nota" style="margin:10px 0 0">🔒 Guardados em pasta privada do escritório. Cada abertura gera um link que expira em 5 minutos.'+(REAL?'':' <b>Demonstração:</b> os arquivos ficam só nesta aba.')+'</p></div>'+
-    cartaoHonorarios(p)+linhaDoTempo(p)+cartaoMinuta(p)+
+    cartaoAndamentos(p)+cartaoHonorarios(p)+linhaDoTempo(p)+cartaoMinuta(p)+
     // intimações
     '<div class="lead"><h4>📬 Intimações <small class="mut">'+I.length+'</small></h4>'+
       (I.length?'<ul class="ilst">'+I.slice(0,8).map(i=>'<li><b>'+dataBR(i.data_disp)+(i.lida?'':' · <span style="color:var(--ok)">nova</span>')+'</b><small>'+esc((i.tipo_comunicacao||(i.classe&&typeof fmtClasse==='function'?fmtClasse(i.classe):i.classe)||'Comunicação')+(i.orgao?' · '+i.orgao:''))+' <button class="lnk" data-cli="verint" data-id="'+i.id+'">abrir</button></small></li>').join('')+'</ul>'
@@ -2854,6 +2858,7 @@ function linhaDoTempo(p){const E=[],c=cliDe(p);
   docsDe(p).forEach(d=>E.push({d:(d.criado_em||'').slice(0,10),ic:'📎',t:'Documento anexado · '+d.nome,id:d.id,k:'doc'}));
   if(podeFinanceiro())lancDoProc(p).forEach(l=>{if(l.pago_em)E.push({d:l.pago_em,ic:'💰',t:'Pagamento recebido · '+brl(+l.valor)+(l.parcelas>1?' ('+l.parcela+'/'+l.parcelas+')':''),id:l.id,k:'rec'});
     else E.push({d:l.vencimento,ic:'🗓️',t:'Parcela a receber · '+brl(+l.valor)+(l.parcelas>1?' ('+l.parcela+'/'+l.parcelas+')':''),fut:l.vencimento>=hojeISO()})});
+  (AND.dados[p.id]||[]).slice(0,40).forEach(a=>E.push({d:a.data.slice(0,10),ic:'⚖️',t:a.nome+(a.compl?' · '+a.compl:'')}));
   if(c)(D.agenda||[]).filter(a=>a.cliente_id===c.id).forEach(a=>E.push({d:a.data,ic:a.tipo==='audiencia'?'⚖️':'📅',t:(TIPOS_AG[a.tipo]||['Compromisso'])[0]+' · '+a.titulo+(a.hora?' às '+a.hora:''),fut:a.data>=hojeISO()}));
   const L=E.filter(x=>x.d).sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:0);if(!L.length)return '';
   const h=hojeISO(),fut=L.filter(x=>x.d>h),pas=L.filter(x=>x.d<=h);
@@ -2897,9 +2902,10 @@ function prazosSemana(){const h=hojeISO(),fim=addDias(h,7),E=[];
   (INT.itens||[]).filter(i=>i.prazo_fim&&!i.resolvida&&i.prazo_fim<=fim).forEach(i=>E.push({d:i.prazo_fim,t:(i.prazo_obs||'Prazo')+' · '+(i.numero_processo||'').slice(0,25),k:'int',id:i.id,du:diasUteisAte(i.prazo_fim)}));
   (D.agenda||[]).filter(a=>['prazo','audiencia'].includes(a.tipo)&&!a.feito&&a.data>=h&&a.data<=fim).forEach(a=>E.push({d:a.data,t:(a.tipo==='audiencia'?'Audiência · ':'Prazo · ')+a.titulo+(a.hora?' · '+a.hora:''),k:'ag',id:a.id,du:diasUteisAte(a.data),aud:a.tipo==='audiencia'}));
   const semPrazo=(INT.itens||[]).filter(i=>!i.lida&&!i.prazo_fim).length;
+  if(AND.novos===null){AND.novos=0;contarAndamentosNovos().then(()=>{if(AND.novos&&UI.tela==='painel')render()})}
   return {E:E.sort((a,b)=>a.d<b.d?-1:1),semPrazo}}
-function faixaPrazos(){const {E,semPrazo}=prazosSemana();if(!E.length&&!semPrazo)return '<div class="prz ok"><b>✓ Nenhum prazo nos próximos 7 dias.</b></div>';
-  return '<div class="prz"><div class="prz-h"><b>⏰ Prazos e audiências da semana</b>'+(semPrazo?'<button class="lnk" data-prz="novas">'+semPrazo+' intimaç'+(semPrazo>1?'ões':'ão')+' nova'+(semPrazo>1?'s':'')+' sem prazo anotado</button>':'')+'</div>'+
+function faixaPrazos(){const {E,semPrazo}=prazosSemana();const an=AND.novos?'<button class="lnk" data-tela="processos" style="font-size:13px">⚖️ '+AND.novos+' andamento'+(AND.novos>1?'s':'')+' novo'+(AND.novos>1?'s':'')+' nos processos</button>':'';if(!E.length&&!semPrazo)return an?'<div class="prz"><div class="prz-h"><b>✓ Nenhum prazo nos próximos 7 dias.</b>'+an+'</div></div>': '<div class="prz ok"><b>✓ Nenhum prazo nos próximos 7 dias.</b></div>';
+  return '<div class="prz"><div class="prz-h"><b>⏰ Prazos e audiências da semana</b>'+an+(semPrazo?'<button class="lnk" data-prz="novas">'+semPrazo+' intimaç'+(semPrazo>1?'ões':'ão')+' nova'+(semPrazo>1?'s':'')+' sem prazo anotado</button>':'')+'</div>'+
     (E.length?'<div class="prz-l">'+E.map(x=>{const cls=x.du!=null&&x.du<0?'venc':x.du!=null&&x.du<=2?'urg':'';
       return '<button class="prz-i '+cls+'" data-prz="'+x.k+'" data-id="'+x.id+'"><small>'+(x.du<0?'vencido':x.d===hojeISO()?'hoje':x.du===1?'amanhã':novaData(x.d).toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'}).replace('.',''))+'</small><span>'+esc(x.t)+'</span></button>'}).join('')+'</div>':'')+'</div>'}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-prz]');if(!b)return;const k=b.dataset.prz;
@@ -2912,6 +2918,70 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-gerardoc]'
   if(!c.cpf||!c.endereco)toast('Dica: complete CPF e endereço na ficha do cliente para a qualificação sair completa.');
   if(b.dataset.gerardoc==='contrato')abrirDoc_('Contrato de honorários',contratoHTML(p),'contrato-'+nomeArq(c.nome)+'-'+nomeArq(p.titulo));
   else abrirDoc_('Procuração',procuracaoHTML(p),'procuracao-'+nomeArq(c.nome))});
+
+/* =================== Andamentos (Datajud / CNJ) e certidões =================== */
+const AND={dados:{},cnj:{},carregando:{},consultando:{},tudo:{},novos:null};
+function seedAndamentos(p){const d=n=>{const x=new Date();x.setDate(x.getDate()-n);return x.toISOString()};
+  return [['Conclusos para despacho',1],['Juntada de petição',3],['Publicação',9],['Decisão interlocutória',12],['Audiência de conciliação designada',20],['Citação',35],['Distribuição',60]]
+    .map(([nome,n],i)=>({processo_id:p.id,data:d(n),nome,compl:i===4?'Designada':'',grau:'G1',visto:i>1}))}
+async function carregarAndamentos(p){if(AND.carregando[p.id])return;AND.carregando[p.id]=true;
+  try{if(REAL){const [{data:a,error:e1},{data:c,error:e2}]=await Promise.all([SB.from('andamentos').select('data,nome,compl,grau,visto').eq('processo_id',p.id).order('data',{ascending:false}).limit(400),SB.from('processo_cnj').select('*').eq('processo_id',p.id).maybeSingle()]);
+      if(e1||e2)throw e1||e2;AND.dados[p.id]=a||[];AND.cnj[p.id]=c||null}
+    else{AND.dados[p.id]=p.numero?seedAndamentos(p):[];AND.cnj[p.id]=p.numero?{status:'ok',classe:p.titulo,orgao:p.vara,tribunal:'TJSP',consultado_em:new Date().toISOString(),sistema:'SAJ'}:null}}
+  catch(e){console.error(e);AND.dados[p.id]=AND.dados[p.id]||[]}
+  AND.carregando[p.id]=false;if(UI.tela==='processos'&&MP.sel===p.id)render()}
+async function marcarVistos(p){const L=(AND.dados[p.id]||[]).filter(a=>!a.visto);if(!L.length)return;
+  setTimeout(async()=>{L.forEach(a=>a.visto=true);if(REAL){try{await SB.from('andamentos').update({visto:true}).eq('processo_id',p.id).eq('visto',false)}catch(e){}}AND.novos=null},4000)}
+async function consultarCNJ(p){if(!p.numero){toast('Cadastre o número CNJ do processo primeiro.');return}
+  AND.consultando[p.id]=Date.now();render();
+  if(!REAL){setTimeout(()=>{AND.consultando[p.id]=0;AND.dados[p.id]=seedAndamentos(p);toast('Andamentos atualizados (demonstração).');render()},1500);return}
+  try{const {data,error}=await SB.rpc('datajud_atualizar',{p_processo:p.id});if(error)throw error;
+    if(!data.ok){AND.consultando[p.id]=0;render();toast(data.erro==='limite'?'Limite de consultas de hoje atingido.':data.erro==='numero'?'Número CNJ inválido ou tribunal não atendido.':'Não consegui consultar.');return}
+    const ini=Date.now();
+    const espera=async()=>{if(!AND.consultando[p.id])return;const {data:s}=await SB.rpc('datajud_status',{p_processo:p.id});
+      if(s&&s.status&&s.status!=='pendente'){AND.consultando[p.id]=0;await carregarAndamentos(p);AND.carregando[p.id]=false;
+        toast(s.status==='ok'?'Andamentos atualizados.':s.status==='nao_achou'?'O CNJ ainda não tem este processo (processos muito novos podem levar alguns dias).':'CNJ: '+(s.detalhe||'erro'));render();return}
+      if(Date.now()-ini>180000){AND.consultando[p.id]=0;render();toast('O CNJ está demorando. Os andamentos aparecem sozinhos quando chegarem.');return}
+      setTimeout(espera,6000)};
+    setTimeout(espera,8000)}
+  catch(e){AND.consultando[p.id]=0;render();toast('Não consegui consultar o CNJ agora.')}}
+const GRAU={G1:'1º grau',G2:'2º grau',JE:'Juizado',TR:'Turma Recursal',SUP:'Superior'};
+function cartaoAndamentos(p){
+  if(!p.numero)return '<div class="lead"><h4>⚖️ Andamentos do tribunal</h4><p class="mut" style="margin:0">'+(p.fase==='inquerito'?'Inquérito na delegacia: quando for ao fórum e tiver número CNJ, os andamentos aparecem aqui.':'Cadastre o número CNJ (✎ Editar) para buscar todos os andamentos no CNJ.')+'</p></div>';
+  if(AND.dados[p.id]===undefined){carregarAndamentos(p);return '<div class="lead"><h4>⚖️ Andamentos do tribunal</h4><div class="carregando"><span></span><span></span><span></span></div></div>'}
+  const L=AND.dados[p.id],c=AND.cnj[p.id],cons=AND.consultando[p.id],novos=L.filter(a=>!a.visto).length,lim=AND.tudo[p.id]?400:10;
+  if(novos)marcarVistos(p);
+  const info=c&&c.status==='ok'?'<p class="mut" style="margin:0 0 6px;font-size:13px">'+[c.tribunal,c.classe,c.orgao,c.sistema].filter(Boolean).map(esc).join(' · ')+(c.consultado_em?' · consultado '+novaData(c.consultado_em.slice(0,10)).toLocaleDateString('pt-BR')+' '+c.consultado_em.slice(11,16):'')+'</p>'
+    :c&&c.status==='nao_achou'?'<p class="mut" style="margin:0 0 6px;font-size:13px">O CNJ ainda não tem este processo. Processos novos ou em segredo de justiça podem não aparecer.</p>'
+    :c&&c.status==='erro'?'<p style="margin:0 0 6px;font-size:13px;color:var(--perigo)">Última consulta: '+esc(/429/.test(c.detalhe||'')?'o CNJ estava ocupado; tento de novo amanhã cedo (ou toque em Atualizar agora)':/50[234]/.test(c.detalhe||'')?'o CNJ demorou demais; tento de novo amanhã cedo (ou toque em Atualizar agora)':(c.detalhe||'erro'))+'.</p>':'';
+  return '<div class="lead"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><h4 style="margin:0 auto 0 0">⚖️ Andamentos do tribunal'+(novos?' <span class="wa-bd">'+novos+' novo'+(novos>1?'s':'')+'</span>':'')+'</h4>'+
+    '<button class="btn sm" data-andcnj="'+p.id+'"'+(cons?' disabled':'')+'>'+(cons?'Consultando o CNJ…':'↻ Atualizar agora')+'</button></div>'+info+
+    (cons?'<p class="nota" style="margin:0 0 6px">O CNJ costuma levar de 30 segundos a 1 minuto. Pode continuar usando o sistema.</p>':'')+
+    (L.length?'<ul class="and-l">'+L.slice(0,lim).map(a=>'<li class="'+(a.visto?'':'novo')+'"><span class="and-d">'+novaData(a.data.slice(0,10)).toLocaleDateString('pt-BR')+'</span><span class="and-t"><b>'+esc(a.nome)+'</b>'+(a.compl?' <small class="mut">'+esc(a.compl)+'</small>':'')+(a.grau&&a.grau!=='G1'?' <small class="pill" style="--c:var(--mut)">'+esc(GRAU[a.grau]||a.grau)+'</small>':'')+'</span></li>').join('')+'</ul>'+
+      (L.length>lim?'<button class="lnk" data-andtudo="'+p.id+'">ver todos ('+L.length+')</button>':'')
+      :'<p class="mut" style="margin:6px 0 0">'+(c?'Nenhum andamento ainda.':'Toque em <b>Atualizar agora</b> para buscar no CNJ. Depois disso, o sistema atualiza sozinho toda manhã.')+'</p>')+
+    '<p class="nota" style="margin:8px 0 0">Fonte: Datajud (CNJ), base oficial e gratuita. Pode ter alguns dias de atraso em relação ao site do tribunal; prazos continuam vindo pelas intimações do DJEN.</p></div>'}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-andcnj]');if(b){const p=(D.processos||[]).find(x=>x.id===b.dataset.andcnj);if(p)consultarCNJ(p);return}
+  const t=e.target.closest('[data-andtudo]');if(t){AND.tudo[t.dataset.andtudo]=true;render()}});
+/* andamentos novos no Painel */
+async function contarAndamentosNovos(){if(!REAL){AND.novos=0;return}
+  try{const {count}=await SB.from('andamentos').select('processo_id',{count:'exact',head:true}).eq('escritorio_id',ESCRITORIO.id).eq('visto',false);AND.novos=count||0}catch(e){AND.novos=0}}
+
+/* ---------- certidões e consultas (sites oficiais; a própria pessoa emite) ---------- */
+const CERTIDOES=[
+  ['Antecedentes criminais · Polícia Federal','https://www.gov.br/pt-br/servicos/emitir-certidao-de-antecedentes-criminais','Nacional. Nome, CPF, data de nascimento, filiação.'],
+  ['Atestado de antecedentes · São Paulo (Poupatempo)','https://www.poupatempo.sp.gov.br','Estadual (SSP-SP). Procure "Atestado de antecedentes criminais".'],
+  ['Certidões de distribuição · TJSP (cível e criminal)','https://esaj.tjsp.jus.br/sco/abrirCadastro.do','1ª instância. Escolha o modelo (ex.: criminal) e informe os dados.'],
+  ['Certidão regional · Justiça Federal da 3ª Região','https://web.trf3.jus.br/certidao-regional/','Processos na Justiça Federal de SP e MS.'],
+  ['Débitos trabalhistas (CNDT) · TST','https://cndt-certidao.tst.jus.br/','Certidão negativa de débitos trabalhistas.'],
+  ['Situação do CPF · Receita Federal','https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp','CPF e data de nascimento.']];
+function cartaoCertidoes(c){const sig=c.tema==='violencia';
+  return '<div class="lead"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><h4 style="margin:0 auto 0 0">🔎 Certidões e consultas</h4><button class="btn sm" data-certcopia="'+c.id+'">Copiar dados do cliente</button>'+(c.telefone&&!sig?'<a class="btn sm wa" target="_blank" rel="noopener" href="https://wa.me/55'+soDig(c.telefone)+'?text='+encodeURIComponent(msgCertidoes(c))+'">Pedir ao cliente</a>':'')+'</div>'+
+    '<ul class="cert-l">'+CERTIDOES.map(x=>'<li><a href="'+x[1]+'" target="_blank" rel="noopener noreferrer">'+esc(x[0])+' ↗</a><small class="mut">'+esc(x[2])+'</small></li>').join('')+'</ul>'+
+    '<p class="nota" style="margin:6px 0 0">Sites oficiais e gratuitos. As certidões são emitidas pela própria pessoa (ou com os dados dela, com autorização): o sistema não faz consultas escondidas. Depois, anexe o PDF no processo em 📎 Documentos.</p></div>'}
+function msgCertidoes(c){const pn=(c.nome||'').split(' ')[0];return 'Olá, '+pn+'! Para o seu caso, preciso destas certidões (são gratuitas e saem na hora pela internet):\n\n1. Antecedentes criminais da Polícia Federal: https://www.gov.br/pt-br/servicos/emitir-certidao-de-antecedentes-criminais\n2. Certidão de distribuição do TJSP: https://esaj.tjsp.jus.br/sco/abrirCadastro.do\n\nQuando tiver, me mande o PDF por aqui. Qualquer dúvida, estou à disposição.\n'+(ESCRITORIO.primeiro||'')}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-certcopia]');if(!b)return;const c=(D.clientes||[]).find(x=>x.id===b.dataset.certcopia);if(!c)return;
+  copiar([c.nome,c.cpf?'CPF '+fmtCPF(c.cpf):'',c.rg?'RG '+c.rg:'',c.nascimento?'Nascimento '+dataBR(c.nascimento):''].filter(Boolean).join('\n'))});
 
 /* =================== Comemoração: alguém tocou no WhatsApp do site =================== */
 /* Sem dado pessoal: o site só conta página, assunto e origem. O agente do assunto comemora com fogos.
