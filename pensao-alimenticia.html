@@ -621,7 +621,7 @@ if(grid){ grid.innerHTML = DUVIDAS.map(d=>`
   </article>`; }
 document.querySelectorAll('.wa').forEach(a=>{
   a.href=link(a.dataset.msg); a.target=ABRIR_NA_MESMA_ABA?'_self':'_blank'; a.rel='noopener';
-  a.addEventListener('click',()=>{ try{ if(window.fbq) fbq('track','Contact'); }catch(e){} });
+  a.addEventListener('click',()=>{ try{ if(window.fbq) fbq('track','Contact'); }catch(e){} try{ fetch('https://bjxfxoieamlnkkllbjib.supabase.co/rest/v1/rpc/registrar_clique',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqeGZ4b2llYW1sbmtrbGxiamliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3MTM0MDksImV4cCI6MjEwODI4OTQwOX0.XxHWblbOH49eNEhtIkTjKMkB9PMcwjfW7zHKjqt6gmw'},body:JSON.stringify({p_escritorio:'beatriz-alves',p_pagina:location.pathname.split('/').pop()||'inicio',p_tema:'pensao'})}).catch(()=>{}); }catch(e){} });
 });
 (function(){
  var bt=document.querySelector('.menu-bt'),m=document.getElementById('menu');
@@ -633,11 +633,11 @@ document.querySelectorAll('.wa').forEach(a=>{
 
 </script>
 <!-- Pixel do Meta: só liga depois do aceite (LGPD). Não é instalado nas páginas de violência doméstica e criminal. -->
-<div id="cookies" hidden role="region" aria-label="Aviso de cookies" style="position:fixed;left:16px;right:16px;bottom:16px;z-index:60;max-width:560px;margin:0 auto;background:#14213D;color:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 10px 30px rgba(0,0,0,.25);font-size:15px;line-height:1.45">
-  <p style="margin:0 0 12px">Usamos cookies para entender como as pessoas chegam ao site pelos anúncios. Nenhum dado do seu caso é coletado.</p>
-  <div style="display:flex;gap:10px;flex-wrap:wrap">
-    <button type="button" data-ck="sim" style="background:#BF9440;color:#14213D;border:0;border-radius:999px;padding:10px 20px;font-weight:600;font-size:15px;cursor:pointer">Aceitar</button>
-    <button type="button" data-ck="nao" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:999px;padding:10px 20px;font-size:15px;cursor:pointer">Recusar</button>
+<div id="cookies" hidden role="region" aria-label="Aviso de cookies" style="position:fixed;left:12px;right:84px;bottom:12px;z-index:60;max-width:520px;background:#14213D;color:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.25);font-size:13px;line-height:1.35;gap:10px;align-items:center;flex-wrap:wrap">
+  <p style="margin:0;flex:1 1 180px">Usamos cookies para medir os anúncios. Nenhum dado do seu caso é coletado.</p>
+  <div style="display:flex;gap:8px">
+    <button type="button" data-ck="sim" style="background:#BF9440;color:#14213D;border:0;border-radius:999px;padding:7px 14px;font-weight:600;font-size:13px;cursor:pointer">Aceitar</button>
+    <button type="button" data-ck="nao" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:999px;padding:7px 14px;font-size:13px;cursor:pointer">Recusar</button>
   </div>
 </div>
 <script>
@@ -654,8 +654,8 @@ document.querySelectorAll('.wa').forEach(a=>{
   var v=ler();
   if(v==='sim'){ligar();return}
   if(v==='nao')return;
-  box.hidden=false;
-  box.addEventListener('click',function(e){var b=e.target.closest('[data-ck]');if(!b)return;gravar(b.dataset.ck);box.hidden=true;if(b.dataset.ck==='sim')ligar()});
+  box.hidden=false;box.style.display='flex';
+  box.addEventListener('click',function(e){var b=e.target.closest('[data-ck]');if(!b)return;gravar(b.dataset.ck);box.hidden=true;box.style.display='none';if(b.dataset.ck==='sim')ligar()});
 })();
 </script>
 </body>
