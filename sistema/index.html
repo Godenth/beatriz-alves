@@ -761,12 +761,14 @@ async function carregarReal(){
   Object.assign(ESCRITORIO,{telefone:e.telefone||'',email:e.email||'',site:e.site||'',endereco:e.endereco||'',cidade:e.cidade||'',uf:e.uf||'',instagram:e.instagram||''});await carregarPerfil();MAX_RETORNOS=e.max_retornos;DIAS_RETORNO=e.dias_retorno;
   const [{data:ls,error:e2},{data:hs,error:e3}]=await Promise.all([SB.from('leads').select('*').eq('escritorio_id',e.id).order('criado_em',{ascending:false}),SB.from('historico').select('lead_id,tipo,texto,criado_em').eq('escritorio_id',e.id).order('criado_em')]);
   if(e2||e3)throw (e2||e3);
-  D={leads:ls.map(r=>doBanco(r,hs))};
+  D.leads=ls.map(r=>doBanco(r,hs));   // só troca os leads: clientes, processos, financeiro e agenda continuam
   const desde=new Date();desde.setDate(desde.getDate()-30);
   const {data:cq}=await SB.from('cliques').select('dia,pagina,tema,total').eq('escritorio_id',e.id).gte('dia',desde.toISOString().slice(0,10));
   D.cliques=cq||[];
 }
-async function recarregar(){if(!REAL||!USUARIO)return;try{await carregarReal();render()}catch(e){toast(String(e.message||e))}}
+async function recarregar(){if(!REAL||!USUARIO)return;try{await carregarReal();
+    await Promise.all([CLI.carregado?carregarClientes():null,MP.docs?carregarDocs():null,FIN.carregado&&podeFinanceiro()?carregarFin():null,AGD.carregado?carregarAgenda():null]);
+    const editando=CLI.form||MP.novo||FIN.novo||AGD.novo||document.querySelector('input:focus,textarea:focus,select:focus');if(!editando)render()}catch(e){toast(String(e.message||e))}}
 async function criarLead(nome,tel,tema,origem){
   if(!REAL)return novoLead(nome,tel,tema,origem);
   tel=tel.replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,'');
@@ -2779,7 +2781,7 @@ document.addEventListener('click',e=>{
   if(a==='editar'){UI.editando=d.id;render();const ta=$('#txt-edit');if(ta)ta.focus();return}
   if(a==='fimedit'){UI.editando=null;render();return}
   if(a==='salvaconsulta'){const l=D.leads.find(x=>x.id===d.id);l.consulta={data:$('#c-data').value,hora:$('#c-hora').value,tipo:$('#c-tipo').value};l.lembrou=false;if(l.status!=='consulta'){l.status='consulta';l.etapa='consulta';l.prox=null}anotar(l,'consulta','Consulta agendada: '+fmtConsulta(l.consulta));UI.agendar=null;UI.tipo='confirmar';salvar(l);render();toast('Consulta salva.');return}
-  if(a==='sair'){SB.auth.signOut().finally(()=>{USUARIO=null;UI.logado=false;D={leads:[]};render()});return}
+  if(a==='sair'){SB.auth.signOut().finally(()=>{USUARIO=null;UI.logado=false;D={leads:[]};location.reload()});return}
   if(a==='apagar'){const l=D.leads.find(x=>x.id===d.id);if(t.dataset.conf){apagarLead(l);UI.sel=null;render();toast('Contato apagado.')}else{t.dataset.conf='1';t.textContent='Toque de novo para apagar';t.style.color='var(--perigo)'}return}
 });
 document.addEventListener('input',e=>{if(e.target.id==='txt-edit'){UI.custom={id:UI.atual.id,tipo:UI.atual.tipo,txt:e.target.value};const a=document.querySelector('[data-envia]');const l=D.leads.find(x=>x.id===UI.atual.id);if(a&&l)a.href=waLink(l,e.target.value)}});
