@@ -1793,7 +1793,7 @@ function telaIntimacoes(){
   if(!INT.itens){carregarIntimacoes().then(render);return '<div class="lead"><div class="carregando"><span></span><span></span><span></span></div></div>'}
   const lista=intimFiltradas();if(!INT.sel||!lista.find(i=>i.id===INT.sel))INT.sel=(lista[0]||{}).id||null;
   const cont={novas:(INT.itens||[]).filter(i=>!i.lida).length,prazo:(INT.itens||[]).filter(i=>i.prazo_fim&&!i.resolvida).length,todas:(INT.itens||[]).length};
-  const itens=lista.map(i=>{const p=prazoInfo(i);return '<button class="it '+(i.id===INT.sel?'on':'')+'" data-intsel="'+i.id+'"><div style="min-width:0;flex:1"><b style="display:flex;gap:6px;align-items:center">'+(i.lida?'':'<span class="pt-nova"></span>')+esc(i.classe?i.classe.charAt(0)+i.classe.slice(1).toLowerCase():'Intimação')+'</b><small>'+dataBR(i.data_disp)+' · '+esc(curtoOrgao(i.orgao))+'</small></div>'+(p?'<span class="st" style="color:'+p.cor+'">'+(i.resolvida?'feito':dataBR(i.prazo_fim))+'</span>':'')+'</button>'}).join('')||'<p class="mut" style="padding:10px;margin:0">Nada aqui.</p>';
+  const itens=lista.map(i=>{const p=prazoInfo(i);return '<button class="it '+(i.id===INT.sel?'on':'')+'" data-intsel="'+i.id+'"><div style="min-width:0;flex:1"><b style="display:flex;gap:6px;align-items:center">'+(i.lida?'':'<span class="pt-nova"></span>')+esc(fmtClasse(i.classe))+'</b><small>'+dataBR(i.data_disp)+' · '+esc(curtoOrgao(i.orgao))+'</small></div>'+(p?'<span class="st" style="color:'+p.cor+'">'+(i.resolvida?'feito':dataBR(i.prazo_fim))+'</span>':'')+'</button>'}).join('')||'<p class="mut" style="padding:10px;margin:0">Nada aqui.</p>';
   const it=(INT.itens||[]).find(i=>i.id===INT.sel);
   return '<div class="lay"><aside class="lado"><div class="agh">'+av('klaus',44)+'<div><b>Klaus</b><div class="mut" style="font-size:12px">Intimações e prazos</div></div></div>'+
     '<div class="fala">'+falaKlausInt()+'</div>'+
@@ -1802,11 +1802,12 @@ function telaIntimacoes(){
     '<div class="seg" style="align-self:flex-start">'+[['novas','Novas'],['prazo','Prazos'],['todas','Todas']].map(f=>'<button data-intfil="'+f[0]+'" class="'+(INT.filtro===f[0]?'on':'')+'">'+f[1]+' <small class="mut">'+cont[f[0]]+'</small></button>').join('')+'</div>'+
     '<div style="display:flex;flex-direction:column;gap:2px">'+itens+'</div></aside><section class="conv">'+(it?detalheInt(it):'<div class="lead ivazio"><p>Nenhuma intimação nesta lista.</p></div>')+'</section></div>';
 }
+function fmtClasse(c){if(!c)return 'Intimação';c=c.toLowerCase();return c.charAt(0).toUpperCase()+c.slice(1)}
 function curtoOrgao(o){return (o||'').replace(/^Foro\s+(Regional\s+[IVXL]+\s*-\s*)?/i,'').replace(/\s+-\s+/,' · ').slice(0,70)}
 function detalheInt(it){
   const pen=ehPenal(it),achou=diasNoTexto(it.texto);const n=INT.dias&&INT.dias[it.id]||achou||15;const corr=INT.corr&&it.id in INT.corr?INT.corr[it.id]:pen;
   const c=calcPrazoInt(it,n,corr);const p=prazoInfo(it);const rs=INT.resumo[it.id];
-  return '<div class="lead"><div class="l1"><b style="font-size:17px">'+esc(it.classe||'Intimação')+'</b><span class="pill" style="--c:#6FC0C8">'+esc(it.tribunal||'')+'</span>'+(it.lida?'':'<span class="pill" style="--c:var(--ok)">nova</span>')+(it.resolvida?'<span class="pill" style="--c:var(--mut)">resolvida</span>':'')+(it.exemplo?'<span class="pill" style="--c:var(--mut)">exemplo</span>':'')+'</div>'+
+  return '<div class="lead"><div class="l1"><b style="font-size:17px">'+esc(fmtClasse(it.classe))+'</b><span class="pill" style="--c:#6FC0C8">'+esc(it.tribunal||'')+'</span>'+(it.lida?'':'<span class="pill" style="--c:var(--ok)">nova</span>')+(it.resolvida?'<span class="pill" style="--c:var(--mut)">resolvida</span>':'')+(it.exemplo?'<span class="pill" style="--c:var(--mut)">exemplo</span>':'')+'</div>'+
     '<p class="mut" style="margin:0;font-size:13px">'+esc(it.numero_processo||'')+' · '+esc(it.orgao||'')+'</p>'+
     '<p class="mut" style="margin:0;font-size:13px">Disponibilizada no DJEN em '+dataBR(it.data_disp)+(it.partes?' · Partes: '+esc(it.partes):'')+'</p></div>'+
     '<div class="balao">'+av('klaus',40)+'<div class="tx"><b>Klaus:</b> '+(rs?esc(rs):esc(resumoRapido(it.texto)))+
