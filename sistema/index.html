@@ -2361,9 +2361,9 @@ document.addEventListener('click',async e=>{
 function menuConta(){if(!UI.conta)return '';const P=PERFIL();
   return '<div class="conta-menu" role="menu"><div class="conta-topo">'+(temMono()?'<img src="'+MONO+'" alt="" width="40" height="40" style="border-radius:50%">':'')+'<div><b>'+esc(P.nome||ESCRITORIO.advogada)+'</b><small>'+esc(REAL&&USUARIO?USUARIO.email:'Modo demonstração')+'</small></div></div>'+
     [['perfil','👤','Meu perfil'],['escritorio','🏛️','Dados do escritório'],['aparencia','🎨','Aparência'],['seguranca','🔒','Senha e segurança']].map(x=>'<button role="menuitem" data-cfgir="'+x[0]+'"><span>'+x[1]+'</span>'+x[2]+'</button>').join('')+
-    '<button role="menuitem" data-tour="abrir"><span>▶</span>Rever a apresentação</button>'+(REAL?'<button role="menuitem" data-a="sair" class="sair"><span>⎋</span>Sair</button>':'')+'</div>'}
+    '<button role="menuitem" data-cfgir="aparencia" data-ancora="cfg-anim"><span>🎆</span>Testar animações</button>'+'<button role="menuitem" data-tour="abrir"><span>▶</span>Rever a apresentação</button>'+(REAL?'<button role="menuitem" data-a="sair" class="sair"><span>⎋</span>Sair</button>':'')+'</div>'}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-conta]');if(b){UI.conta=!UI.conta;render();return}
-  const ir=e.target.closest('[data-cfgir]');if(ir){UI.conta=false;UI.tela='config';UI.cfg=ir.dataset.cfgir;render();scrollTo(0,0);return}
+  const ir=e.target.closest('[data-cfgir]');if(ir){UI.conta=false;UI.tela='config';UI.cfg=ir.dataset.cfgir;render();scrollTo(0,0);const an=ir.dataset.ancora&&document.getElementById(ir.dataset.ancora);if(an)setTimeout(()=>an.scrollIntoView({behavior:'smooth',block:'center'}),80);return}
   if(UI.conta&&!e.target.closest('.conta-menu')){UI.conta=false;render()}},true);
 
 /* IA no sistema publicado: função "ia" no Supabase (Groq gratuito). Mesmo formato usado dentro do Claude. */
@@ -2621,7 +2621,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&FESTA.ativa)fecharF
 const TEMA_PROC=[['violencia',/medida protetiva|viol[eê]ncia dom|maria da penha/i],['criminal',/criminal|penal|crime|inqu[eé]rito|habeas|flagrante|den[uú]ncia|queixa/i],
   ['pensao',/alimento|pens[aã]o/i],['guarda',/guarda|conviv[eê]ncia|visita|regulamenta/i],['partilha',/partilha|invent[aá]rio|sobrepartilha/i],
   ['divorcio',/div[oó]rcio|separa[cç][aã]o/i],['casamento',/uni[aã]o est[aá]vel|casamento|pacto antenupcial|regime de bens/i]];
-function temaDoProcesso(p){const c=(D.clientes||[]).find(x=>x.id===p.cliente_id)||{};
+function temaDoProcesso(p){if(p.tema_teste)return p.tema_teste;const c=(D.clientes||[]).find(x=>x.id===p.cliente_id)||{};
   if(['violencia','acusacao','criminal'].includes(c.tema))return c.tema;
   const t=(p.titulo||'');for(const [k,re] of TEMA_PROC)if(re.test(t))return k;
   return TEMAS[c.tema]?c.tema:'outro'}
@@ -2714,7 +2714,18 @@ function cfgAparencia(){const A=APARENCIA;
     '<div class="cfg-op" style="margin-top:10px"><button class="cfg-card'+(A.visual==='oficial'?' on':'')+'" data-cfg="visual" data-v="oficial">'+prev('#14213D','#F6F4EF','#FFFFFF','#BF9440')+'<b>Oficial Beatriz Alves</b><small>Azul-marinho, dourado, branco e bege, como o site. Padrão.</small></button>'+
     '<button class="cfg-card'+(A.visual==='vidro'?' on':'')+'" data-cfg="visual" data-v="vidro">'+prev('rgba(255,255,255,.6)','linear-gradient(135deg,#7FD6CF,#A9B4FF 55%,#F2C98F)','rgba(255,255,255,.6)','#B98A45')+'<b>Ideali vidro</b><small>O visual anterior: vidro fosco sobre luz colorida.</small></button></div>'+
     '<h4 style="margin-top:16px">Claro ou escuro</h4><div class="seg">'+[['auto','Automático'],['claro','☀️ Claro'],['escuro','🌙 Escuro']].map(m=>'<button data-cfg="modo" data-v="'+m[0]+'" class="'+(A.modo===m[0]?'on':'')+'">'+m[1]+'</button>').join('')+'</div>'+
-    '<p class="nota">Automático segue o celular ou computador: claro de dia, escuro se o aparelho estiver no modo escuro.</p></div>'}
+    '<p class="nota">Automático segue o celular ou computador: claro de dia, escuro se o aparelho estiver no modo escuro.</p></div>'+cfgAnimacoes()}
+function cfgAnimacoes(){
+  return '<div class="lead" id="cfg-anim"><h3 style="margin-top:0">🎆 Testar animações</h3><p class="mut" style="margin:0 0 10px">Veja como o agente aparece. É só a animação: nada é salvo e nenhum dado muda.</p>'+
+    '<div class="grid2"><label class="f">Assunto<select class="inp" id="an-tema">'+Object.entries(TEMAS).map(([k,v])=>'<option value="'+k+'">'+esc(v.nome)+' · '+esc((AGENTES[FIG[v.ag]?v.ag:'klaus']||{}).nome||'')+'</option>').join('')+'</select></label>'+
+    '<label class="f">De onde veio (clique no WhatsApp)<select class="inp" id="an-orig"><option value="instagram">Instagram</option><option value="facebook">Facebook</option><option value="google">Google</option><option value="direto">Direto pelo site</option></select></label></div>'+
+    '<div class="acoes"><button class="btn pri" data-anim="clique">📲 Clique no WhatsApp</button><button class="btn" data-anim="cliente">👤 Cliente novo</button><button class="btn" data-anim="processo">📁 Processo novo</button></div></div>'}
+const TIT_TESTE={divorcio:'Divórcio litigioso',partilha:'Partilha de bens',casamento:'Reconhecimento de união estável',pensao:'Alimentos',guarda:'Guarda compartilhada',violencia:'Medida protetiva',criminal:'Defesa em inquérito policial',acusacao:'Defesa em inquérito policial',outro:'Ação de exemplo'};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-anim]');if(!b)return;const tema=($('#an-tema')||{}).value||'divorcio',origem=($('#an-orig')||{}).value||'instagram';
+  FESTA.fila=[];if(FESTA.ativa){const el=document.getElementById('festa');if(el)el.remove();FESTA.ativa=false}
+  if(b.dataset.anim==='clique')comemorar({tema,origem,pagina:'teste',n:1});
+  if(b.dataset.anim==='cliente')festaCliente({id:'',nome:'Cliente de teste',tema});
+  if(b.dataset.anim==='processo')festaProcesso({id:'',cliente_id:null,tema_teste:tema,titulo:TIT_TESTE[tema]||'Ação de exemplo',numero:null})});
 
 async function salvarCfg(k){const g=id=>($('#'+id)?$('#'+id).value.trim():'');
   try{
