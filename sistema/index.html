@@ -625,6 +625,10 @@ html,body{overflow-x:clip}
 .painel-corpo{position:relative;z-index:1}
 .cl-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px 18px}
 .cl-d{display:flex;flex-direction:column;gap:1px;min-width:0}.cl-d small{color:var(--mut);font-size:12px}.cl-d b{font-weight:600;overflow-wrap:anywhere}
+.mp-auto{margin-top:0;cursor:pointer}.mp-auto:hover{border-color:var(--ouro)}.mp-auto b{color:var(--tx,inherit)}
+.mp-pend{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}.mp-pend:empty{display:none}.mp-pend .chip{font-size:12px;padding:3px 9px;border-radius:99px;background:var(--card2);border:1px solid var(--rule)}
+.mp-ia:empty{display:none}.mp-ia{color:inherit}.mp-ia .carregando{display:inline-flex;vertical-align:middle;margin-right:6px}
+.inp.auto{border-color:var(--ouro);box-shadow:0 0 0 3px color-mix(in srgb,var(--ouro) 22%,transparent)}
 .mp-num{display:block;font-variant-numeric:tabular-nums;opacity:.75}
 .mp-drop{margin:12px 0 4px;border:1.5px dashed var(--rule);border-radius:12px;padding:16px;text-align:center;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:6px;transition:.15s}
 .mp-drop.on{border-color:var(--ouro);background:color-mix(in srgb,var(--ouro) 10%,transparent);color:inherit}
@@ -2420,7 +2424,9 @@ function telaMeusProcessos(){
 function formNovoProcesso(){
   const cl=(D.clientes||[]).filter(c=>c.status==='ativo').sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
   if(!cl.length)return '<div class="lead"><h3>Novo processo</h3><p>Primeiro cadastre o cliente. O processo fica ligado à ficha dele.</p><div class="acoes"><button class="btn pri" data-mp="ircli">Ir para Clientes</button><button class="btn" data-mp="cancnovo">Cancelar</button></div></div>';
-  return '<div class="lead"><h3 style="margin-top:0">Novo processo</h3><label class="f">Cliente<select class="inp" id="mp-cli">'+cl.map(c=>'<option value="'+c.id+'">'+esc(c.nome)+'</option>').join('')+'</select></label>'+
+  return '<div class="lead"><h3 style="margin-top:0">Novo processo</h3>'+
+    '<label class="mp-drop mp-auto" style="cursor:pointer"><input type="file" id="mp-novoarq" multiple accept="'+DOC_ACEITA+'" hidden><b>📎 Anexar petição, capa ou decisão</b><small>O Klaus lê e preenche os campos sozinho. PDF com texto funciona melhor.</small><div id="mp-pend" class="mp-pend">'+(MP.pend||[]).map(f=>'<span class="chip">'+iconeDoc(tipoDoArquivo(f))+' '+esc(f.name)+'</span>').join('')+'</div><small id="mp-ia" class="mp-ia"></small></label>'+
+    '<label class="f">Cliente<select class="inp" id="mp-cli">'+cl.map(c=>'<option value="'+c.id+'">'+esc(c.nome)+'</option>').join('')+'</select></label>'+
     formProcesso({id:'__mp'}).replace('data-cli="salvaproc" data-id="__mp"','data-mp="salvar"').replace('data-cli="cancproc"','data-mp="cancnovo"')+'</div>'}
 
 function detalheProcesso(p){
@@ -2494,11 +2500,11 @@ document.addEventListener('click',async e=>{
   const f=e.target.closest('[data-mpfil]');if(f){MP.filtro=f.dataset.mpfil;render();return}
   const t=e.target.closest('[data-mp]');if(!t)return;const a=t.dataset.mp,id=t.dataset.id;
   if(a!=='apagadoc'&&a!=='apagaproc')MP.apagar=null;
-  if(a==='novo'){MP.novo=true;render();return}
-  if(a==='cancnovo'){MP.novo=false;render();return}
+  if(a==='novo'){MP.novo=true;MP.pend=[];render();return}
+  if(a==='cancnovo'){MP.novo=false;MP.pend=[];render();return}
   if(a==='ircli'){MP.novo=false;UI.tela='clientes';CLI.form={};render();scrollTo(0,0);return}
   if(a==='salvar'){const cid=($('#mp-cli')||{}).value;if(!cid)return;const antes=new Set((D.processos||[]).map(p=>p.id));await salvarProcesso(cid);
-    const novo=(D.processos||[]).find(p=>!antes.has(p.id));if(novo){MP.novo=false;MP.sel=novo.id;MP.filtro=MP.filtro==='fim'?'ativos':MP.filtro;render()}return}
+    const novo=(D.processos||[]).find(p=>!antes.has(p.id));if(novo){MP.novo=false;MP.sel=novo.id;MP.filtro=MP.filtro==='fim'?'ativos':MP.filtro;render();const pend=MP.pend||[];MP.pend=[];if(pend.length)await enviarDocs(pend)}return}
   if(a==='ficha'){UI.tela='clientes';CLI.sel=id;CLI.form=null;render();scrollTo(0,0);return}
   if(a==='apagaproc'){if(MP.apagar!==id){MP.apagar=id;render();return}
     try{const docs=(MP.docs||[]).filter(d=>d.processo_id===id);
@@ -2515,6 +2521,54 @@ document.addEventListener('change',e=>{if(e.target.id==='mp-arq'&&e.target.files
 ['dragenter','dragover'].forEach(ev=>document.addEventListener(ev,e=>{const z=e.target.closest&&e.target.closest('[data-mpdrop]');if(!z)return;e.preventDefault();if(!MP.arrasta){MP.arrasta=true;z.classList.add('on')}}));
 document.addEventListener('dragleave',e=>{const z=e.target.closest&&e.target.closest('[data-mpdrop]');if(z&&!z.contains(e.relatedTarget)){MP.arrasta=false;z.classList.remove('on')}});
 document.addEventListener('drop',e=>{const z=e.target.closest&&e.target.closest('[data-mpdrop]');if(!z)return;e.preventDefault();MP.arrasta=false;if(e.dataTransfer.files.length)enviarDocs([...e.dataTransfer.files])});
+
+/* ---- Novo processo: anexar a petição/capa e o Klaus preenche o formulário ---- */
+const semAcento=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+function extrairRegex(txt){const r={};
+  const n=txt.match(/\b\d{7}-?\d{2}\.?\d{4}\.?\d\.?\d{2}\.?\d{4}\b/);if(n)r.numero=soDig(n[0]);
+  const v=txt.match(/\b\d{1,2}\s*[ªaº°]?\s*Vara[^\n]{0,90}/i);if(v)r.vara=v[0].replace(/\s+/g,' ').trim().slice(0,160);
+  else{const f=txt.match(/Foro[^\n]{3,70}/i);if(f)r.vara=f[0].replace(/\s+/g,' ').trim()}
+  const a=txt.match(/A[ÇC][ÃA]O\s+DE\s+([A-ZÀ-Úa-zà-ú ]{4,45}?)(?=\s+(?:EM FACE|CONTRA|C\/C|COM PEDIDO)|[,.;\n])/i);
+  if(a){const t=a[1].trim().toLowerCase();r.titulo=t.charAt(0).toUpperCase()+t.slice(1)}
+  const pc=txt.match(/em face de\s+([^,\n]{3,80})/i);if(pc)r.parte=pc[1].trim();
+  return r}
+async function textoDoArquivo(f){const t=tipoDoArquivo(f);
+  if(/pdf/.test(t)){const r=await lerPDF(f);return r.txt}
+  if(/^text\//.test(t))return await f.text();
+  return ''}
+function setCampo(id,v){const el=document.getElementById(id);if(!el||v==null||v==='')return false;if(el.value&&el.value.trim())return false;el.value=v;el.classList.add('auto');return true}
+async function lerParaPreencher(files){
+  MP.pend=(MP.pend||[]).concat(files.filter(f=>f.size<=DOC_MAX&&DOC_TIPOS.test(tipoDoArquivo(f))));
+  const st=document.getElementById('mp-ia'),lista=document.getElementById('mp-pend');
+  if(lista)lista.innerHTML=MP.pend.map(f=>'<span class="chip">'+iconeDoc(tipoDoArquivo(f))+' '+esc(f.name)+'</span>').join('');
+  const say=h=>{if(st)st.innerHTML=h};
+  say('<span class="carregando"><span></span><span></span><span></span></span> Klaus está lendo…');
+  let txt='';
+  for(const f of files){try{txt+='\n'+(await textoDoArquivo(f))}catch(e){console.error(e)}}
+  txt=txt.trim();
+  if(txt.length<40){say('Anexei. Não deu para ler o texto (foto, Word ou PDF escaneado): preencha os campos à mão. O arquivo vai junto ao salvar.');return}
+  const R=extrairRegex(txt);
+  // cliente citado no documento
+  const sel=document.getElementById('mp-cli'),tn=semAcento(txt);
+  if(sel){const achou=(D.clientes||[]).filter(c=>c.status==='ativo'&&c.nome.length>5&&tn.includes(semAcento(c.nome)));if(achou.length===1)sel.value=achou[0].id}
+  const cli=sel?((D.clientes||[]).find(c=>c.id===sel.value)||{}).nome:'';
+  let A={};
+  if(SAMPLE&&typeof SAMPLE.json==='function'){
+    try{A=await SAMPLE.json('Você é o Klaus, advogado sênior. Do documento judicial abaixo, extraia os dados para cadastrar o processo. A cliente do escritório é: '+(cli||'(não informada)')+'.\n'+
+      'Devolva JSON com: "titulo" (a ação, curta, ex.: "Divórcio litigioso", "Alimentos", "Guarda"), "numero" (número CNJ com 20 dígitos ou null), "vara" (vara e foro, ex.: "2ª Vara da Família e Sucessões · Foro Regional I"), '+
+      '"parte_contraria" (nome da outra parte; se não houver, null), "polo" ("autor" se a cliente é autora/requerente, "reu" se é ré/requerida, "outro" se não der para saber). Use null no que não estiver no texto. Não invente.\n\nDOCUMENTO:\n'+txt.slice(0,3500)+(txt.length>3500?'\n[...]\n'+txt.slice(-1500):''),{cache:false})}
+    catch(e){A={};console.warn('ia',e)}}
+  const num=soDig(A.numero||'').length===20?soDig(A.numero):R.numero;
+  const fmt=d=>d?d.replace(/(\d{7})(\d{2})(\d{4})(\d)(\d{2})(\d{4})/,'$1-$2.$3.$4.$5.$6'):'';
+  let n=0;
+  if(setCampo('pr-tit',String(A.titulo||R.titulo||'').slice(0,120)))n++;
+  if(setCampo('pr-num',fmt(num)))n++;
+  if(setCampo('pr-vara',(A.vara||R.vara||'')&&String(A.vara||R.vara).slice(0,160)))n++;
+  if(setCampo('pr-parte',String(A.parte_contraria||R.parte||'').slice(0,120)))n++;
+  const po=document.getElementById('pr-polo');if(po&&['autor','reu','outro'].includes(A.polo)){po.value=A.polo;po.classList.add('auto');n++}
+  say(n?'✓ Klaus preencheu '+n+' campo'+(n>1?'s':'')+' (em destaque). <b>Confira antes de salvar.</b> O arquivo é anexado ao processo ao salvar.'
+       :'Li o documento, mas não achei os dados com segurança. Preencha à mão; o arquivo vai junto ao salvar.'+(SAMPLE?'':' (A leitura com IA fica ativa com a chave da IA configurada.)'))}
+document.addEventListener('change',e=>{if(e.target.id==='mp-novoarq'&&e.target.files.length){lerParaPreencher([...e.target.files]);e.target.value=''}});
 
 /* =================== Comemoração: alguém tocou no WhatsApp do site =================== */
 /* Sem dado pessoal: o site só conta página, assunto e origem. O agente do assunto comemora com fogos.
