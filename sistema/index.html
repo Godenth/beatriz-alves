@@ -629,6 +629,8 @@ html,body{overflow-x:clip}
 .mp-pend{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}.mp-pend:empty{display:none}.mp-pend .chip{font-size:12px;padding:3px 9px;border-radius:99px;background:var(--card2);border:1px solid var(--rule)}
 .mp-ia:empty{display:none}.mp-ia{color:inherit}.mp-ia .carregando{display:inline-flex;vertical-align:middle;margin-right:6px}
 .inp.auto{border-color:var(--ouro);box-shadow:0 0 0 3px color-mix(in srgb,var(--ouro) 22%,transparent)}
+.pr-form .so-ip{display:none}.pr-form.ip .so-ip{display:revert}.pr-form.ip .so-jud{display:none}.pr-form.ip .grid2.so-ip{display:grid}
+.pill-ip{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;background:color-mix(in srgb,#A79CC6 25%,transparent);color:inherit}
 .mp-num{display:block;font-variant-numeric:tabular-nums;opacity:.75}
 .mp-drop{margin:12px 0 4px;border:1.5px dashed var(--rule);border-radius:12px;padding:16px;text-align:center;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:6px;transition:.15s}
 .mp-drop.on{border-color:var(--ouro);background:color-mix(in srgb,var(--ouro) 10%,transparent);color:inherit}
@@ -2273,18 +2275,30 @@ function fichaCliente(c){
       linhaDado('Telefone',c.telefone?fmtTel(c.telefone):'')+linhaDado('E-mail',c.email)+linhaDado('Endereço',[c.endereco,c.numero_end,c.complemento].filter(Boolean).join(', '))+linhaDado('Bairro',c.bairro)+linhaDado('Cidade',c.cidade?c.cidade+(c.uf?'/'+c.uf:''):'')+linhaDado('CEP',c.cep?fmtCEP(c.cep):'')+'</div>'+
       (c.obs?'<p class="mut" style="margin:6px 0 0">'+esc(c.obs)+'</p>':'')+'<p class="nota" style="margin:8px 0 0"><b>Qualificação:</b> '+esc(qualificacao(c))+'</p></div>'+
     '<div class="lead"><div style="display:flex;gap:10px;align-items:center"><h4 style="margin-right:auto">Processos</h4><button class="btn sm" data-cli="novoproc">+ Processo</button></div>'+(CLI.novoProc?formProcesso(c):'')+
-      (P.length?P.map(p=>{const I=intimDe(p),nl=I.filter(i=>!i.lida).length,s=SIT_PROC[p.situacao]||SIT_PROC.andamento;
-        return '<div class="cl-proc"><div style="flex:1;min-width:0"><b>'+esc(p.titulo)+'</b>'+(p.exemplo?' <span class="mut" style="font-size:12px">exemplo</span>':'')+'<div class="mut" style="font-size:13px">'+(p.numero?'<button class="lnk" data-cli="copiarnum" data-num="'+esc(p.numero)+'">'+esc(p.numero)+'</button>':'sem número ainda')+(p.vara?' · '+esc(p.vara):'')+(p.parte_contraria?' · parte contrária: '+esc(p.parte_contraria):'')+'</div>'+
+      (P.length?P.map(p=>{if(CLI.editProc===p.id)return formProcesso(c,p);const I=intimDe(p),nl=I.filter(i=>!i.lida).length,s=SIT_PROC[p.situacao]||SIT_PROC.andamento;
+        return '<div class="cl-proc"><div style="flex:1;min-width:0"><b>'+esc(p.titulo)+'</b>'+(p.exemplo?' <span class="mut" style="font-size:12px">exemplo</span>':'')+'<div class="mut" style="font-size:13px">'+numLinha(p)+(p.vara?' · '+esc(p.vara):'')+(p.parte_contraria?' · parte contrária: '+esc(p.parte_contraria):'')+'</div>'+
           ((MP.docs&&docsDe(p).length)?'<div style="font-size:13px;margin-top:4px">📎 '+docsDe(p).length+' documento'+(docsDe(p).length>1?'s':'')+' <button class="lnk" data-cli="verdocs" data-id="'+p.id+'">ver</button></div>':'<div style="font-size:13px;margin-top:4px"><button class="lnk" data-cli="verdocs" data-id="'+p.id+'">📎 anexar documentos</button></div>')+(I.length?'<div style="font-size:13px;margin-top:4px">📬 '+I.length+' intimaç'+(I.length===1?'ão':'ões')+(nl?' · <b style="color:var(--ok)">'+nl+' nova'+(nl>1?'s':'')+'</b>':'')+' · última em '+dataBR(I[0].data_disp)+' <button class="lnk" data-cli="verint" data-id="'+I[0].id+'">abrir</button></div>':'')+'</div>'+
-          '<select class="inp sm" data-procsit="'+p.id+'" aria-label="Situação" style="width:auto;color:'+s[1]+'">'+Object.entries(SIT_PROC).map(([k,v])=>'<option value="'+k+'"'+(k===p.situacao?' selected':'')+'>'+v[0]+'</option>').join('')+'</select><button class="btn sm" data-cli="apagaproc" data-id="'+p.id+'" aria-label="Tirar processo">×</button></div>'}).join(''):'<p class="mut" style="margin:0">Nenhum processo ligado. Com o número cadastrado, as intimações do DJEN aparecem aqui sozinhas.</p>')+'</div>'+
+          '<select class="inp sm" data-procsit="'+p.id+'" aria-label="Situação" style="width:auto;color:'+s[1]+'">'+Object.entries(SIT_PROC).map(([k,v])=>'<option value="'+k+'"'+(k===p.situacao?' selected':'')+'>'+v[0]+'</option>').join('')+'</select><button class="btn sm" data-cli="editproc" data-id="'+p.id+'" aria-label="Editar processo" title="Editar">✎</button><button class="btn sm" data-cli="apagaproc" data-id="'+p.id+'" aria-label="Tirar processo">×</button></div>'}).join(''):'<p class="mut" style="margin:0">Nenhum processo ligado. Com o número cadastrado, as intimações do DJEN aparecem aqui sozinhas.</p>')+'</div>'+
     '<div class="igrade">'+(podeFinanceiro()?'<div class="lead"><div style="display:flex;gap:10px;align-items:center"><h4 style="margin-right:auto">Honorários</h4><button class="btn sm" data-cli="lancar" data-id="'+c.id+'">+ Lançar</button></div>'+
       '<div class="cl-grade" style="grid-template-columns:repeat(3,1fr)"><div class="cl-d"><small>Recebido</small><b style="color:var(--ok)">'+brl(rec)+'</b></div><div class="cl-d"><small>A receber</small><b>'+brl(abe)+'</b></div><div class="cl-d"><small>Atrasado</small><b style="color:'+(atr?'var(--perigo)':'inherit')+'">'+brl(atr)+'</b></div></div>'+
       (Lc.length?'<ul class="ilst">'+Lc.sort((a,b)=>a.vencimento<b.vencimento?-1:1).slice(-6).map(l=>{const s=statusLanc(l);return '<li><b>'+esc(l.descricao)+(l.parcelas>1?' ('+l.parcela+'/'+l.parcelas+')':'')+' · '+brl(+l.valor)+'</b><small style="color:'+s.cor+'">'+s.txt+'</small></li>'}).join('')+'</ul>':'<p class="mut" style="margin:6px 0 0">Nenhum honorário lançado.</p>')+'</div>':'')+
       '<div class="lead"><div style="display:flex;gap:10px;align-items:center"><h4 style="margin-right:auto">Próximos compromissos</h4><button class="btn sm" data-cli="agendar" data-id="'+c.id+'">+ Agendar</button></div>'+
       (Ag.length?'<ul class="ilst">'+Ag.map(e=>'<li><b>'+esc(e.titulo)+'</b><small>'+novaData(e.data).toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'})+(e.hora?' · '+e.hora:'')+(e.modo?' · '+e.modo:'')+'</small></li>').join('')+'</ul>':'<p class="mut" style="margin:6px 0 0">Nada marcado.</p>')+'</div></div>'}
-function formProcesso(c){return '<div class="lead" style="background:var(--card2);margin:10px 0"><div class="grid2"><label class="f">Ação / título<input class="inp" id="pr-tit" maxlength="120" placeholder="ex.: Divórcio litigioso"></label><label class="f">Número (CNJ)<input class="inp" id="pr-num" inputmode="numeric" placeholder="0000000-00.0000.8.26.0000"></label></div>'+
-  '<div class="grid3"><label class="f">Vara / foro<input class="inp" id="pr-vara" maxlength="160"></label><label class="f">Parte contrária<input class="inp" id="pr-parte" maxlength="120" placeholder="nome ou iniciais"></label><label class="f">A cliente é<select class="inp" id="pr-polo"><option value="autor">Autora</option><option value="reu">Ré</option><option value="outro">Outro</option></select></label></div>'+
-  '<p class="nota" style="margin:4px 0 0">Sem número ainda (antes de distribuir)? Pode deixar em branco e completar depois.</p><div class="acoes"><button class="btn pri" data-cli="salvaproc" data-id="'+c.id+'">Salvar processo</button><button class="btn" data-cli="cancproc">Cancelar</button></div></div>'}
+function formProcesso(c,p){p=p||{};const ip=p.fase==='inquerito',v=k=>esc(p[k]==null?'':p[k]);
+  return '<div class="lead pr-form'+(ip?' ip':'')+'" style="background:var(--card2);margin:10px 0">'+
+  '<div class="seg pr-fase" role="radiogroup" style="margin-bottom:10px"><button type="button" data-prfase="judicial" class="'+(ip?'':'on')+'">⚖️ Processo judicial</button><button type="button" data-prfase="inquerito" class="'+(ip?'on':'')+'">🚔 Inquérito policial</button></div><input type="hidden" id="pr-fase" value="'+(ip?'inquerito':'judicial')+'">'+
+  '<div class="grid2 so-ip"><label class="f">Nº do inquérito / BO<input class="inp" id="pr-ip" maxlength="40" placeholder="ex.: 2192170/2026" value="'+v('inquerito')+'"></label><label class="f">Delegacia<input class="inp" id="pr-deleg" maxlength="120" placeholder="ex.: 1ª DDM · São Miguel Paulista" value="'+v('delegacia')+'"></label></div>'+
+  '<div class="grid2"><label class="f">Ação / título<input class="inp" id="pr-tit" maxlength="120" placeholder="'+(ip?'ex.: Inquérito policial · Maria da Penha':'ex.: Divórcio litigioso')+'" value="'+v('titulo')+'"></label><label class="f"><span class="so-jud">Número (CNJ)</span><span class="so-ip">Número CNJ (se já foi ao fórum)</span><input class="inp" id="pr-num" inputmode="numeric" placeholder="0000000-00.0000.8.26.0000" value="'+v('numero')+'"></label></div>'+
+  '<div class="grid3"><label class="f"><span class="so-jud">Vara / foro</span><span class="so-ip">Vara / foro (se houver)</span><input class="inp" id="pr-vara" maxlength="160" value="'+v('vara')+'"></label><label class="f">Parte contrária<input class="inp" id="pr-parte" maxlength="120" placeholder="nome ou iniciais" value="'+v('parte_contraria')+'"></label><label class="f">A cliente é<select class="inp" id="pr-polo">'+
+    [['autor','Autora / vítima'],['reu','Ré / investigada'],['outro','Outro']].map(o=>'<option value="'+o[0]+'"'+(p.polo===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select></label></div>'+
+  '<p class="nota so-jud" style="margin:4px 0 0">Sem número ainda (antes de distribuir)? Pode deixar em branco e completar depois.</p><p class="nota so-ip" style="margin:4px 0 0">Fase de delegacia (pré-processual). Quando virar processo, toque em Editar, mude para <b>Processo judicial</b> e coloque o número CNJ: as intimações passam a chegar sozinhas.</p>'+
+  '<div class="acoes"><button class="btn pri" data-cli="salvaproc" data-id="'+c.id+'"'+(p.id?' data-pid="'+p.id+'"':'')+'>'+(p.id?'Salvar alterações':'Salvar processo')+'</button><button class="btn" data-cli="cancproc">Cancelar</button></div></div>'}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-prfase]');if(!b)return;const f=b.closest('.pr-form');const ip=b.dataset.prfase==='inquerito';
+  f.classList.toggle('ip',ip);f.querySelectorAll('[data-prfase]').forEach(x=>x.classList.toggle('on',x===b));f.querySelector('#pr-fase').value=b.dataset.prfase;
+  const t=f.querySelector('#pr-tit');t.placeholder=ip?'ex.: Inquérito policial · Maria da Penha':'ex.: Divórcio litigioso';if(ip){const po=f.querySelector('#pr-polo');if(po&&!po.classList.contains('auto'))po.value='reu'}});
+function numLinha(p){const ip=p.fase==='inquerito',cnj=p.numero?'<button class="lnk" data-cli="copiarnum" data-num="'+esc(p.numero)+'">'+esc(p.numero)+'</button>':'';
+  if(ip)return '<span class="pill-ip">🚔 Inquérito</span> '+(p.inquerito?'<button class="lnk" data-cli="copiarnum" data-num="'+esc(p.inquerito)+'">IP '+esc(p.inquerito)+'</button>':'sem nº do IP')+(p.delegacia?' · '+esc(p.delegacia):'')+(cnj?' · '+cnj:'');
+  return (cnj||'sem número ainda')+(p.inquerito?' · <span class="mut">IP '+esc(p.inquerito)+'</span>':'')}
 function formCliente(){const f=CLI.form,v=f.id?(D.clientes||[]).find(c=>c.id===f.id)||{}:f.pre||{};const val=k=>esc(v[k]==null?'':v[k]);
   const sel=(id,ops,cur)=>'<select class="inp" id="'+id+'">'+ops.map(o=>'<option'+(o===cur?' selected':'')+'>'+o+'</option>').join('')+'</select>';
   return '<div class="lead"><h3 style="margin:0">'+(f.id?'Editar cliente':'Novo cliente')+'</h3>'+
@@ -2319,12 +2333,17 @@ async function salvarCliente(){
       row.status='ativo';if(!REAL)row.criado_em=new Date().toISOString();const [n]=await STORE.ins('clientes',row);CLI.sel=n.id;FESTA.fila.push({cli:n})}
     CLI.form=null;render();toast('Cliente salvo.');proximaFesta()}
   catch(e){toast(/duplicate|unique/i.test(String(e.message||e))?'Já existe um cliente com esse CPF ou contato.':'Não consegui salvar. Confira os campos.')}}
-async function salvarProcesso(cid){const tit=$('#pr-tit').value.trim(),num=$('#pr-num').value.trim();
+async function salvarProcesso(cid,pid){const fase=($('#pr-fase')||{}).value==='inquerito'?'inquerito':'judicial';
+  let tit=$('#pr-tit').value.trim();const num=$('#pr-num').value.trim(),ip=($('#pr-ip').value.trim()||null),deleg=($('#pr-deleg').value.trim()||null);
+  if(fase==='inquerito'&&tit.length<2)tit='Inquérito policial';
   if(tit.length<2){toast('Escreva a ação, ex.: Divórcio litigioso.');return}
   const d=soDig(num);if(num&&d.length!==20){toast('O número CNJ tem 20 dígitos.');return}
   const numero=d?d.replace(/(\d{7})(\d{2})(\d{4})(\d)(\d{2})(\d{4})/,'$1-$2.$3.$4.$5.$6'):null;
-  try{const novoP=await STORE.ins('processos',{cliente_id:cid,titulo:tit,numero,vara:$('#pr-vara').value.trim()||null,parte_contraria:$('#pr-parte').value.trim()||null,polo:$('#pr-polo').value,situacao:'andamento'});CLI.novoProc=false;render();toast(numero&&intimDe({numero}).length?'Processo salvo. Já achei intimações dele.':'Processo salvo.');if(novoP&&novoP[0]){FESTA.fila.push({proc:novoP[0]});proximaFesta()}}
-  catch(e){toast('Não consegui salvar o processo.')}}
+  const row={titulo:tit,numero,vara:$('#pr-vara').value.trim()||null,parte_contraria:$('#pr-parte').value.trim()||null,polo:$('#pr-polo').value,fase,inquerito:ip,delegacia:deleg};
+  try{
+    if(pid){await STORE.upd('processos',pid,row);CLI.editProc=null;MP.editar=null;render();toast(numero&&intimDe({numero}).length?'Salvo. Já achei intimações dele.':'Alterações salvas.');return}
+    const novoP=await STORE.ins('processos',Object.assign({cliente_id:cid,situacao:'andamento'},row));CLI.novoProc=false;render();toast(numero&&intimDe({numero}).length?'Processo salvo. Já achei intimações dele.':fase==='inquerito'?'Inquérito salvo.':'Processo salvo.');if(novoP&&novoP[0]){FESTA.fila.push({proc:novoP[0]});proximaFesta()}}
+  catch(e){console.error(e);toast('Não consegui salvar o processo.')}}
 document.addEventListener('input',e=>{if(e.target.id==='cli-busca'){CLI.busca=e.target.value;clearTimeout(CLI.tb);CLI.tb=setTimeout(()=>{render();const b=$('#cli-busca');if(b){b.focus();b.setSelectionRange(99,99)}},250)}
   if(e.target.id==='cf-cpf'){const d=soDig(e.target.value).slice(0,11);e.target.value=d.length>9?d.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/,'$1.$2.$3-$4'):d.length>6?d.replace(/(\d{3})(\d{3})(\d{0,3})/,'$1.$2.$3'):d.length>3?d.replace(/(\d{3})(\d{0,3})/,'$1.$2'):d}
   if(e.target.id==='cf-cep'){const d=soDig(e.target.value).slice(0,8);e.target.value=d.length>5?d.slice(0,5)+'-'+d.slice(5):d;if(d.length===8)buscarCEP()}});
@@ -2341,8 +2360,9 @@ document.addEventListener('click',async e=>{
   if(a==='cancelar'){CLI.form=null;render();return}
   if(a==='salvar'){salvarCliente();return}
   if(a==='novoproc'){CLI.novoProc=!CLI.novoProc;render();return}
-  if(a==='cancproc'){CLI.novoProc=false;render();return}
-  if(a==='salvaproc'){salvarProcesso(t.dataset.id);return}
+  if(a==='cancproc'){CLI.novoProc=false;CLI.editProc=null;MP.editar=null;render();return}
+  if(a==='salvaproc'){salvarProcesso(t.dataset.id,t.dataset.pid);return}
+  if(a==='editproc'){CLI.editProc=t.dataset.id;CLI.novoProc=false;render();return}
   if(a==='copiarnum'){copiar(t.dataset.num);return}
   if(a==='verdocs'){UI.tela='processos';UI.proc='meus';MP.sel=t.dataset.id;MP.novo=false;MP.filtro='todos';render();scrollTo(0,0);return}
   if(a==='verint'){UI.tela='processos';UI.proc='intim';INT.filtro='todas';INT.sel=t.dataset.id;render();scrollTo(0,0);return}
@@ -2409,12 +2429,12 @@ function telaMeusProcessos(){
   const todos=(D.processos||[]).slice();
   const ativo=p=>p.situacao==='andamento'||p.situacao==='suspenso';
   const L=todos.filter(p=>MP.filtro==='todos'||(MP.filtro==='ativos'?ativo(p):!ativo(p)))
-    .filter(p=>{if(!q)return true;const c=cliDe(p);return (p.titulo||'').toLowerCase().includes(q)||(c&&c.nome.toLowerCase().includes(q))||(p.vara||'').toLowerCase().includes(q)||(p.parte_contraria||'').toLowerCase().includes(q)||(qd.length>=3&&numCNJ(p.numero).includes(qd))})
+    .filter(p=>{if(!q)return true;const c=cliDe(p);return (p.titulo||'').toLowerCase().includes(q)||(c&&c.nome.toLowerCase().includes(q))||(p.vara||'').toLowerCase().includes(q)||(p.parte_contraria||'').toLowerCase().includes(q)||(qd.length>=3&&(numCNJ(p.numero).includes(qd)||soDig(p.inquerito).includes(qd)))||(p.delegacia||'').toLowerCase().includes(q)||(q.includes('inq')&&p.fase==='inquerito')})
     .sort((a,b)=>{const na=intimDe(a).filter(i=>!i.lida).length,nb=intimDe(b).filter(i=>!i.lida).length;if(na!==nb)return nb-na;return ((cliDe(a)||{}).nome||'').localeCompare((cliDe(b)||{}).nome||'','pt-BR')});
   if(!MP.novo&&(!MP.sel||!todos.find(p=>p.id===MP.sel)))MP.sel=(L[0]||{}).id||null;
   const cont={ativos:todos.filter(ativo).length,fim:todos.filter(p=>!ativo(p)).length,todos:todos.length};
   const itens=L.map(p=>{const c=cliDe(p),nl=intimDe(p).filter(i=>!i.lida).length,nd=docsDe(p).length,s=SIT_PROC[p.situacao]||SIT_PROC.andamento;
-    return '<button class="it '+(p.id===MP.sel&&!MP.novo?'on':'')+'" data-mpsel="'+p.id+'"><span class="wa-av" style="--c:'+((TEMAS[c&&c.tema]||{}).cor||'var(--ouro)')+'">📁</span><div style="min-width:0;flex:1"><b>'+esc(p.titulo)+'</b><small>'+esc(c?c.nome:'cliente apagado')+' · <span style="color:'+s[1]+'">'+s[0].toLowerCase()+'</span></small><small class="mp-num">'+(p.numero?esc(p.numero):'sem número ainda')+'</small></div><span class="bd">'+(nl?'<span class="wa-bd" title="intimações novas">'+nl+'</span>':'')+(nd?'<small class="mut" title="documentos">📎'+nd+'</small>':'')+'</span></button>'}).join('')||
+    return '<button class="it '+(p.id===MP.sel&&!MP.novo?'on':'')+'" data-mpsel="'+p.id+'"><span class="wa-av" style="--c:'+((TEMAS[c&&c.tema]||{}).cor||'var(--ouro)')+'">📁</span><div style="min-width:0;flex:1"><b>'+esc(p.titulo)+'</b><small>'+esc(c?c.nome:'cliente apagado')+' · <span style="color:'+s[1]+'">'+s[0].toLowerCase()+'</span></small><small class="mp-num">'+(p.fase==='inquerito'?'🚔 IP '+esc(p.inquerito||'sem nº')+(p.numero?' · '+esc(p.numero):''):(p.numero?esc(p.numero):'sem número ainda'))+'</small></div><span class="bd">'+(nl?'<span class="wa-bd" title="intimações novas">'+nl+'</span>':'')+(nd?'<small class="mut" title="documentos">📎'+nd+'</small>':'')+'</span></button>'}).join('')||
     '<p class="mut" style="margin:8px 4px">'+(todos.length?'Nada encontrado.':'Nenhum processo ainda.')+'</p>';
   const p=todos.find(x=>x.id===MP.sel);
   return '<div class="lay"><aside class="lado"><div style="display:flex;gap:8px;align-items:center"><h3 style="margin:0;margin-right:auto">Processos</h3><button class="btn sm pri" data-mp="novo">+ Processo</button></div>'+
@@ -2432,14 +2452,15 @@ function formNovoProcesso(){
     formProcesso({id:'__mp'}).replace('data-cli="salvaproc" data-id="__mp"','data-mp="salvar"').replace('data-cli="cancproc"','data-mp="cancnovo"')+'</div>'}
 
 function detalheProcesso(p){
+  if(MP.editar===p.id)return '<div class="lead"><h3 style="margin-top:0">Editar processo</h3>'+formProcesso(cliDe(p)||{id:p.cliente_id},p)+'</div>';
   const c=cliDe(p),I=intimDe(p),Dc=docsDe(p),s=SIT_PROC[p.situacao]||SIT_PROC.andamento,sig=c&&c.tema==='violencia';
-  const polo={autor:'cliente é autor(a)',reu:'cliente é réu/ré',outro:''}[p.polo]||'';
+  const polo=(p.fase==='inquerito'?{autor:'cliente é vítima',reu:'cliente é investigada(o)',outro:''}:{autor:'cliente é autor(a)',reu:'cliente é réu/ré',outro:''})[p.polo]||'';
   return '<div class="lead"><div class="l1"><span class="wa-av" style="--c:'+s[1]+';width:44px;height:44px;font-size:20px">📁</span><div style="flex:1;min-width:0"><b style="font-size:19px">'+esc(p.titulo)+'</b>'+(p.exemplo?' <span class="mut" style="font-size:12px">exemplo</span>':'')+
-      '<div class="mut" style="font-size:13px">'+(p.numero?'<button class="lnk" data-cli="copiarnum" data-num="'+esc(p.numero)+'">'+esc(p.numero)+'</button>':'sem número ainda')+'</div></div>'+
+      '<div class="mut" style="font-size:13px">'+numLinha(p)+'</div></div>'+
       '<select class="inp sm" data-procsit="'+p.id+'" aria-label="Situação" style="width:auto;color:'+s[1]+'">'+Object.entries(SIT_PROC).map(([k,v])=>'<option value="'+k+'"'+(k===p.situacao?' selected':'')+'>'+v[0]+'</option>').join('')+'</select></div>'+
     (sig?'<div class="aviso"><b>⚠ Violência doméstica.</b> O celular pode ser acessado por outra pessoa: só fale por WhatsApp se ela iniciar a conversa.</div>':'')+
-    '<div class="cl-grade">'+linhaDado('Cliente',c?c.nome:'—')+linhaDado('Vara / foro',p.vara)+linhaDado('Parte contrária',p.parte_contraria)+linhaDado('Polo',polo)+'</div>'+
-    '<div class="acoes">'+(c?'<button class="btn" data-mp="ficha" data-id="'+c.id+'">Abrir ficha do cliente</button>':'')+'<button class="btn" data-mp="apagaproc" data-id="'+p.id+'">'+(MP.apagar===p.id?'Confirmar: tirar processo':'Tirar processo')+'</button></div></div>'+
+    '<div class="cl-grade">'+linhaDado('Cliente',c?c.nome:'—')+(p.fase==='inquerito'||p.inquerito?linhaDado('Inquérito / BO',p.inquerito||'—')+linhaDado('Delegacia',p.delegacia):'')+linhaDado('Vara / foro',p.vara)+linhaDado('Parte contrária',p.parte_contraria)+linhaDado('Polo',polo)+'</div>'+
+    '<div class="acoes"><button class="btn" data-mp="editar" data-id="'+p.id+'">✎ Editar</button>'+(c?'<button class="btn" data-mp="ficha" data-id="'+c.id+'">Abrir ficha do cliente</button>':'')+'<button class="btn" data-mp="apagaproc" data-id="'+p.id+'">'+(MP.apagar===p.id?'Confirmar: tirar processo':'Tirar processo')+'</button></div></div>'+
     // documentos
     '<div class="lead"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><h4 style="margin:0 auto 0 0">📎 Documentos <small class="mut">'+Dc.length+'</small></h4>'+
       '<label class="btn sm pri" style="cursor:pointer">+ Anexar<input type="file" id="mp-arq" multiple accept="'+DOC_ACEITA+'" hidden></label></div>'+
@@ -2498,11 +2519,12 @@ async function lerComKlaus(d){
   catch(e){toast(REAL?'Não consegui buscar o documento.':'Na demonstração o arquivo some ao recarregar a página.')}}
 
 document.addEventListener('click',async e=>{
-  const s=e.target.closest('[data-mpsel]');if(s){MP.sel=s.dataset.mpsel;MP.novo=false;MP.apagar=null;render();if(innerWidth<760){const c=document.querySelector('.conv');if(c)c.scrollIntoView({behavior:'smooth'})}return}
+  const s=e.target.closest('[data-mpsel]');if(s){MP.sel=s.dataset.mpsel;MP.novo=false;MP.editar=null;MP.apagar=null;render();if(innerWidth<760){const c=document.querySelector('.conv');if(c)c.scrollIntoView({behavior:'smooth'})}return}
   const f=e.target.closest('[data-mpfil]');if(f){MP.filtro=f.dataset.mpfil;render();return}
   const t=e.target.closest('[data-mp]');if(!t)return;const a=t.dataset.mp,id=t.dataset.id;
   if(a!=='apagadoc'&&a!=='apagaproc')MP.apagar=null;
-  if(a==='novo'){MP.novo=true;MP.pend=[];render();return}
+  if(a==='novo'){MP.novo=true;MP.pend=[];MP.editar=null;render();return}
+  if(a==='editar'){MP.editar=id;render();return}
   if(a==='cancnovo'){MP.novo=false;MP.pend=[];render();return}
   if(a==='ircli'){MP.novo=false;UI.tela='clientes';CLI.form={};render();scrollTo(0,0);return}
   if(a==='salvar'){const cid=($('#mp-cli')||{}).value;if(!cid)return;const antes=new Set((D.processos||[]).map(p=>p.id));await salvarProcesso(cid);
@@ -2533,6 +2555,8 @@ function extrairRegex(txt){const r={};
   const a=txt.match(/A[ÇC][ÃA]O\s+DE\s+([A-ZÀ-Úa-zà-ú ]{4,45}?)(?=\s+(?:EM FACE|CONTRA|C\/C|COM PEDIDO)|[,.;\n])/i);
   if(a){const t=a[1].trim().toLowerCase();r.titulo=t.charAt(0).toUpperCase()+t.slice(1)}
   const pc=txt.match(/em face de\s+([^,\n]{3,80})/i);if(pc)r.parte=pc[1].trim();
+  const ipm=txt.match(/inqu[ée]rito\s+policial[^\n]{0,30}?n[º°o.]*\s*([0-9][0-9./-]{3,30})/i)||txt.match(/\bIP\s*n?[º°]?\s*([0-9][0-9./-]{3,30})/);if(ipm)r.ip=ipm[1].replace(/[.-]$/,'');
+  const dl=txt.match(/\b\d{1,3}\s*[ªaº°]?\s*(?:DP|DDM|Delegacia)[^\n]{0,70}/i);if(dl)r.deleg=dl[0].replace(/\s+/g,' ').trim().slice(0,120);
   return r}
 async function textoDoArquivo(f){const t=tipoDoArquivo(f);
   if(/pdf/.test(t)){const r=await lerPDF(f);return r.txt}
@@ -2563,6 +2587,7 @@ async function lerParaPreencher(files){
   const num=soDig(A.numero||'').length===20?soDig(A.numero):R.numero;
   const fmt=d=>d?d.replace(/(\d{7})(\d{2})(\d{4})(\d)(\d{2})(\d{4})/,'$1-$2.$3.$4.$5.$6'):'';
   let n=0;
+  if(R.ip||/inqu[ée]rito policial/i.test(txt.slice(0,3000))){const b=document.querySelector('[data-prfase=inquerito]');if(b&&$('#pr-fase').value!=='inquerito')b.click();if(setCampo('pr-ip',R.ip))n++;if(setCampo('pr-deleg',R.deleg))n++}
   if(setCampo('pr-tit',String(A.titulo||R.titulo||'').slice(0,120)))n++;
   if(setCampo('pr-num',fmt(num)))n++;
   if(setCampo('pr-vara',(A.vara||R.vara||'')&&String(A.vara||R.vara).slice(0,160)))n++;
@@ -2622,7 +2647,7 @@ const TEMA_PROC=[['violencia',/medida protetiva|viol[eê]ncia dom|maria da penha
   ['pensao',/alimento|pens[aã]o/i],['guarda',/guarda|conviv[eê]ncia|visita|regulamenta/i],['partilha',/partilha|invent[aá]rio|sobrepartilha/i],
   ['divorcio',/div[oó]rcio|separa[cç][aã]o/i],['casamento',/uni[aã]o est[aá]vel|casamento|pacto antenupcial|regime de bens/i]];
 function temaDoProcesso(p){if(p.tema_teste)return p.tema_teste;const c=(D.clientes||[]).find(x=>x.id===p.cliente_id)||{};
-  if(['violencia','acusacao','criminal'].includes(c.tema))return c.tema;
+  if(['violencia','acusacao','criminal'].includes(c.tema))return c.tema;if(p.fase==='inquerito')return 'criminal';
   const t=(p.titulo||'');for(const [k,re] of TEMA_PROC)if(re.test(t))return k;
   return TEMAS[c.tema]?c.tema:'outro'}
 const FALA_PROC={helena:'Divórcio e partilha são comigo: vou acompanhar cada movimentação de perto.',rafael:'Pensão é comigo: fico de olho nos prazos e nas parcelas.',
