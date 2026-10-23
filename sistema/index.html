@@ -881,15 +881,16 @@ function stTxt(l){if(travado(l))return'<span class="trava">🔒 NÃO ENVIAR RETO
 const dataBR=iso=>iso?new Date(iso+(iso.length===10?'T12:00:00':'')).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'';
 const horaBR=iso=>new Date(iso).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
 
-const MAIS_TELAS=()=>(podeFinanceiro()?[['financeiro','Financeiro']]:[]).concat([['conteudo','Conteúdo e anúncios'],['ferramentas','Calcular'],['config','Configurações']]);
+const MAIS_TELAS=()=>[['conteudo','Conteúdo e anúncios'],['ferramentas','Calcular'],['config','Configurações']];
 function render(){
   if(!UI.logado){$('#app').innerHTML=telaLogin();return}
-  const tabs=[['painel','Painel'],['agenda','Agenda'],['clientes','Clientes'],['leads','Leads'],['processos','Processos']].concat(podeFinanceiro()?[['financeiro','Financeiro']]:[]).concat([['conteudo','Conteúdo'],['ferramentas','Calcular']]);
+  if(UI.tela==='leads'){UI.tela='painel';UI.pab='contatos'}
+  const tabs=[['painel','Painel'],['agenda','Agenda'],['clientes','Clientes'],['processos','Processos']].concat(podeFinanceiro()?[['financeiro','Financeiro']]:[]).concat([['conteudo','Conteúdo'],['ferramentas','Calcular']]);
   $('#app').innerHTML='<header class="top"><div class="in"><button class="marca marca-bt" data-conta="1" aria-haspopup="menu" aria-expanded="'+(UI.conta?'true':'false')+'" title="Minha conta e configurações">'+(temMono()?'<img class="mono" src="'+MONO+'" alt="" width="40" height="40">':'')+'<svg class="logo-vidro" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="var(--ouro)"/><path d="M16 7v18M9 12h14M9 12l-3 7h6zM23 12l-3 7h6zM11 25h10" stroke="var(--tinta-btn)" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><div>'+esc(ESCRITORIO.nome)+'<small>'+(REAL?esc(USUARIO.email):'Sistema interno · só você vê')+'</small></div><svg class="marca-seta" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>'+menuConta()+
     '<nav class="tabs" aria-label="Seções">'+tabs.map(t=>'<button data-tela="'+t[0]+'" class="'+(UI.tela===t[0]||(t[0]==='equipe'&&UI.tela==='agente')?'on':'')+'">'+t[1]+'</button>').join('')+'</nav>'+
     '<div class="dir">'+(REAL?'':'<span class="demo">Modo demonstração</span>')+'<button class="btn sm" data-a="colar">+ Colar contatos</button><button class="btn sm" data-a="novo">+ Novo contato</button>'+'</div></div></header>'+
     '<main><div class="wrap">'+({equipe:telaEquipe,agente:telaAgente,leads:telaLeads,agenda:telaAgenda,financeiro:telaFinanceiro,config:telaConfig,clientes:telaClientes,ferramentas:telaFerramentas,conteudo:telaConteudo,processos:telaProcessos,painel:telaPainel}[UI.tela])()+'</div></main>'+
-    '<nav class="mbar" aria-label="Seções">'+[['painel','Painel'],['agenda','Agenda'],['clientes','Clientes'],['leads','Leads'],['processos','Processos']].map(t=>'<button data-tela="'+t[0]+'" class="'+(UI.tela===t[0]||(t[0]==='equipe'&&UI.tela==='agente')?'on':'')+'">'+ICO[t[0]]+t[1]+'</button>').join('')+
+    '<nav class="mbar" aria-label="Seções">'+[['painel','Painel'],['agenda','Agenda'],['clientes','Clientes'],['processos','Processos']].concat(podeFinanceiro()?[['financeiro','Financeiro']]:[]).map(t=>'<button data-tela="'+t[0]+'" class="'+(UI.tela===t[0]||(t[0]==='equipe'&&UI.tela==='agente')?'on':'')+'">'+ICO[t[0]]+t[1]+'</button>').join('')+
       '<button data-a="mais" class="'+(MAIS_TELAS().some(t=>t[0]===UI.tela)?'on':'')+'" aria-expanded="'+(UI.mais?'true':'false')+'">'+ICO.mais+'Mais</button></nav>'+
     (UI.mais?'<div class="mais-menu" role="menu">'+MAIS_TELAS().map(t=>'<button role="menuitem" data-tela="'+t[0]+'">'+ICO[t[0]]+t[1]+'</button>').join('')+'</div>':'')+(UI.logado?botaoEquipe()+gavetaEquipe():'');
   if(UI.tela==='ferramentas')recalcular();
@@ -948,7 +949,9 @@ function fichaHTML(l){
   return h;
 }
 
-function telaPainel(){return heroCeu()+'<div class="painel-corpo">'+(REAL?'':'<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px"><button class="eq-b" data-festateste="divorcio|instagram">🎆 Testar comemoração (divórcio, Instagram)</button><button class="eq-b" data-festateste="pensao|facebook">🎆 Pensão, Facebook</button><button class="eq-b" data-festateste="violencia|direto">Violência doméstica (aviso discreto)</button></div>')+telaPainelCorpo()+'</div>'}
+function telaPainel(){const ab=UI.pab||'contatos';const nf=(D.leads||[]).filter(l=>naFilaHoje(l)).length;
+  return heroCeu()+'<div class="painel-corpo">'+'<div class="seg pab" style="margin-bottom:14px"><button data-pab="contatos" class="'+(ab==='contatos'?'on':'')+'">📇 Contatos'+(nf?' <span class="wa-bd">'+nf+'</span>':'')+'</button><button data-pab="resultados" class="'+(ab==='resultados'?'on':'')+'">📊 Resultados</button></div>'+(ab==='resultados'?telaPainelCorpo():telaLeads())+'</div>'}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-pab]');if(!b)return;UI.pab=b.dataset.pab;render()});
 document.addEventListener('click',e=>{const t=e.target.closest('[data-festateste]');if(!t)return;const [tema,origem]=t.dataset.festateste.split('|');FESTA.fila.push({tema,origem,pagina:'teste',n:1});proximaFesta()});
 function telaPainelCorpo(){
   const dias=UI.per==='semana'?7:30;const desde=new Date();desde.setDate(desde.getDate()-dias);
@@ -1599,13 +1602,12 @@ const TOUR=[
  {ag:'nina',txt:'E aí! Nina, do marketing. Sou eu que movimento o Instagram do escritório: monto os posts, as artes e as legendas, tudo dentro das regras da OAB. Você só revisa e posta.'},
  {ag:'theo',txt:'Theo, também do marketing. A Nina cuida do Instagram; eu cuido dos anúncios. Mostro quanto você investiu, quantos contatos cada campanha trouxe e quanto custou cada um. Se um anúncio não se paga, eu aviso.'},
  {alvo:'equipe',tit:'Equipe',txt:'Aqui você conversa com cada agente. Eles avisam quem chamar hoje e já deixam a mensagem pronta.'},
- {alvo:'leads',tit:'Leads',txt:'Todos os contatos, como no WhatsApp. Toque em um para ver a conversa e abrir a mensagem no WhatsApp.'},
  {alvo:'processos',tit:'Processos',txt:'As intimações dos tribunais chegam aqui sozinhas, todo dia, com o prazo já calculado. E você pode mandar um processo inteiro para o Klaus ler.'},
  {alvo:'ferramentas',tit:'Ferramentas',txt:'Calculadoras do dia a dia: prazos em dias úteis, pensão atrasada, partilha, custas no TJSP e mais.'},
  {alvo:'conteudo',tit:'Conteúdo',txt:'Os posts da Nina para o Instagram, com a checagem das regras da OAB.'},
  {alvo:'agenda',tit:'Agenda',txt:'Atendimentos, audiências e prazos num lugar só. As consultas dos Leads e os prazos das intimações entram sozinhos, e dá para mandar lembrete pelo WhatsApp.'},
  {alvo:'financeiro',tit:'Financeiro',txt:'Entradas, saídas e honorários a receber, mês a mês. A Dona Vera avisa quando tem pagamento atrasado.'},
- {alvo:'painel',tit:'Painel',txt:'Os números do mês: quantos contatos chegaram, quantos viraram consulta e cliente.'},
+ {alvo:'painel',tit:'Painel',txt:'Contatos e números num lugar só. Em Contatos ficam todos os leads, como no WhatsApp, com a mensagem pronta. Em Resultados, quantos chegaram e quantos viraram consulta e cliente.'},
  {ag:'narra',tit:'Tudo pronto!',txt:'Uma regra de ouro: nada é enviado sozinho. Você sempre revisa e toca em "Abrir no WhatsApp". Qualquer processo complicado, me chame. Bom trabalho!',fim:true},
 ];
 let TI=0,GEST=null,TL=TOUR,TMODO='equipe';
