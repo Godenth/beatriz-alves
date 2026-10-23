@@ -2316,14 +2316,14 @@ async function salvarCliente(){
   const lead=$('#cf-lead')?$('#cf-lead').value:'';if(lead)row.lead_id=lead;else if(CLI.form.pre&&CLI.form.pre.lead_id)row.lead_id=CLI.form.pre.lead_id;
   try{if(CLI.form.id){await STORE.upd('clientes',CLI.form.id,row);CLI.sel=CLI.form.id}
     else{if((D.clientes||[]).some(c=>c.exemplo)){const ex=D.clientes.filter(c=>c.exemplo).map(c=>c.id);if(REAL)await STORE.del('clientes',ex);else{D.clientes=D.clientes.filter(c=>!c.exemplo);D.processos=(D.processos||[]).filter(p=>!p.exemplo)}}
-      row.status='ativo';if(!REAL)row.criado_em=new Date().toISOString();const [n]=await STORE.ins('clientes',row);CLI.sel=n.id}
-    CLI.form=null;render();toast('Cliente salvo.')}
+      row.status='ativo';if(!REAL)row.criado_em=new Date().toISOString();const [n]=await STORE.ins('clientes',row);CLI.sel=n.id;FESTA.fila.push({cli:n})}
+    CLI.form=null;render();toast('Cliente salvo.');proximaFesta()}
   catch(e){toast(/duplicate|unique/i.test(String(e.message||e))?'Já existe um cliente com esse CPF ou contato.':'Não consegui salvar. Confira os campos.')}}
 async function salvarProcesso(cid){const tit=$('#pr-tit').value.trim(),num=$('#pr-num').value.trim();
   if(tit.length<2){toast('Escreva a ação, ex.: Divórcio litigioso.');return}
   const d=soDig(num);if(num&&d.length!==20){toast('O número CNJ tem 20 dígitos.');return}
   const numero=d?d.replace(/(\d{7})(\d{2})(\d{4})(\d)(\d{2})(\d{4})/,'$1-$2.$3.$4.$5.$6'):null;
-  try{await STORE.ins('processos',{cliente_id:cid,titulo:tit,numero,vara:$('#pr-vara').value.trim()||null,parte_contraria:$('#pr-parte').value.trim()||null,polo:$('#pr-polo').value,situacao:'andamento'});CLI.novoProc=false;render();toast(numero&&intimDe({numero}).length?'Processo salvo. Já achei intimações dele.':'Processo salvo.')}
+  try{const novoP=await STORE.ins('processos',{cliente_id:cid,titulo:tit,numero,vara:$('#pr-vara').value.trim()||null,parte_contraria:$('#pr-parte').value.trim()||null,polo:$('#pr-polo').value,situacao:'andamento'});CLI.novoProc=false;render();toast(numero&&intimDe({numero}).length?'Processo salvo. Já achei intimações dele.':'Processo salvo.');if(novoP&&novoP[0]){FESTA.fila.push({proc:novoP[0]});proximaFesta()}}
   catch(e){toast('Não consegui salvar o processo.')}}
 document.addEventListener('input',e=>{if(e.target.id==='cli-busca'){CLI.busca=e.target.value;clearTimeout(CLI.tb);CLI.tb=setTimeout(()=>{render();const b=$('#cli-busca');if(b){b.focus();b.setSelectionRange(99,99)}},250)}
   if(e.target.id==='cf-cpf'){const d=soDig(e.target.value).slice(0,11);e.target.value=d.length>9?d.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/,'$1.$2.$3-$4'):d.length>6?d.replace(/(\d{3})(\d{3})(\d{0,3})/,'$1.$2.$3'):d.length>3?d.replace(/(\d{3})(\d{0,3})/,'$1.$2'):d}
@@ -2594,9 +2594,9 @@ async function checarCliques(){
   if(novos.length){const d30=addDias(hojeISO(),-30);SB.from('cliques').select('dia,pagina,tema,origem,total').eq('escritorio_id',ESCRITORIO.id).gte('dia',d30).then(({data:cq})=>{if(cq){D.cliques=cq;if(UI.tela==='painel'&&!FESTA.ativa)render()}})}
   proximaFesta();
 }
-function proximaFesta(){if(FESTA.ativa||!FESTA.fila.length||tourAberto())return;comemorar(FESTA.fila.shift())}
+function proximaFesta(){if(FESTA.ativa||!FESTA.fila.length||tourAberto())return;const x=FESTA.fila.shift();if(x.proc)festaProcesso(x.proc);else if(x.cli)festaCliente(x.cli);else comemorar(x)}
 function comemorar(x){
-  const t=TEMAS[x.tema]?x.tema:'outro',T=TEMAS[t],ag=T.ag||'livia',A=AGENTES[ag]||{nome:'Equipe',cor:'#BF9440'};
+  const t=TEMAS[x.tema]?x.tema:'outro',T=TEMAS[t],ag=FIG[T.ag]?T.ag:'klaus',A=AGENTES[ag]||{nome:'Equipe',cor:'#BF9440'};
   const quem=(typeof PERFIL==='function'&&PERFIL().apelido)||ESCRITORIO.primeiro;
   const sig=t==='violencia';
   const assunto=sig?'violência doméstica':(T.palavra||T.nome.toLowerCase());
@@ -2614,8 +2614,47 @@ function comemorar(x){
   clearTimeout(FESTA.timer);FESTA.timer=setTimeout(fecharFesta,sig?20000:11000);
 }
 function fecharFesta(){const el=document.getElementById('festa');if(el){el.classList.add('sai');setTimeout(()=>el.remove(),350)}FESTA.ativa=false;setTimeout(proximaFesta,600)}
-document.addEventListener('click',e=>{const t=e.target.closest('[data-festa]');if(!t)return;if(t.dataset.festa==='painel'){UI.tela='painel';render();scrollTo(0,0)}fecharFesta()});
+document.addEventListener('click',e=>{const t=e.target.closest('[data-festa]');if(!t)return;if(t.dataset.festa==='painel'){UI.tela='painel';render();scrollTo(0,0)}if(t.dataset.festa==='cli'){UI.tela='clientes';CLI.sel=t.dataset.id;CLI.form=null;render();scrollTo(0,0)}if(t.dataset.festa==='proc'){UI.tela='processos';UI.proc='meus';MP.sel=t.dataset.id;MP.novo=false;render();scrollTo(0,0)}fecharFesta()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&FESTA.ativa)fecharFesta()});
+
+/* processo novo: o agente da área aparece para receber o caso */
+const TEMA_PROC=[['violencia',/medida protetiva|viol[eê]ncia dom|maria da penha/i],['criminal',/criminal|penal|crime|inqu[eé]rito|habeas|flagrante|den[uú]ncia|queixa/i],
+  ['pensao',/alimento|pens[aã]o/i],['guarda',/guarda|conviv[eê]ncia|visita|regulamenta/i],['partilha',/partilha|invent[aá]rio|sobrepartilha/i],
+  ['divorcio',/div[oó]rcio|separa[cç][aã]o/i],['casamento',/uni[aã]o est[aá]vel|casamento|pacto antenupcial|regime de bens/i]];
+function temaDoProcesso(p){const c=(D.clientes||[]).find(x=>x.id===p.cliente_id)||{};
+  if(['violencia','acusacao','criminal'].includes(c.tema))return c.tema;
+  const t=(p.titulo||'');for(const [k,re] of TEMA_PROC)if(re.test(t))return k;
+  return TEMAS[c.tema]?c.tema:'outro'}
+const FALA_PROC={helena:'Divórcio e partilha são comigo: vou acompanhar cada movimentação de perto.',rafael:'Pensão é comigo: fico de olho nos prazos e nas parcelas.',
+  clara:'Guarda é comigo: vou acompanhar tudo com o cuidado que as crianças merecem.',marina:'Casamento e união estável são comigo. Pode contar!',
+  bento:'Criminal é comigo: prazo penal não perdoa, vou ficar de olho.',livia:'Já organizei a pasta e aviso quando chegar novidade.',sofia:''};
+function festaProcesso(p){
+  const t=temaDoProcesso(p),T=TEMAS[t]||TEMAS.outro,ag=T.ag||'livia',A=AGENTES[ag]||{nome:'Equipe',cor:'#BF9440'};
+  const c=(D.clientes||[]).find(x=>x.id===p.cliente_id),quem=(typeof PERFIL==='function'&&PERFIL().apelido)||ESCRITORIO.primeiro;
+  const sig=t==='violencia';
+  const prazo=p.numero?'Com o número cadastrado, as intimações do DJEN chegam aqui sozinhas.':'Quando sair o número CNJ, é só completar: as intimações passam a chegar sozinhas.';
+  const msg=sig?'<b>Caso registrado, '+esc(quem)+'.</b><br>'+esc(p.titulo)+(c?' · '+esc(c.nome):'')+'. Eu acompanho com discrição. Lembrete: <b>só fale com ela por WhatsApp se ela iniciar a conversa</b>.'
+    :'<b>Processo novo na casa, '+esc(quem)+'! 📁</b><br><b>'+esc(p.titulo)+'</b>'+(c?' de '+esc(c.nome):'')+'. '+FALA_PROC[ag]+'<br><small class="mut">'+prazo+'</small>';
+  palcoAgente(ag,sig,msg,'<button class="btn pri" data-festa="proc" data-id="'+p.id+'">Ver processo</button>')}
+function palcoAgente(ag,sig,msg,botao){if(!FIG[ag])ag='klaus';const A=AGENTES[ag]||{nome:'Equipe',area:'',cor:'#BF9440'};
+  FESTA.ativa=true;
+  let el=document.getElementById('festa');if(el)el.remove();
+  el=document.createElement('div');el.id='festa';el.className=sig?'festa calma':'festa';el.setAttribute('role','alert');
+  const fig=FIG[ag]?'<img class="festa-fig" src="'+FIG[ag]+'" alt="">':'<div class="festa-fig av-g">'+av(ag,180)+'</div>';
+  el.innerHTML=(sig?'':'<canvas class="festa-ceu" aria-hidden="true"></canvas>')+'<div class="festa-palco" style="--c:'+A.cor+'">'+fig+'<div class="festa-balao"><span class="festa-nome">'+esc(A.nome)+(A.area?' · '+esc(A.area):'')+'</span><p>'+msg+'</p>'+
+    '<div class="festa-bots">'+botao+'<button class="btn" data-festa="fechar">'+(sig?'Entendi':'Bora!')+'</button></div></div></div>';
+  document.body.appendChild(el);
+  if(!sig)fogos(el.querySelector('.festa-ceu'));
+  clearTimeout(FESTA.timer);FESTA.timer=setTimeout(fecharFesta,sig?15000:9000)}
+/* cliente novo: o agente da área dá as boas-vindas */
+const FALA_CLI={helena:'Divórcio e partilha são comigo: já deixei a ficha pronta para a procuração.',rafael:'Pensão é comigo: quando tiver o processo, é só ligar à ficha.',
+  clara:'Guarda é comigo: vamos cuidar disso com todo carinho.',marina:'Casamento e união estável são comigo. Bem-vinda(o)!',
+  bento:'Criminal é comigo: assim que tiver o número do processo, cadastra que eu fico de olho.',livia:'Ficha pronta! A qualificação já sai prontinha para a procuração.',sofia:''};
+function festaCliente(c){
+  const t=TEMAS[c.tema]?c.tema:'outro',ag=TEMAS[t].ag||'livia',sig=t==='violencia',quem=(typeof PERFIL==='function'&&PERFIL().apelido)||ESCRITORIO.primeiro;
+  const msg=sig?'<b>Cliente cadastrada, '+esc(quem)+'.</b><br>'+esc(c.nome)+'. Eu acompanho com discrição. Lembrete: <b>só fale com ela por WhatsApp se ela iniciar a conversa</b>.'
+    :'<b>Cliente novo na casa, '+esc(quem)+'! 🎉</b><br><b>'+esc(c.nome)+'</b>'+(TEMAS[c.tema]?' · '+esc(TEMAS[c.tema].nome):'')+'. '+FALA_CLI[ag];
+  palcoAgente(ag,sig,msg,'<button class="btn pri" data-festa="cli" data-id="'+c.id+'">Ver ficha</button>')}
 /* fogos de artifício em canvas */
 function fogos(cv){if(!cv)return;const reduz=matchMedia('(prefers-reduced-motion: reduce)').matches;const ctx=cv.getContext('2d');let W,H;const dpr=Math.min(2,devicePixelRatio||1);
   const tam=()=>{W=cv.width=innerWidth*dpr;H=cv.height=innerHeight*dpr};tam();addEventListener('resize',tam);
