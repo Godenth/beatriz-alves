@@ -2362,11 +2362,12 @@ function cfgSeguranca(){return '<div class="lead"><h4>Senha e segurança</h4>'+(
     '<p class="mut" style="margin:0">Na demonstração não há senha. No sistema real, a troca de senha fica aqui.</p>')+
     '<p class="nota">Seus dados ficam protegidos por login e regras de acesso no banco: cada escritório só vê os seus, e a secretária não vê o financeiro.</p></div>'}
 function cfgAparencia(){const A=APARENCIA;
-  return '<div class="cfg"><div class="lead"><h4>Aparência</h4><p class="mut" style="margin:0">Fica salva neste aparelho. Cada pessoa da equipe escolhe a sua.</p>'+
+  const prev=(top,bg,card,ac)=>'<div class="cfg-prev" style="background:'+bg+'"><i style="background:'+top+'"></i><i style="background:linear-gradient(90deg,'+card+' 0 60%,transparent 60%);margin:10px;border-radius:6px;position:relative"><i style="position:absolute;right:-28%;top:20%;width:22%;height:40%;border-radius:6px;background:'+ac+'"></i></i></div>';
+  return '<div class="lead"><h4>Aparência</h4><p class="mut" style="margin:0">Fica salva neste aparelho. Cada pessoa da equipe escolhe a sua.</p>'+
     '<div class="cfg-op" style="margin-top:10px"><button class="cfg-card'+(A.visual==='oficial'?' on':'')+'" data-cfg="visual" data-v="oficial">'+prev('#14213D','#F6F4EF','#FFFFFF','#BF9440')+'<b>Oficial Beatriz Alves</b><small>Azul-marinho, dourado, branco e bege, como o site. Padrão.</small></button>'+
     '<button class="cfg-card'+(A.visual==='vidro'?' on':'')+'" data-cfg="visual" data-v="vidro">'+prev('rgba(255,255,255,.6)','linear-gradient(135deg,#7FD6CF,#A9B4FF 55%,#F2C98F)','rgba(255,255,255,.6)','#B98A45')+'<b>Ideali vidro</b><small>O visual anterior: vidro fosco sobre luz colorida.</small></button></div>'+
     '<h4 style="margin-top:16px">Claro ou escuro</h4><div class="seg">'+[['auto','Automático'],['claro','☀️ Claro'],['escuro','🌙 Escuro']].map(m=>'<button data-cfg="modo" data-v="'+m[0]+'" class="'+(A.modo===m[0]?'on':'')+'">'+m[1]+'</button>').join('')+'</div>'+
-    '<p class="nota">Automático segue o celular ou computador: claro de dia, escuro se o aparelho estiver no modo escuro.</p></div>'+'</div>'}
+    '<p class="nota">Automático segue o celular ou computador: claro de dia, escuro se o aparelho estiver no modo escuro.</p></div>'}
 
 async function salvarCfg(k){const g=id=>($('#'+id)?$('#'+id).value.trim():'');
   try{
