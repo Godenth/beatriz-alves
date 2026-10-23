@@ -1682,7 +1682,35 @@ function seedInsta(){
     P('Guarda compartilhada não é 50/50','guarda','post',11,2140,1680,131,22,18,57,9,3),P('Morar junto já é união estável?','casamento','carrossel',15,3390,2620,214,35,44,96,22,6),
     P('Medida protetiva: como pedir','violencia','post',19,1880,1410,98,6,30,35,7,2),P('A pensão acaba aos 18 anos?','pensao','reels',24,6050,4880,311,47,82,103,40,11)],seguidoresDia:seg,seguidoresTotal:1847,exemplo:true};
 }
-function INS(){if(!D.insta)D.insta=seedInsta();return D.insta}
+function INS(){if(REAL&&!INSTA.carregado&&!INSTA.carregando){INSTA.carregando=true;carregarInsta().then(()=>{INSTA.carregando=false;INSTA.carregado=true;if(UI.tela==='conteudo')render()})}if(!D.insta)D.insta=seedInsta();return D.insta}
+/* Instagram oficial (sistema real): números puxados todo dia pelo banco, da API do Instagram */
+const INSTA={carregado:false,carregando:false,conectado:null,usuario:'',erro:'',atualizando:false};
+function temaDaLegenda(t){t=(t||'').toLowerCase();return /pens[aã]o|alimentos/.test(t)?'pensao':/div[oó]rcio|partilha|separa/.test(t)?'divorcio':/guarda|conviv|visita/.test(t)?'guarda':/uni[aã]o est|casamento|pacto|regime de bens/.test(t)?'casamento':/viol[eê]ncia|protetiva|maria da penha/.test(t)?'violencia':/criminal|delegacia|inqu[eé]rito|cust[oó]dia/.test(t)?'criminal':'outro'}
+async function carregarInsta(){
+  try{const {data:st}=await SB.rpc('insta_processar',{p_escritorio:ESCRITORIO.id});if(st){INSTA.conectado=st.conectado;INSTA.erro=st.erro_recente||''}
+    const desde=new Date();desde.setDate(desde.getDate()-45);
+    const [{data:ps,error:e1},{data:cs,error:e2}]=await Promise.all([SB.from('insta_posts').select('*').eq('escritorio_id',ESCRITORIO.id).order('publicado_em',{ascending:false}).limit(60),
+      SB.from('insta_conta').select('dia,usuario,seguidores').eq('escritorio_id',ESCRITORIO.id).gte('dia',dISO(desde)).order('dia')]);
+    if(e1||e2)throw (e1||e2);
+    const posts=(ps||[]).map(p=>{const leg=(p.legenda||'').split('\n')[0].trim();return {id:p.media_id,titulo:leg?(leg.length>70?leg.slice(0,67)+'…':leg):'Post sem legenda',tema:temaDaLegenda(p.legenda),formato:p.tipo==='REELS'?'reels':p.tipo==='CAROUSEL_ALBUM'?'carrossel':'post',data:p.publicado_em?dISO(new Date(p.publicado_em)):hojeISO(),
+      views:p.views||0,alcance:p.alcance||0,curtidas:p.curtidas||0,comentarios:p.comentarios||0,compart:p.compart||0,salvos:p.salvos||0,seguidores:p.seguiu||0,mensagens:0,link:p.link}});
+    const mapa={};(cs||[]).forEach(c=>mapa[c.dia]=c.seguidores);const seg=[];let ant=null;
+    for(let i=29;i>=0;i--){const d=addDias(hojeISO(),-i);const v=mapa[d];seg.push({d,n:(v!=null&&ant!=null)?Math.max(0,v-ant):0});if(v!=null)ant=v}
+    const ult=(cs||[]).slice(-1)[0];INSTA.usuario=ult?ult.usuario:'';
+    D.insta={posts,seguidoresDia:seg,seguidoresTotal:ult?ult.seguidores:0,exemplo:false,auto:true};
+  }catch(e){INSTA.erro='Não consegui carregar os números do Instagram agora.'}
+}
+async function instaAtualizar(){INSTA.atualizando=true;render();
+  try{const {data,error}=await SB.rpc('insta_atualizar_agora',{p_escritorio:ESCRITORIO.id});if(error)throw error;
+    if(!data.ok){toast({limite:'Já atualizamos várias vezes nesta hora. Tente daqui a pouco.',sem_token:'O Instagram ainda não foi conectado.',acesso:'Sem acesso.'}[data.erro]||'Não consegui atualizar.');return}
+    for(let i=0;i<10;i++){await new Promise(r=>setTimeout(r,3000));const {data:p}=await SB.rpc('insta_processar',{p_escritorio:ESCRITORIO.id});if(p&&p.ok&&!p.pendentes)break}
+    await carregarInsta();toast('Números do Instagram atualizados.')}
+  catch(e){toast('Não consegui falar com o Instagram agora.')}finally{INSTA.atualizando=false;render()}}
+document.addEventListener('click',e=>{if(e.target.closest('[data-insta="atualizar"]'))instaAtualizar()});
+function barraInsta(){if(!REAL)return '';
+  if(INSTA.conectado===false)return '<div class="lead" style="margin-bottom:14px"><h4>Conectar o Instagram</h4><p style="margin:0">Quando o Instagram da Bea for conectado, a Nina puxa sozinha, todo dia, os posts, as visualizações, o alcance, as curtidas, os salvamentos e os seguidores. A chave de acesso fica guardada no cofre do banco, nunca no navegador.</p><p class="nota">Peça ao suporte do sistema para fazer a conexão (leva 10 minutos, uma vez só). Enquanto isso, dá para mandar o print das estatísticas.</p></div>';
+  if(INSTA.conectado)return '<div class="aviso" style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span>✅ Conectado ao Instagram'+(INSTA.usuario?' <b>@'+esc(INSTA.usuario)+'</b>':'')+'. Os números chegam sozinhos todo dia às 6h30.'+(INSTA.erro?' <span style="color:var(--perigo)">Último aviso: '+esc(INSTA.erro)+'</span>':'')+'</span><button class="btn sm" data-insta="atualizar" style="margin-left:auto"'+(INSTA.atualizando?' disabled':'')+'>'+(INSTA.atualizando?'Atualizando…':'↻ Atualizar agora')+'</button></div>';
+  return ''}
 const engaj=p=>p.alcance?(p.curtidas+p.comentarios+p.compart+p.salvos)/p.alcance*100:0;
 const nfmt=n=>(n||0).toLocaleString('pt-BR');
 const nCurto=n=>n>=1000?(n/1000).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mil':nfmt(n);
@@ -1714,7 +1742,7 @@ function telaDesempenho(){
   const ganho=I.seguidoresDia.reduce((a,s)=>a+s.n,0),alc=S('alcance'),inter=S('curtidas')+S('comentarios')+S('compart')+S('salvos');
   const k=(ic,rot,val,sub)=>'<div class="ik"><span class="ik-i">'+ic+'</span><small>'+rot+'</small><b>'+val+'</b>'+(sub?'<em>'+sub+'</em>':'')+'</div>';
   const tab=P.slice().sort((a,b)=>b.data.localeCompare(a.data)).map(p=>'<tr><td><b>'+esc(p.titulo)+'</b><br><span class="mut" style="font-size:12px">'+esc(p.formato)+' · '+dataBR(p.data)+(p.exemplo?' · exemplo':'')+'</span></td><td class="num">'+nfmt(p.views)+'</td><td class="num">'+nfmt(p.alcance)+'</td><td class="num">'+nfmt(p.curtidas)+'</td><td class="num">'+nfmt(p.comentarios)+'</td><td class="num">'+nfmt(p.compart)+'</td><td class="num">'+nfmt(p.salvos)+'</td><td class="num">+'+nfmt(p.seguidores)+'</td><td class="num"><b>'+pctf(engaj(p))+'</b></td></tr>').join('');
-  return '<div class="ds">'+(I.exemplo?'<div class="aviso" style="margin-bottom:12px">Números de <b>exemplo</b>. Mande o print das estatísticas de um post do Instagram da Bea e a Nina troca pelos números reais.</div>':'')+
+  return '<div class="ds">'+barraInsta()+(I.exemplo?'<div class="aviso" style="margin-bottom:12px">Números de <b>exemplo</b>. Mande o print das estatísticas de um post do Instagram da Bea e a Nina troca pelos números reais.</div>':'')+
     '<div class="balao" style="margin-bottom:14px">'+av('nina',48)+'<div class="tx"><b>Nina:</b> '+insightNina(I)+'</div></div>'+
     '<div class="iks">'+k('👁️','Visualizações',nCurto(S('views')),P.length+' posts')+k('📣','Alcance',nCurto(alc),'contas alcançadas')+k('❤️','Curtidas',nCurto(S('curtidas')))+k('💬','Comentários',nfmt(S('comentarios')))+
       k('✉️','Mensagens',nfmt(S('mensagens')),'conversas no direct')+k('🔁','Compartilhamentos',nfmt(S('compart')))+k('🔖','Salvamentos',nfmt(S('salvos')))+k('➕','Seguidores ganhos','+'+nfmt(ganho),'30 dias · total '+nfmt(I.seguidoresTotal))+k('⚡','Engajamento',pctf(alc?inter/alc*100:0),'interações ÷ alcance')+'</div>'+
@@ -1722,7 +1750,7 @@ function telaDesempenho(){
     '<div class="lead" style="margin-top:14px"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><h4 style="margin-right:auto">Posts</h4><label class="btn sm pri" for="ds-print">📷 Mandar print das estatísticas</label><input type="file" id="ds-print" accept="image/*" hidden multiple><button class="btn sm" data-ds="manual">+ Digitar números</button>'+(I.exemplo?'':'<button class="btn sm" data-ds="limpar">Limpar</button>')+'</div>'+
     '<p class="nota" id="ds-status" style="margin:0">'+(UI.dsStatus||'No Instagram: abra o post › Ver insights › tire o print da tela inteira.')+'</p>'+(UI.dsManual?formManual():'')+
     '<div class="tbl"><table><tr><th>Post</th><th class="num">Visualiz.</th><th class="num">Alcance</th><th class="num">Curtidas</th><th class="num">Coment.</th><th class="num">Compart.</th><th class="num">Salvos</th><th class="num">Seguid.</th><th class="num">Engaj.</th></tr>'+tab+'</table></div></div>'+
-    '<p class="nota">Engajamento = (curtidas + comentários + compartilhamentos + salvamentos) ÷ alcance. Quando o banco estiver ligado, dá para conectar o Instagram oficial e os números chegam sozinhos.</p></div>';
+    '<p class="nota">Engajamento = (curtidas + comentários + compartilhamentos + salvamentos) ÷ alcance. '+(REAL?'Com o Instagram conectado, os números chegam sozinhos todo dia; o print continua valendo para o que a API não mostra (mensagens no direct).':'No sistema real, o Instagram oficial é conectado e os números chegam sozinhos.')+'</p></div>';
 }
 function formManual(){const c=(id,r)=>'<label class="f">'+r+'<input class="inp" id="dm-'+id+'" inputmode="numeric"></label>';
   return '<div class="lead" style="margin:10px 0;background:var(--card2)"><div class="grid2">'+'<label class="f">Título do post<input class="inp" id="dm-titulo"></label><label class="f">Assunto<select class="inp" id="dm-tema">'+optTemas('pensao')+'</select></label></div>'+
