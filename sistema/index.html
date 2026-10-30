@@ -767,6 +767,9 @@ html,body{overflow-x:clip}
 #novidade .festa-bots .btn{font-size:15.5px;padding:11px 18px}#novidade .festa-bots .btn:not(.pri){background:#14213D;color:#FFFFFF;border:1px solid #14213D}#novidade .festa-bots .btn:not(.pri):hover{background:#22325A}
 #novidade .nv-balao .festa-bots{position:sticky;bottom:-22px;margin:10px -24px -22px;padding:12px 24px 16px;background:#FFFDF8;border-top:1px solid #EFE6D2;flex-wrap:wrap}
 @media (max-width:760px){#novidade{z-index:60}#novidade .nv-balao{max-height:calc(100dvh - 40px)}#novidade .nv-balao h3{font-size:21px}#novidade .nv-lista small{font-size:14px}#novidade .nv-balao .festa-bots .btn{flex:1 1 auto}}
+#novidade .nv-seguir{align-items:center;gap:14px}.nv-auto{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:#5A6577;font-family:var(--f)}
+.nv-barra{display:block;width:150px;height:4px;border-radius:4px;background:#EFE6D2;overflow:hidden}.nv-barra i{display:block;height:100%;width:100%;background:#C9A24A;transform-origin:left;animation:nvBarra 12s linear forwards}
+@keyframes nvBarra{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 </style>
 
 <div id="app"></div>
@@ -1773,7 +1776,7 @@ function alvoTour(k){const vis=[...document.querySelectorAll('.tabs [data-tela="
 function desenharTour(){
   const el=document.getElementById('tour');if(!el)return;const s=TL[TI],n=TL.length;
   const pontos='<div class="tr-pontos">'+TL.map((_,i)=>'<i class="'+(i===TI?'on':i<TI?'ja':'')+'"></i>').join('')+'</div>';
-  const bots=s.novoFim?'<div class="tr-bots nv-fim"><button class="btn" data-tour="nv-depois">Ver no próximo login</button><button class="btn" data-tour="nv-denovo">Ver de novo</button><button class="btn pri" data-tour="nv-ok">Entendi ✓</button></div>':'<div class="tr-bots">'+(TI>0?'<button class="btn" data-tour="volta">Voltar</button>':'')+(s.fim?'':'<button class="btn tr-pula" data-tour="pula">Pular</button>')+'<button class="btn pri" data-tour="'+(s.fim?'fim':'vai')+'">'+(s.fim?(TMODO==='mkt'?'Bora!':'Começar'):TI===0?(TMODO==='mkt'?'Bora ver':TMODO==='novo'?'Vamos lá':'Conhecer a equipe'):'Próximo')+'</button></div>';
+  const bots=s.novoFim?'<div class="tr-bots nv-fim"><button class="btn" data-tour="nv-depois">Ver no próximo login</button><button class="btn" data-tour="nv-denovo">Ver novamente</button><button class="btn pri" data-tour="nv-ok">Entendi, obrigado ✓</button></div>':'<div class="tr-bots">'+(TI>0?'<button class="btn" data-tour="volta">Voltar</button>':'')+(s.fim?'':'<button class="btn tr-pula" data-tour="pula">Pular</button>')+'<button class="btn pri" data-tour="'+(s.fim?'fim':'vai')+'">'+(s.fim?(TMODO==='mkt'?'Bora!':'Começar'):TI===0?(TMODO==='mkt'?'Bora ver':TMODO==='novo'?'Vamos lá':'Conhecer a equipe'):'Próximo')+'</button></div>';
   if(s.sel){
     if(s.prep)s.prep();
     const t=[...document.querySelectorAll(s.sel)].find(e=>e.offsetParent!==null);if(t)t.scrollIntoView({block:'center'});
@@ -3655,9 +3658,10 @@ function mostrarNovidade(){if(tourAberto()||document.getElementById('novidade'))
     '<li><span class="nv-ic">'+av('klaus',36)+'</span><div><b>Equipe mais esperta</b><small>Cada agente responde conhecendo a área dele: o Klaus vê processos, intimações e prazos; a Dona Vera, o caixa; o Theo, de onde vêm os contatos.</small></div></li>'+
     '<li><span class="nv-ic">📂</span><div><b>O Klaus lê o que já está anexado</b><small>Em Processos › Ler processo, escolha o cliente e marque os documentos. Sem baixar e subir de novo.</small></div></li>'+
     '<li><span class="nv-ic">⚡</span><div><b>A IA por trás</b><small>GPT-OSS 120B, modelo aberto da OpenAI, rodando nos servidores da Groq. Até 80 usos por dia. Lembretes nunca vão para a IA.</small></div></li></ul>'+
-    '<div class="festa-bots"><button class="btn pri" data-novo="tour">Me mostra ▶</button><button class="btn" data-novo="depois">Ver no próximo login</button></div></div></div>';
-  document.body.appendChild(el);fogos(el.querySelector('.festa-ceu'))}
-function fecharNovidade(){const el=document.getElementById('novidade');if(el){el.classList.add('sai');setTimeout(()=>el.remove(),350)}}
+    '<div class="festa-bots nv-seguir"><button class="btn pri" data-novo="tour">Começar o tour ▶</button><small class="nv-auto">O tour começa sozinho<span class="nv-barra"><i></i></span></small></div></div></div>';
+  document.body.appendChild(el);fogos(el.querySelector('.festa-ceu'));
+  clearTimeout(PED.nvTimer);PED.nvTimer=setTimeout(()=>{if(document.getElementById('novidade')&&!tourAberto()){fecharNovidade();setTimeout(()=>abrirTour(TOUR_NOVO,'novo'),380)}},12000)}
+function fecharNovidade(){clearTimeout(PED.nvTimer);const el=document.getElementById('novidade');if(el){el.classList.add('sai');setTimeout(()=>el.remove(),350)}}
 document.addEventListener('click',e=>{const t=e.target.closest('[data-novo]');if(!t)return;const a=t.dataset.novo;
   if(a==='abrir'){UI.conta=false;render();mostrarNovidade();return}
   fecharNovidade();if(a==='tour')setTimeout(()=>abrirTour(TOUR_NOVO,'novo'),380);else setTimeout(pedroChecar,1500)});
@@ -3674,7 +3678,7 @@ const TOUR_NOVO=[
  {ag:'klaus',sel:'[data-pesc="abrir"]',prep:irLer,tit:'Documentos já anexados',txt:'Novidade minha: em Ler processo, toque aqui, escolha o cliente e marque os documentos que já estão nos processos dele. Eu leio direto, sem você baixar e subir de novo.'},
  {ag:'klaus',txt:'A equipe também ficou mais esperta. Quando você pergunta algo na Equipe, cada agente recebe os dados da área dele: eu vejo processos, intimações e prazos; a Dona Vera vê o caixa (só para a dona); o Theo e a Nina veem de onde vêm os contatos; a Lívia vê a agenda.'},
  {ag:'klaus',txt:'Sobre a IA: usamos o GPT-OSS 120B, um modelo aberto da OpenAI, rodando nos servidores da Groq. É gratuito, com até 80 usos por dia. A chave fica guardada no servidor, nunca no navegador, e para a IA vão só primeiros nomes e dados do processo, nunca CPF ou telefone. É ótima para resumir e organizar, mas pode errar lei e jurisprudência: confira sempre na fonte.'},
- {ag:'narra',tit:'Ficou claro?',txt:'Se entendeu, toque em Entendi e eu não mostro mais. Se quiser rever, é só tocar em Ver de novo. E se preferir ver depois, eu mostro de novo no próximo login.',fim:true,novoFim:true},
+ {ag:'narra',tit:'Ficou claro?',txt:'Se entendeu, toque em Entendi e eu não mostro mais. Se quiser rever, é só tocar em Ver novamente. E se preferir ver depois, eu mostro de novo no próximo login.',fim:true,novoFim:true},
 ];
 
 /* =================== Honorários do cliente: editar, receber valor variável e manter o total do contrato =================== */
