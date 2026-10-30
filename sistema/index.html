@@ -3426,9 +3426,13 @@ const PED_INTERVALO=20*60*1000;   // fechou sem marcar? volta em 20 minutos
 function seedLembretes(){const a=new Date(),b=new Date();b.setDate(b.getDate()+1);b.setHours(10,0,0,0);
   return [{id:uid(),texto:'Exemplo: conferir as intimações do dia',quando:a.toISOString(),visto_em:null,adiado:0,criado_em:a.toISOString(),exemplo:true},
           {id:uid(),texto:'Exemplo: ligar para o cartório sobre a averbação',quando:b.toISOString(),visto_em:null,adiado:0,criado_em:a.toISOString(),exemplo:true}]}
-async function carregarLembretes(){if(PED.carregando)return;PED.carregando=true;
-  try{if(REAL)await STORE.load('lembretes','criado_em');else if(!D.lembretes){D.lembretes=seedLembretes();salvar()}}catch(e){console.error(e);D.lembretes=D.lembretes||[]}
-  PED.carregado=true;PED.carregando=false}
+/* uma única busca compartilhada: quem pedir durante o carregamento espera a mesma (evita laço que travava a página) */
+function carregarLembretes(){if(PED.prom)return PED.prom;PED.carregando=true;
+  PED.prom=(async()=>{try{if(REAL)await STORE.load('lembretes','criado_em');else{await new Promise(r=>setTimeout(r,60));if(!D.lembretes){D.lembretes=seedLembretes();salvar()}}}
+    catch(e){console.error(e);D.lembretes=D.lembretes||[]}
+    PED.carregado=true;PED.carregando=false})();
+  return PED.prom}
+function pedirLembretes(){if(PED.carregado||PED.esperando)return;PED.esperando=true;carregarLembretes().then(()=>{PED.esperando=false;const ocupado=document.querySelector('input:focus,textarea:focus,select:focus');if(UI.logado&&!ocupado&&(UI.tela==='painel'||UI.tela==='equipe'||UI.eqGaveta))render();pedroChecar()})}
 const lemHora=l=>new Date(l.quando||l.criado_em).getTime();
 const lemAbertos=()=>(D.lembretes||[]).filter(l=>!l.visto_em).sort((a,b)=>lemHora(a)-lemHora(b));
 const lemVencidos=()=>{const n=Date.now();return lemAbertos().filter(l=>lemHora(l)<=n)};
@@ -3479,7 +3483,7 @@ function itemLem(l){const atras=lemHora(l)<=Date.now();
 
 /* Faixa do Pedro no Painel */
 function faixaPedro(){
-  if(!PED.carregado){carregarLembretes().then(()=>{if(UI.tela==='painel')render();pedroChecar()});return '<section class="pd-faixa" style="--c:'+AGENTES.pedro.cor+'"><div class="pd-cab">'+av('pedro',40)+'<div><b>Pedro <em>estagiário</em></b><small>Abrindo o caderninho…</small></div></div></section>'}
+  if(!PED.carregado){pedirLembretes();return '<section class="pd-faixa" style="--c:'+AGENTES.pedro.cor+'"><div class="pd-cab">'+av('pedro',40)+'<div><b>Pedro <em>estagiário</em></b><small>Abrindo o caderninho…</small></div></div></section>'}
   const V=lemVencidos(),P=lemDepois();
   return '<section class="pd-faixa'+(V.length?' tem':'')+'" style="--c:'+AGENTES.pedro.cor+'"><div class="pd-cab">'+av('pedro',40)+'<div><b>Pedro <em>estagiário</em></b><small>'+
     (V.length?(V.length===1?'1 coisa para você ver agora':V.length+' coisas para você ver agora'):P.length?'Tudo visto. ✓ Próximo: '+esc(fmtQuando(P[0].quando)):'Me fala o que eu tenho que te lembrar.')+
@@ -3490,7 +3494,7 @@ function faixaPedro(){
 
 /* Pedro na Equipe */
 function msgsPedro(){const M=[];
-  if(!PED.carregado){carregarLembretes().then(()=>{if(UI.eqag==='pedro')render()});M.push({de:'pedro',tit:'Abrindo o caderninho…'});return M}
+  if(!PED.carregado){pedirLembretes();M.push({de:'pedro',tit:'Abrindo o caderninho…'});return M}
   const V=lemVencidos(),P=lemDepois();
   if(!V.length&&!P.length)M.push({de:'pedro',tit:'Oi! Sou o Pedro, o estagiário.',txt:'Escreva aqui embaixo o que eu tenho que te lembrar, do seu jeito: "protocolar contestação sexta 10h", "ligar pro cartório amanhã", "conferir o DJEN daqui a 2 horas". Eu fico lembrando até você marcar ✓ Visto.'});
   if(V.length)M.push({de:'pedro',tit:'Para ver agora ('+V.length+'):',html:'<ul class="pd-lista">'+V.map(itemLem).join('')+'</ul>'});
@@ -3504,7 +3508,7 @@ async function pedroDoChat(q){falar('pedro','user',q);
   render();rolarChat();const i=$('#eq-q');if(i)i.focus()}
 
 /* O aviso insistente no canto da tela */
-function pedroChecar(){if(!UI.logado)return;if(!PED.carregado){carregarLembretes().then(pedroChecar);return}
+function pedroChecar(){if(!UI.logado)return;if(!PED.carregado){carregarLembretes();return}
   const V=lemVencidos();if(!PED.titulo)PED.titulo=document.title.replace(/^\(\d+\) /,'');document.title=(V.length?'('+V.length+') ':'')+PED.titulo;
   if(V.length!==PED.ultN){const mudou=PED.ultN>=0;PED.ultN=V.length;const ocupado=document.querySelector('input:focus,textarea:focus,select:focus')||CLI.form||MP.novo||FIN.novo||FIN.editar||AGD.novo;
     if(mudou&&!ocupado&&(UI.tela==='painel'||UI.tela==='equipe'||UI.eqGaveta))render()}
