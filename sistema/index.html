@@ -759,6 +759,14 @@ html,body{overflow-x:clip}
 .hon-campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}.hon-campos .inp{min-width:0;width:100%}.hon-campos label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mut)}
 .hon-ck{display:flex;gap:8px;align-items:flex-start;margin-top:8px;font-size:13.5px;cursor:pointer}.hon-ck input{margin-top:3px;width:16px;height:16px;accent-color:var(--ouro)}
 .hon-prev{display:block;min-height:16px;margin-top:6px;font-size:13px;font-weight:600;color:var(--fg)}.hon-ptit{display:block}.hon-verpg{margin-top:8px}
+#novidade .nv-balao{background:#FFFDF8;color:#14213D;max-width:min(580px,94vw);padding:22px 24px}
+#novidade .nv-balao h3{font-family:var(--f);font-variant:normal;text-transform:none;letter-spacing:-.01em;font-size:24px;line-height:1.25;font-weight:800;color:#14213D;margin:4px 0 16px}
+#novidade .festa-nome{font-family:var(--f);font-size:12.5px;color:#9A7420}
+#novidade .nv-lista{gap:14px}#novidade .nv-lista b{font-family:var(--f);font-size:16.5px;font-weight:700;color:#14213D;margin-bottom:2px}
+#novidade .nv-lista small{font-family:var(--f);font-size:15px;line-height:1.5;color:#3A4558}
+#novidade .festa-bots .btn{font-size:15.5px;padding:11px 18px}#novidade .festa-bots .btn:not(.pri){background:#14213D;color:#FFFFFF;border:1px solid #14213D}#novidade .festa-bots .btn:not(.pri):hover{background:#22325A}
+#novidade .nv-balao .festa-bots{position:sticky;bottom:-22px;margin:10px -24px -22px;padding:12px 24px 16px;background:#FFFDF8;border-top:1px solid #EFE6D2;flex-wrap:wrap}
+@media (max-width:760px){#novidade{z-index:60}#novidade .nv-balao{max-height:calc(100dvh - 40px)}#novidade .nv-balao h3{font-size:21px}#novidade .nv-lista small{font-size:14px}#novidade .nv-balao .festa-bots .btn{flex:1 1 auto}}
 </style>
 
 <div id="app"></div>
@@ -885,7 +893,7 @@ function seed(){
 /* =================== Regras =================== */
 const agDe=l=>TEMAS[l.tema].ag;
 const travado=l=>l.tema==='violencia';
-function saudacao(d=new Date()){const h=d.getHours();return h>=5&&h<12?'Bom dia':h<18?'Boa tarde':'Boa noite'}
+function saudacao(d=new Date()){const h=d.getHours();return h>=5&&h<12?'Bom dia':h>=12&&h<18?'Boa tarde':'Boa noite'}
 function fmtConsulta(c){if(!c)return'(data a combinar)';const d=new Date(c.data+'T12:00:00');return d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit'})+' às '+c.hora.replace(':00','h').replace(':','h')+', '+(c.tipo==='videochamada'?'por videochamada':'presencial no escritório')}
 function preencher(tpl,l){const p=(l.nome||'').split(' ')[0].replace(/\.$/,'');const nome=/^[A-Z]\.?$/.test(p)||!p?'':p;
   return tpl.replace('{saud}',saudacao()).replace(', {nome}',nome?', '+nome:'').replace('{nome}',nome).replace('{adv}',ESCRITORIO.advogada).replace('{palavra}',TEMAS[l.tema].palavra||'o seu assunto').replace('{consulta}',fmtConsulta(l.consulta))}
