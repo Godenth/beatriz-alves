@@ -627,6 +627,7 @@ if(grid){ grid.innerHTML = DUVIDAS.map(d=>`
 document.querySelectorAll('.wa').forEach(a=>{
   a.href=link(a.dataset.msg); a.target=ABRIR_NA_MESMA_ABA?'_self':'_blank'; a.rel='noopener';
   a.addEventListener('click',()=>{ try{ if(window.fbq) fbq('track','Contact'); }catch(e){} try{ fetch('https://bjxfxoieamlnkkllbjib.supabase.co/rest/v1/rpc/registrar_clique',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqeGZ4b2llYW1sbmtrbGxiamliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3MTM0MDksImV4cCI6MjEwODI4OTQwOX0.XxHWblbOH49eNEhtIkTjKMkB9PMcwjfW7zHKjqt6gmw'},body:JSON.stringify({p_origem:origemVisita(),p_escritorio:'beatriz-alves',p_pagina:location.pathname.split('/').pop()||'inicio',p_tema:'divorcio'})}).catch(()=>{}); }catch(e){} });
+  a.addEventListener('click',ev=>{ if(window.fbq&&ABRIR_NA_MESMA_ABA&&!ev.ctrlKey&&!ev.metaKey&&!ev.shiftKey&&ev.button===0){ ev.preventDefault(); var h=a.href; setTimeout(function(){ location.href=h; },350); } }); /* dá tempo do aviso 'Contact' chegar ao Meta antes de sair da página */
 });
 (function(){
  var bt=document.querySelector('.menu-bt'),m=document.getElementById('menu');
