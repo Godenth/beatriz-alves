@@ -537,6 +537,24 @@ footer .rod-links a{color:#fff}
 function origemVisita(){var o='';try{o=sessionStorage.getItem('ba-origem')||''}catch(e){}if(o)return o;var u=new URLSearchParams(location.search),ua=navigator.userAgent||'',r=document.referrer||'',src=(u.get('utm_source')||'').toLowerCase();o=/Instagram/i.test(ua)||/instagram/.test(src)||/instagram\.com/.test(r)?'instagram':/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)||/facebook|fb/.test(src)||/facebook\.com/.test(r)?'facebook':u.get('gclid')||/google/.test(src)||/google\./.test(r)?'google':(src==='meta'||u.get('fbclid'))?'facebook':'direto';try{sessionStorage.setItem('ba-origem',o)}catch(e){}return o}
 origemVisita();
 </script>
+<style id="ct-css">
+.ct-fundo{position:fixed;inset:0;z-index:90;background:rgba(10,16,32,.62);display:flex;align-items:flex-end;justify-content:center;padding:16px}
+@media(min-width:640px){.ct-fundo{align-items:center}}
+.ct-caixa{width:100%;max-width:420px;background:#fff;color:#14213D;border-radius:18px;padding:22px 20px 18px;box-shadow:0 20px 50px rgba(0,0,0,.35);font-family:'Manrope','Segoe UI',system-ui,sans-serif;position:relative}
+.ct-caixa h2{margin:0 0 4px;font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;line-height:1.15;color:#14213D}
+.ct-caixa p.ct-sub{margin:0 0 14px;font-size:14px;color:#56607A}
+.ct-caixa label.ct-l{display:block;font-size:13px;font-weight:600;margin:10px 0 4px}
+.ct-caixa input[type=text],.ct-caixa input[type=tel]{width:100%;font:inherit;font-size:16px;padding:12px 13px;border:1.5px solid #D9D5CC;border-radius:11px;color:#14213D;background:#FAF9F6}
+.ct-caixa input:focus{outline:none;border-color:#BF9440;background:#fff}
+.ct-ok{display:flex;gap:9px;align-items:flex-start;margin:14px 0 4px;font-size:12.5px;line-height:1.4;color:#56607A}
+.ct-ok input{margin-top:2px;width:18px;height:18px;flex:none;accent-color:#14213D}
+.ct-bt{margin-top:14px;width:100%;border:0;border-radius:12px;padding:15px;font:inherit;font-weight:700;font-size:16px;background:#1F9D55;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.ct-bt[disabled]{opacity:.65;cursor:wait}
+.ct-bt svg{width:20px;height:20px}
+.ct-erro{color:#B42318;font-size:13px;margin:8px 0 0;min-height:1em}
+.ct-x{position:absolute;top:8px;right:10px;border:0;background:none;font-size:26px;line-height:1;color:#56607A;cursor:pointer;padding:6px}
+.ct-arm{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+</style>
 </head>
 <body>
 <header class="nav">
@@ -624,10 +642,67 @@ if(grid){ grid.innerHTML = DUVIDAS.map(d=>`
     <p>Conte sua situação. Cada caso tem particularidades, e a orientação começa por entender o seu.</p>
     <a class="btn wa" data-tema="Outro assunto" data-msg="Olá, Dra. Beatriz! Vim pelo site, na página Pensão alimentícia. Tenho outra dúvida sobre esse assunto." href="https://wa.me/5511951635738?text=Ol%C3%A1%2C%20Dra.%20Beatriz%21%20Vim%20pelo%20site%2C%20na%20p%C3%A1gina%20Pens%C3%A3o%20aliment%C3%ADcia.%20Tenho%20outra%20d%C3%BAvida%20sobre%20esse%20assunto.">${WPP} Falar sobre o meu caso</a>
   </article>`; }
+
+/* ===== Antes do WhatsApp: nome + telefone vão para o sistema (Leads) ===== */
+const CT_ESC='beatriz-alves', CT_TEMA='pensao', CT_DIRETO=false;
+const CT_SB='https://bjxfxoieamlnkkllbjib.supabase.co/rest/v1/rpc/';
+const CT_AK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqeGZ4b2llYW1sbmtrbGxiamliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3MTM0MDksImV4cCI6MjEwODI4OTQwOX0.XxHWblbOH49eNEhtIkTjKMkB9PMcwjfW7zHKjqt6gmw';
+function ctRpc(f,b){ return fetch(CT_SB+f,{method:'POST',keepalive:true,headers:{'Content-Type':'application/json','apikey':CT_AK},body:JSON.stringify(b)}); }
+function ctPagina(){ return location.pathname.split('/').pop()||'inicio'; }
+function ctIr(h){
+  try{ if(window.fbq) fbq('track','Contact'); }catch(e){}
+  try{ ctRpc('registrar_clique',{p_origem:origemVisita(),p_escritorio:CT_ESC,p_pagina:ctPagina(),p_tema:CT_TEMA}).catch(()=>{}); }catch(e){}
+  setTimeout(function(){ if(ABRIR_NA_MESMA_ABA) location.href=h; else window.open(h,'_blank','noopener'); },350);
+}
+function ctJaEnviou(){ try{ return sessionStorage.getItem('ba-enviou')==='1'; }catch(e){ return false; } }
+function ctAbrir(a){
+  var antigo=document.getElementById('ct-fundo'); if(antigo) antigo.remove();
+  var f=document.createElement('div'); f.className='ct-fundo'; f.id='ct-fundo';
+  f.innerHTML='<form class="ct-caixa" role="dialog" aria-modal="true" aria-labelledby="ct-t" novalidate>'+
+    '<button type="button" class="ct-x" aria-label="Fechar">&times;</button>'+
+    '<h2 id="ct-t">Falar com a Dra. Beatriz</h2>'+
+    '<p class="ct-sub">Deixe seu nome e WhatsApp e continue a conversa direto no WhatsApp.</p>'+
+    '<label class="ct-l" for="ct-nome">Seu nome</label><input id="ct-nome" type="text" autocomplete="name" maxlength="80" required>'+
+    '<label class="ct-l" for="ct-tel">Seu WhatsApp (com DDD)</label><input id="ct-tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="(11) 90000-0000" maxlength="20" required>'+
+    '<div class="ct-arm" aria-hidden="true"><input id="ct-arm" type="text" tabindex="-1" autocomplete="off"></div>'+
+    '<label class="ct-ok"><input id="ct-ok" type="checkbox"> <span>Autorizo o uso do meu nome e telefone somente para a Dra. Beatriz Alves responder este contato. Não escreva detalhes do caso aqui.</span></label>'+
+    '<p class="ct-erro" id="ct-erro" role="alert"></p>'+
+    '<button type="submit" class="ct-bt">'+WPP+' Entrar em contato agora</button></form>';
+  document.body.appendChild(f);
+  var form=f.querySelector('form'), nome=f.querySelector('#ct-nome'), tel=f.querySelector('#ct-tel'), erro=f.querySelector('#ct-erro'), bt=f.querySelector('.ct-bt');
+  function fechar(){ f.remove(); document.removeEventListener('keydown',esc); }
+  function esc(e){ if(e.key==='Escape') fechar(); }
+  document.addEventListener('keydown',esc);
+  f.addEventListener('click',function(e){ if(e.target===f) fechar(); });
+  f.querySelector('.ct-x').addEventListener('click',fechar);
+  tel.addEventListener('input',function(){ var d=tel.value.replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,'').slice(0,11);
+    tel.value=d.length>6?'('+d.slice(0,2)+') '+d.slice(2,d.length-4)+'-'+d.slice(-4):d.length>2?'('+d.slice(0,2)+') '+d.slice(2):d; });
+  setTimeout(function(){ nome.focus(); },50);
+  form.addEventListener('submit',function(e){
+    e.preventDefault(); erro.textContent='';
+    var n=nome.value.trim(), d=tel.value.replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,'');
+    if(n.length<2){ erro.textContent='Digite seu nome.'; nome.focus(); return; }
+    if(!/^\d{10,11}$/.test(d)){ erro.textContent='Digite o WhatsApp com DDD, só números.'; tel.focus(); return; }
+    if(!f.querySelector('#ct-ok').checked){ erro.textContent='Marque a autorização para continuar.'; return; }
+    bt.disabled=true;
+    var h=link('Olá, Dra. Beatriz! Meu nome é '+n+'. '+(a.dataset.msg||'').replace(/^Olá, Dra\. Beatriz! ?/,''));
+    var feito=false; function seguir(){ if(feito) return; feito=true; try{ sessionStorage.setItem('ba-enviou','1'); }catch(_){} ctIr(h); }
+    try{
+      ctRpc('receber_contato',{p_escritorio:CT_ESC,p_nome:n,p_telefone:d,p_tema:CT_TEMA,p_pagina:ctPagina(),p_consentimento:true,p_armadilha:f.querySelector('#ct-arm').value,p_origem:origemVisita()})
+        .then(function(r){ if(r.ok) return seguir(); /* banco ainda na versão antiga: manda sem a origem */
+          return ctRpc('receber_contato',{p_escritorio:CT_ESC,p_nome:n,p_telefone:d,p_tema:CT_TEMA,p_pagina:ctPagina()+' · '+origemVisita(),p_consentimento:true,p_armadilha:f.querySelector('#ct-arm').value}).then(seguir,seguir); },seguir);
+    }catch(_){ seguir(); }
+    setTimeout(seguir,2500); /* se a internet estiver lenta, não segura a pessoa */
+  });
+}
+function ctClique(ev,a){
+  if(ev.ctrlKey||ev.metaKey||ev.shiftKey||ev.button!==0) return;
+  ev.preventDefault();
+  if(CT_DIRETO||ctJaEnviou()) ctIr(a.href); else ctAbrir(a);
+}
 document.querySelectorAll('.wa').forEach(a=>{
   a.href=link(a.dataset.msg); a.target=ABRIR_NA_MESMA_ABA?'_self':'_blank'; a.rel='noopener';
-  a.addEventListener('click',()=>{ try{ if(window.fbq) fbq('track','Contact'); }catch(e){} try{ fetch('https://bjxfxoieamlnkkllbjib.supabase.co/rest/v1/rpc/registrar_clique',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json','apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqeGZ4b2llYW1sbmtrbGxiamliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3MTM0MDksImV4cCI6MjEwODI4OTQwOX0.XxHWblbOH49eNEhtIkTjKMkB9PMcwjfW7zHKjqt6gmw'},body:JSON.stringify({p_origem:origemVisita(),p_escritorio:'beatriz-alves',p_pagina:location.pathname.split('/').pop()||'inicio',p_tema:'pensao'})}).catch(()=>{}); }catch(e){} });
-  a.addEventListener('click',ev=>{ if(window.fbq&&ABRIR_NA_MESMA_ABA&&!ev.ctrlKey&&!ev.metaKey&&!ev.shiftKey&&ev.button===0){ ev.preventDefault(); var h=a.href; setTimeout(function(){ location.href=h; },350); } }); /* dá tempo do aviso 'Contact' chegar ao Meta antes de sair da página */
+  a.addEventListener('click',ev=>ctClique(ev,a));
 });
 (function(){
  var bt=document.querySelector('.menu-bt'),m=document.getElementById('menu');
