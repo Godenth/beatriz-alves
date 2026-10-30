@@ -802,6 +802,12 @@ html,body{overflow-x:clip}
 @keyframes paPulsa{from{transform:scale(1)}to{transform:scale(1.06)}}@keyframes paTremeAv{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
 .top .dir .pd-pop .btn{display:inline-flex;align-items:center;font-size:14px!important;padding:8px 14px}.top .dir .pd-pop .btn.pri{background:var(--ouro);color:var(--tinta-btn,#14213D);border-color:var(--ouro)}.top .dir .pd-pop .btn.pri::before{content:none}.pd-pop{color:var(--fg)}
 @media (prefers-reduced-motion: reduce){#pedro-aviso.nv-urgente,#pedro-aviso.nv-urgente .pa-urg,#pedro-aviso.nv-urgente .pa-av,#pedro-aviso.nv-atencao .pa-av{animation:none}}
+#pedro-aviso.nv-breve,#pedro-aviso.nv-atencao{transition:background-color .9s linear,border-color .9s linear,color .4s;animation:paEntra .5s cubic-bezier(.2,1.4,.4,1) both,paTremeVar var(--vel,2.6s) ease-in-out .5s infinite}
+#pedro-aviso.escuro{color:#fff}#pedro-aviso.escuro .pa-nome,#pedro-aviso.escuro small{color:rgba(255,255,255,.88)}#pedro-aviso.escuro .pa-x{color:#fff}
+#pedro-aviso.escuro .btn{background:#fff;color:#7F1D1D;border-color:#fff}#pedro-aviso.escuro .btn.pri{background:#FFE27A;color:#3A1500;border-color:#FFE27A}
+.pa-falta{display:flex;align-items:baseline;gap:6px}.pa-cont{font:800 26px/1 var(--f);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+@keyframes paTremeVar{0%,55%,100%{transform:translate(0,0) rotate(0)}60%{transform:translate(calc(var(--amp,0)*-1px),0) rotate(calc(var(--amp,0)*-.2deg))}65%{transform:translate(calc(var(--amp,0)*1px),0) rotate(calc(var(--amp,0)*.2deg))}70%{transform:translate(calc(var(--amp,0)*-.7px),0)}75%{transform:translate(calc(var(--amp,0)*.7px),0)}80%{transform:translate(0,0)}}
+@media (prefers-reduced-motion: reduce){#pedro-aviso.nv-breve,#pedro-aviso.nv-atencao{animation:none}}
 </style>
 
 <div id="app"></div>
@@ -3582,8 +3588,7 @@ function mostrarAvisoPedro(l,tot,niv){niv=niv||'normal';const quem=(typeof PERFI
   const el=document.createElement('div');el.id='pedro-aviso';el.className='nv-'+niv;el.dataset.id=l.id;el.dataset.rank=NIV_RANK[niv];el.setAttribute('role',niv==='urgente'?'alertdialog':'alert');el.style.setProperty('--c',AGENTES.pedro.cor);
   const fig=niv==='urgente'&&FIG.pedro_assustado?'<img class="pa-assust" src="'+FIG.pedro_assustado+'" alt="">':'';
   const cab=niv==='urgente'?'<span class="pa-urg">🚨 URGENTEEE!</span><p>'+(d>-90000?'É agora'+(quem?', '+esc(quem):'')+'!':'Atrasado há '+tempoTxt(-d)+'!')+'</p>'
-    :niv==='atencao'?'<span class="pa-nome">⚠ Atenção · Pedro</span><p>Faltam '+tempoTxt(d)+'!</p>'
-    :niv==='breve'?'<span class="pa-nome">Pedro · daqui a pouco</span><p>Daqui a '+tempoTxt(d)+':</p>'
+    :niv==='atencao'||niv==='breve'?'<span class="pa-nome">'+(niv==='atencao'?'⚠ Atenção · Pedro':'Pedro · daqui a pouco')+'</span><p class="pa-falta">Faltam <b class="pa-cont">'+mmss(d)+'</b></p>'
     :'<span class="pa-nome">Pedro · estagiário</span><p>'+esc(frasePedro(l,quem))+'</p>';
   const bts=niv==='breve'||niv==='atencao'?'<button class="btn pri" data-lem="visto" data-id="'+l.id+'">✓ Visto</button><button class="btn" data-lem="fecha">Ok, já sei</button>'
     :'<button class="btn pri" data-lem="visto" data-id="'+l.id+'">✓ Visto</button>'+(niv==='urgente'?'<button class="btn" data-lem="10m" data-id="'+l.id+'">+10 min</button>':'')+'<button class="btn" data-lem="1h" data-id="'+l.id+'">Daqui 1h</button><button class="btn" data-lem="amanha" data-id="'+l.id+'">Amanhã</button>';
@@ -3591,7 +3596,23 @@ function mostrarAvisoPedro(l,tot,niv){niv=niv||'normal';const quem=(typeof PERFI
     '<small>'+(l.adiado?'Já adiado '+l.adiado+(l.adiado>1?' vezes':' vez')+' · ':'')+(niv==='breve'||niv==='atencao'?'marcado para ':'anotado para ')+esc(fmtQuando(l.quando))+(tot>1?' · mais '+(tot-1)+' esperando':'')+'</small>'+
     '<div class="pa-bts">'+bts+'</div></div>'+
     '<button class="pa-x" data-lem="fecha" aria-label="Fechar por agora" title="Fechar por agora">✕</button>';
-  document.body.appendChild(el)}
+  document.body.appendChild(el);if(niv==='breve'||niv==='atencao')iniciarContagem(el,l)}
+/* contagem regressiva ao vivo: a janela vai do claro ao amarelo, laranja e vermelho, e treme mais conforme a hora chega */
+const mmss=ms=>{const t=Math.max(0,Math.ceil(ms/1000)),m=Math.floor(t/60),x=t%60;return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0')};
+function corMistura(p){const S=[[0,[255,253,248],[94,143,168]],[.45,[255,236,170],[232,163,23]],[.75,[246,150,80],[226,96,40]],[1,[200,30,30],[255,107,107]]];
+  let i=0;while(i<S.length-2&&p>S[i+1][0])i++;const a=S[i],b=S[i+1],t=Math.min(1,Math.max(0,(p-a[0])/(b[0]-a[0])));const m=(x,y)=>x.map((v,k)=>Math.round(v+(y[k]-v)*t)).join(',');
+  return {bg:'rgb('+m(a[1],b[1])+')',bd:'rgb('+m(a[2],b[2])+')'}}
+function iniciarContagem(el,l){clearInterval(PED.contTimer);
+  const tick=()=>{if(!document.body.contains(el)){clearInterval(PED.contTimer);return}
+    const d=lemHora(l)-Date.now();
+    if(d<=0){clearInterval(PED.contTimer);el.remove();pedroChecar();return}
+    const p=Math.min(1,Math.max(0,1-d/(30*60000))),c=corMistura(p);
+    el.style.background=c.bg;el.style.borderColor=c.bd;el.classList.toggle('escuro',p>.7);
+    el.style.setProperty('--amp',(p<.5?0:(p-.5)/.5*7).toFixed(2));el.style.setProperty('--vel',(2.6-1.8*p).toFixed(2)+'s');
+    const ct=el.querySelector('.pa-cont');if(ct)ct.textContent=mmss(d);
+    const at=d<=10*60000,lab=el.querySelector('.pa-nome');if(lab)lab.textContent=at?'⚠ Atenção · Pedro':'Pedro · daqui a pouco';
+    el.classList.toggle('nv-atencao',at);el.classList.toggle('nv-breve',!at);el.dataset.rank=at?3:2;el.dataset.p=p.toFixed(3)};
+  tick();PED.contTimer=setInterval(tick,1000)}
 setInterval(pedroChecar,30000);
 /* ---- Pedro no cabeçalho: foto redonda à direita; clica e anota. Pisca de vez em quando e puxa conversa. ---- */
 const FALAS_PEDRO=['Oi! Precisa anotar algum recado?','Tô aqui pra ajudar. Quer que eu te lembre de algo?','Prazo, ligação, documento… me fala que eu anoto.','Lembrou de alguma coisa? Me conta que eu guardo.','Tô de olho na sua lista. Pode contar comigo!'];
