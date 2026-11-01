@@ -656,9 +656,11 @@ function ctIr(h){
   try{ ctRpc('registrar_clique',{p_origem:origemVisita(),p_escritorio:CT_ESC,p_pagina:ctPagina(),p_tema:CT_TEMA}).catch(()=>{}); }catch(e){}
   setTimeout(function(){ if(ABRIR_NA_MESMA_ABA) location.href=h; else window.open(h,'_blank','noopener'); },350);
 }
+function ctFunil(et){ try{ ctRpc('registrar_funil',{p_escritorio:CT_ESC,p_pagina:ctPagina(),p_tema:CT_TEMA,p_origem:origemVisita(),p_etapa:et}).catch(()=>{}); }catch(e){} }
+(function(){ var k='ba-vis-'+ctPagina(); try{ if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k,'1'); }catch(e){} ctFunil('visita'); })();
 function ctJaEnviou(){ try{ return sessionStorage.getItem('ba-enviou')==='1'; }catch(e){ return false; } }
 function ctAbrir(a){
-  var antigo=document.getElementById('ct-fundo'); if(antigo) antigo.remove();
+  var antigo=document.getElementById('ct-fundo'); if(antigo) antigo.remove(); ctFunil('abriu');
   var f=document.createElement('div'); f.className='ct-fundo'; f.id='ct-fundo';
   f.innerHTML='<form class="ct-caixa" role="dialog" aria-modal="true" aria-labelledby="ct-t" novalidate>'+
     '<button type="button" class="ct-x" aria-label="Fechar">&times;</button>'+
@@ -691,7 +693,7 @@ function ctAbrir(a){
     var feito=false; function seguir(){ if(feito) return; feito=true; try{ sessionStorage.setItem('ba-enviou','1'); }catch(_){} ctIr(h); }
     try{
       ctRpc('receber_contato',{p_escritorio:CT_ESC,p_nome:n,p_telefone:d,p_tema:CT_TEMA,p_pagina:ctPagina(),p_consentimento:true,p_armadilha:f.querySelector('#ct-arm').value,p_origem:origemVisita()})
-        .then(function(r){ if(r.ok) return seguir(); /* banco ainda na versão antiga: manda sem a origem */
+        .then(function(r){ if(r.ok){ ctFunil('enviou'); return seguir(); } /* banco ainda na versão antiga: manda sem a origem */
           return ctRpc('receber_contato',{p_escritorio:CT_ESC,p_nome:n,p_telefone:d,p_tema:CT_TEMA,p_pagina:ctPagina()+' · '+origemVisita(),p_consentimento:true,p_armadilha:f.querySelector('#ct-arm').value}).then(seguir,seguir); },seguir);
     }catch(_){ seguir(); }
     setTimeout(seguir,2500); /* se a internet estiver lenta, não segura a pessoa */
