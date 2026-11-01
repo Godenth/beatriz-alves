@@ -2,6 +2,9 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
+<script>/* Modo teste da equipe: abra o site com ?teste=1 uma vez neste navegador (?teste=0 desliga). Aqui nada é contado: visitas, cliques, funil, pixel e contatos. */
+(function(){try{var q=new URLSearchParams(location.search).get('teste');if(q==='1')localStorage.setItem('ba-teste','1');if(q==='0')localStorage.removeItem('ba-teste');window.BA_TESTE=localStorage.getItem('ba-teste')==='1'}catch(e){window.BA_TESTE=false}
+if(window.BA_TESTE)document.addEventListener('DOMContentLoaded',function(){var b=document.createElement('div');b.textContent='🧪 Modo teste: este navegador não é contado';b.setAttribute('role','status');b.style.cssText='position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:9999;background:#E8A317;color:#2A1A00;font:600 12px/1.2 system-ui,sans-serif;padding:6px 12px;border-radius:999px;box-shadow:0 4px 12px rgba(0,0,0,.25);pointer-events:none;white-space:nowrap';document.body.appendChild(b)});})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Advogada Beatriz Alves</title>
 <meta name="description" content="Advogada Beatriz Alves, advocacia familiarista estratégica. Divórcio, partilha, casamento e união estável, pensão, guarda e violência doméstica. São Paulo e online, com atuação em todo o Brasil.">
@@ -705,10 +708,10 @@ if(grid){ grid.innerHTML = DUVIDAS.map(d=>`
 const CT_ESC='beatriz-alves', CT_TEMA='outro', CT_DIRETO=false;
 const CT_SB='https://bjxfxoieamlnkkllbjib.supabase.co/rest/v1/rpc/';
 const CT_AK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqeGZ4b2llYW1sbmtrbGxiamliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3MTM0MDksImV4cCI6MjEwODI4OTQwOX0.XxHWblbOH49eNEhtIkTjKMkB9PMcwjfW7zHKjqt6gmw';
-function ctRpc(f,b){ return fetch(CT_SB+f,{method:'POST',keepalive:true,headers:{'Content-Type':'application/json','apikey':CT_AK},body:JSON.stringify(b)}); }
+function ctRpc(f,b){ if(window.BA_TESTE) return Promise.resolve({ok:true,teste:true}); return fetch(CT_SB+f,{method:'POST',keepalive:true,headers:{'Content-Type':'application/json','apikey':CT_AK},body:JSON.stringify(b)}); }
 function ctPagina(){ return location.pathname.split('/').pop()||'inicio'; }
 function ctIr(h){
-  try{ if(window.fbq) fbq('track','Contact'); }catch(e){}
+  try{ if(window.fbq&&!window.BA_TESTE) fbq('track','Contact'); }catch(e){}
   try{ ctRpc('registrar_clique',{p_origem:origemVisita(),p_escritorio:CT_ESC,p_pagina:ctPagina(),p_tema:CT_TEMA}).catch(()=>{}); }catch(e){}
   setTimeout(function(){ if(ABRIR_NA_MESMA_ABA) location.href=h; else window.open(h,'_blank','noopener'); },350);
 }
@@ -784,7 +787,7 @@ document.querySelectorAll('.wa').forEach(a=>{
 <script>
 (function(){
   var PIXEL_ID = "2339257980226527"; /* número do pixel do Meta (Gerenciador de Eventos) */
-  if(!PIXEL_ID) return;
+  if(!PIXEL_ID||window.BA_TESTE) return;
   var K='ba-cookies', box=document.getElementById('cookies');
   function ler(){try{return localStorage.getItem(K)}catch(e){return null}}
   function gravar(v){try{localStorage.setItem(K,v)}catch(e){}}
