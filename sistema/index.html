@@ -809,6 +809,29 @@ html,body{overflow-x:clip}
 @keyframes paTremeVar{0%,55%,100%{transform:translate(0,0) rotate(0)}60%{transform:translate(calc(var(--amp,0)*-1px),0) rotate(calc(var(--amp,0)*-.2deg))}65%{transform:translate(calc(var(--amp,0)*1px),0) rotate(calc(var(--amp,0)*.2deg))}70%{transform:translate(calc(var(--amp,0)*-.7px),0)}75%{transform:translate(calc(var(--amp,0)*.7px),0)}80%{transform:translate(0,0)}}
 @media (prefers-reduced-motion: reduce){#pedro-aviso.nv-breve,#pedro-aviso.nv-atencao{animation:none}}
 .tab-funil th,.tab-funil td{padding:7px 8px;border-bottom:1px solid var(--rule,#2a3550)}
+/* Tarefas (Kanban) */
+.kb-topo{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:14px}
+.kb-ferr{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.kb-ferr #kb-busca{width:260px;max-width:100%}
+.kb-board{display:grid;grid-template-columns:repeat(4,minmax(240px,1fr));gap:12px;align-items:start;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x proximity}
+.kb-col{background:color-mix(in srgb,var(--card) 82%,transparent);border:1px solid var(--rule);border-top:3px solid var(--cc);border-radius:16px;padding:10px;min-height:180px;scroll-snap-align:start;display:flex;flex-direction:column;gap:8px}
+.kb-col header{display:flex;align-items:center;gap:8px;padding:2px 4px}.kb-dot{width:10px;height:10px;border-radius:50%;background:var(--cc)}.kb-n{margin-left:auto;font-size:12px;color:var(--mut);background:var(--rule);border-radius:10px;padding:1px 8px}
+.kb-lista{display:flex;flex-direction:column;gap:8px;min-height:40px}
+.kb-card{position:relative;background:var(--card);color:var(--fg);border:1px solid var(--rule);border-left:4px solid var(--pr,var(--cc));border-radius:12px;padding:10px 12px;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;box-shadow:0 2px 6px -3px rgba(0,0,0,.35);transition:box-shadow .15s,transform .15s}
+.kb-card:hover{box-shadow:0 8px 18px -10px rgba(0,0,0,.5);transform:translateY(-1px)}.kb-card:focus-visible{outline:2px solid var(--ouro);outline-offset:2px}
+.kb-card b{display:block;font-weight:600;line-height:1.35;overflow-wrap:anywhere}.kb-card.feito b{text-decoration:line-through;opacity:.7}
+.kb-prio{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--pr);margin-bottom:2px}
+.kb-meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.kb-chip{font-size:11.5px;padding:2px 7px;border-radius:8px;background:var(--rule);color:var(--fg);white-space:nowrap}
+.kb-chip.atr{background:#E5484D;color:#fff}.kb-chip.hoje{background:#E8A317;color:#2A1A00}.kb-chip.breve{background:color-mix(in srgb,#E8A317 30%,transparent)}
+.kb-vazio{margin:6px 4px;font-size:13px;color:var(--mut)}
+.kb-mais{background:none;border:1px dashed var(--rule);color:var(--mut);border-radius:10px;padding:8px;cursor:pointer;font:inherit;text-align:left}.kb-mais:hover{color:var(--fg);border-color:var(--cc)}
+.kb-add{display:flex;flex-direction:column;gap:6px}
+.kb-ph{border:2px dashed var(--cc,var(--ouro));border-radius:12px;background:color-mix(in srgb,var(--ouro) 8%,transparent)}
+.kb-origem{display:none}
+.kb-fantasma{position:fixed;z-index:80;pointer-events:none;transform:rotate(2.5deg) scale(1.03);box-shadow:0 22px 40px -14px rgba(0,0,0,.6);cursor:grabbing;opacity:.96}
+body.kb-arrastando,body.kb-arrastando *{cursor:grabbing!important;user-select:none}body.kb-arrastando .kb-board{scroll-snap-type:none}
+.btn.perigo{color:#fff;background:#C53030;border-color:#C53030}
+@media (max-width:760px){.kb-board{grid-template-columns:repeat(4,82vw);margin:0 -16px;padding:0 16px 10px}.kb-ferr #kb-busca{width:100%}.kb-topo{align-items:stretch}}
+@media (prefers-reduced-motion: reduce){.kb-card,.kb-fantasma{transition:none;transform:none}}
 </style>
 
 <div id="app"></div>
@@ -1003,7 +1026,7 @@ const FOTOS={theo:'data:image/webp;base64,UklGRgAwAABXRUJQVlA4WAoAAAAQAAAAxwAAxw
 function av(k,s=48){const a=AGENTES[k];if(FOTOS[k])return '<img class="av" src="'+FOTOS[k]+'" width="'+s+'" height="'+s+'" alt="" style="background:'+a.cor+';object-fit:cover">';const hair=a.curto?'<path d="M17 28c0-10 6-17 15-17s15 7 15 17c-2-3-5-6-8-7-5 3-12 3-17 1-2 2-4 4-5 6z" fill="'+a.cab+'"/>':'<path d="M14 30c0-12 7-20 18-20s18 8 18 20v14c-3-6-5-14-6-18-6 4-16 6-24 5-2 5-4 9-6 13z" fill="'+a.cab+'"/>';
   return '<svg class="av" width="'+s+'" height="'+s+'" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="'+a.cor+'"/><path d="M12 64c2-12 10-18 20-18s18 6 20 18z" fill="#24201D"/><circle cx="32" cy="31" r="13" fill="'+a.pele+'"/>'+hair+'<circle cx="27" cy="31" r="1.6" fill="#24201D"/><circle cx="37" cy="31" r="1.6" fill="#24201D"/><path d="M28 37q4 3 8 0" stroke="#24201D" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>'}
 const WPP='<svg viewBox="0 0 24 24" fill="currentColor" class="wi" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.6-.3Z"/></svg>';
-const ICO={clientes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.4 3-5.4 6-5.4s5.4 2 6 5.4"/><path d="M16 4.6a3.2 3.2 0 0 1 0 6.2M18 14.8c1.7.7 2.8 2.4 3 5.2"/></svg>',config:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',agenda:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M8 14h3v3H8z"/></svg>',financeiro:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="6" width="19" height="13" rx="3"/><circle cx="12" cy="12.5" r="2.6"/><path d="M6 9.5v6M18 9.5v6"/></svg>',mais:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>',processos:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><circle cx="11.5" cy="13.5" r="2.5"/><path d="M13.5 15.5L16 18"/></svg>',conteudo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>',ferramentas:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M16 12h0M8 16h2M12 16h2M16 16h0"/></svg>',equipe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2 20c0-3.3 2.7-6 6-6s6 2.7 6 6M14 20c.2-2.4 1.6-4.5 3.5-4.5S21 17.6 21 20"/></svg>',leads:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',colar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4h6v3H9z"/></svg>',painel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>'};
+const ICO={tarefas:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="10" rx="1.5"/><rect x="17" y="4" width="4" height="13" rx="1.5"/></svg>',clientes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.4 3-5.4 6-5.4s5.4 2 6 5.4"/><path d="M16 4.6a3.2 3.2 0 0 1 0 6.2M18 14.8c1.7.7 2.8 2.4 3 5.2"/></svg>',config:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',agenda:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M8 14h3v3H8z"/></svg>',financeiro:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="6" width="19" height="13" rx="3"/><circle cx="12" cy="12.5" r="2.6"/><path d="M6 9.5v6M18 9.5v6"/></svg>',mais:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>',processos:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><circle cx="11.5" cy="13.5" r="2.5"/><path d="M13.5 15.5L16 18"/></svg>',conteudo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>',ferramentas:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M16 12h0M8 16h2M12 16h2M16 16h0"/></svg>',equipe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2 20c0-3.3 2.7-6 6-6s6 2.7 6 6M14 20c.2-2.4 1.6-4.5 3.5-4.5S21 17.6 21 20"/></svg>',leads:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',colar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4h6v3H9z"/></svg>',painel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>'};
 const pillTema=l=>'<span class="pill" style="--c:'+AGENTES[agDe(l)].cor+'">'+esc(TEMAS[l.tema].nome)+'</span>';
 function stTxt(l){if(travado(l))return'<span class="trava">🔒 NÃO ENVIAR RETORNO</span>';const s=STATUS.find(x=>x[0]===l.status)[1];
   if(l.status==='novo'&&l.etapa==='retorno')return'<span class="st ret">Aguardando · retorno em '+dataBR(l.prox)+'</span>';
@@ -1012,16 +1035,16 @@ function stTxt(l){if(travado(l))return'<span class="trava">🔒 NÃO ENVIAR RETO
 const dataBR=iso=>iso?new Date(iso+(iso.length===10?'T12:00:00':'')).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'';
 const horaBR=iso=>new Date(iso).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
 
-const MAIS_TELAS=()=>[['conteudo','Conteúdo e anúncios'],['ferramentas','Calcular'],['config','Configurações']];
+const MAIS_TELAS=()=>[['tarefas','Tarefas'],['conteudo','Conteúdo e anúncios'],['ferramentas','Calcular'],['config','Configurações']];
 function render(){
   if(!UI.logado){$('#app').innerHTML=UI.onboard?telaOnboarding():telaLogin();return}
   if(UI.tela==='leads'){UI.tela='painel';UI.pab='contatos'}
   if(UI.tela!==UI._ult){UI._ult=UI.tela;if(REAL&&USUARIO){if(UI.tela==='agenda'&&AGD.carregado)carregarAgenda().then(()=>{if(UI.tela==='agenda'&&!AGD.novo)render()});if(UI.tela==='financeiro'&&FIN.carregado&&!FIN.novo&&!FIN.editar)carregarFin().then(()=>{if(UI.tela==='financeiro'&&!FIN.novo&&!FIN.editar)render()})}}
-  const tabs=[['painel','Painel'],['agenda','Agenda'],['clientes','Clientes'],['processos','Processos']].concat(podeFinanceiro()?[['financeiro','Financeiro']]:[]).concat([['conteudo','Conteúdo'],['ferramentas','Calcular']]);
+  const tabs=[['painel','Painel'],['agenda','Agenda'],['tarefas','Tarefas'],['clientes','Clientes'],['processos','Processos']].concat(podeFinanceiro()?[['financeiro','Financeiro']]:[]).concat([['conteudo','Conteúdo'],['ferramentas','Calcular']]);
   $('#app').innerHTML='<header class="top"><div class="in"><button class="marca marca-bt" data-conta="1" aria-haspopup="menu" aria-expanded="'+(UI.conta?'true':'false')+'" title="Minha conta e configurações">'+(temMono()?'<img class="mono" src="'+MONO+'" alt="" width="40" height="40">':'')+'<svg class="logo-vidro" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="var(--ouro)"/><path d="M16 7v18M9 12h14M9 12l-3 7h6zM23 12l-3 7h6zM11 25h10" stroke="var(--tinta-btn)" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><div>'+esc(ESCRITORIO.nome)+'<small>'+(REAL?esc(USUARIO.email):'Sistema interno · só você vê')+'</small></div><svg class="marca-seta" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>'+menuConta()+
     '<nav class="tabs" aria-label="Seções">'+tabs.map(t=>'<button data-tela="'+t[0]+'" class="'+(UI.tela===t[0]||(t[0]==='equipe'&&UI.tela==='agente')?'on':'')+'">'+t[1]+'</button>').join('')+'</nav>'+
     '<div class="dir">'+(REAL?'':'<span class="demo">Modo demonstração</span>')+'<button class="btn sm" data-a="colar">+ Colar contatos</button><button class="btn sm" data-a="novo">+ Novo contato</button>'+botaoPedro()+'</div></div></header>'+
-    '<main><div class="wrap">'+({equipe:telaEquipe,agente:telaAgente,leads:telaLeads,agenda:telaAgenda,financeiro:telaFinanceiro,config:telaConfig,clientes:telaClientes,ferramentas:telaFerramentas,conteudo:telaConteudo,processos:telaProcessos,painel:telaPainel}[UI.tela])()+'</div></main>'+
+    '<main><div class="wrap">'+({tarefas:telaTarefas,equipe:telaEquipe,agente:telaAgente,leads:telaLeads,agenda:telaAgenda,financeiro:telaFinanceiro,config:telaConfig,clientes:telaClientes,ferramentas:telaFerramentas,conteudo:telaConteudo,processos:telaProcessos,painel:telaPainel}[UI.tela])()+'</div></main>'+
     '<nav class="mbar" aria-label="Seções">'+[['painel','Painel'],['agenda','Agenda'],['clientes','Clientes'],['processos','Processos']].concat(podeFinanceiro()?[['financeiro','Financeiro']]:[]).map(t=>'<button data-tela="'+t[0]+'" class="'+(UI.tela===t[0]||(t[0]==='equipe'&&UI.tela==='agente')?'on':'')+'">'+ICO[t[0]]+t[1]+'</button>').join('')+
       '<button data-a="mais" class="'+(MAIS_TELAS().some(t=>t[0]===UI.tela)?'on':'')+'" aria-expanded="'+(UI.mais?'true':'false')+'">'+ICO.mais+'Mais</button></nav>'+
     (UI.mais?'<div class="mais-menu" role="menu">'+MAIS_TELAS().map(t=>'<button role="menuitem" data-tela="'+t[0]+'">'+ICO[t[0]]+t[1]+'</button>').join('')+'</div>':'')+(UI.logado?botaoEquipe()+gavetaEquipe():'');
@@ -3775,7 +3798,7 @@ document.addEventListener('input',e=>{if(e.target.id!=='pesc-busca')return;PESC.
 
 /* =================== Nova atualização: fogos + mini tutorial =================== */
 /* Aparece em todo login até a pessoa tocar em "Entendi". Guardado por conta (cada usuária vê a sua). */
-const NOVO_V='ideali-novo-2026-10-pedro';
+const NOVO_V='ideali-novo-2026-11-tarefas';
 const chaveNovo=()=>NOVO_V+':'+(REAL&&USUARIO?USUARIO.id:'demo');
 /* no sistema real quem manda é o banco (vale em qualquer aparelho); na demonstração, o navegador */
 const novoVisto=()=>{if(REAL)return !!(D.perfil&&D.perfil.novidade_vista===NOVO_V);try{return localStorage.getItem(chaveNovo())==='1'}catch(e){return false}};
@@ -3791,10 +3814,10 @@ function mostrarNovidade(){if(tourAberto()||document.getElementById('novidade'))
     '<div class="nv-figs" aria-hidden="true">'+(FIG.klaus?'<img class="festa-fig nv-klaus" src="'+FIG.klaus+'" alt="">':'')+'<img class="festa-fig nv-pedro" src="'+FIG.pedro+'" alt=""></div>'+
     '<div class="festa-balao nv-balao"><span class="festa-nome">🎆 Nova atualização</span><h3>'+(quem?esc(quem)+', o sistema ganhou novidades!':'O sistema ganhou novidades!')+'</h3>'+
     '<ul class="nv-lista">'+
-    '<li><span class="nv-ic">'+av('pedro',36)+'</span><div><b>Pedro, o estagiário</b><small>Você anota do seu jeito ("protocolar contestação sexta 10h") e ele te lembra até você marcar ✓ Visto.</small></div></li>'+
-    '<li><span class="nv-ic">'+av('klaus',36)+'</span><div><b>Equipe mais esperta</b><small>Cada agente responde conhecendo a área dele: o Klaus vê processos, intimações e prazos; a Dona Vera, o caixa; o Theo, de onde vêm os contatos.</small></div></li>'+
-    '<li><span class="nv-ic">📂</span><div><b>O Klaus lê o que já está anexado</b><small>Em Processos › Ler processo, escolha o cliente e marque os documentos. Sem baixar e subir de novo.</small></div></li>'+
-    '<li><span class="nv-ic">⚡</span><div><b>A IA por trás</b><small>GPT-OSS 120B, modelo aberto da OpenAI, rodando nos servidores da Groq. Até 80 usos por dia. Lembretes nunca vão para a IA.</small></div></li></ul>'+
+    '<li><span class="nv-ic">🗂️</span><div><b>Quadro de tarefas (Kanban)</b><small>Nova aba Tarefas, com as colunas A fazer, Fazendo, Aguardando e Feito. É só clicar e arrastar os cartões.</small></div></li>'+
+    '<li><span class="nv-ic">📅</span><div><b>Prazo, prioridade e cliente</b><small>Cada tarefa pode ter prazo (fica vermelha quando atrasa), prioridade e ficar ligada a um cliente e a um processo.</small></div></li>'+
+    '<li><span class="nv-ic">📱</span><div><b>Funciona no celular</b><small>Segure o cartão um instante e arraste. No celular, a aba Tarefas fica em Mais.</small></div></li>'+
+    '<li><span class="nv-ic">👥</span><div><b>Da equipe toda</b><small>Todo mundo do escritório vê o mesmo quadro. Os lembretes do Pedro continuam sendo só de quem anotou.</small></div></li></ul>'+
     '<div class="festa-bots nv-seguir"><button class="btn pri" data-novo="tour">Começar o tour ▶</button><small class="nv-auto">O tour começa sozinho<span class="nv-barra"><i></i></span></small></div></div></div>';
   document.body.appendChild(el);fogos(el.querySelector('.festa-ceu'));
   clearTimeout(PED.nvTimer);PED.nvTimer=setTimeout(()=>{if(document.getElementById('novidade')&&!tourAberto()){fecharNovidade();setTimeout(()=>abrirTour(TOUR_NOVO,'novo'),380)}},12000)}
@@ -3806,15 +3829,13 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElement
 const irPainel=()=>{if(UI.tela!=='painel'||UI.pab==='resultados'){UI.tela='painel';UI.pab='contatos';render()}};
 const irLer=()=>{if(UI.tela!=='processos'||UI.proc!=='ler'){UI.tela='processos';UI.proc='ler';PESC.aberto=false;render()}};
 const irPedro=()=>{if(UI.tela!=='equipe'||UI.eqag!=='pedro'){UI.tela='equipe';UI.eqag='pedro';UI.eqaberto=true;render()}};
+const irTarefas=()=>{if(UI.tela!=='tarefas'){UI.tela='tarefas';render()}};
 const TOUR_NOVO=[
- {ag:'pedro',txt:'Oi! Eu sou o Pedro, o estagiário novo. Meu trabalho é um só: não deixar nada cair no esquecimento. Você me fala, eu anoto e fico lembrando até você marcar ✓ Visto.'},
- {ag:'pedro',sel:'.pd-hd',prep:()=>{if(PED.pop){PED.pop=false;render()}},tit:'Estou aqui no cabeçalho',txt:'Minha foto fica aqui em cima, em todas as telas. De vez em quando eu pisco e puxo conversa. Quando tem coisa para ver, aparece um número na foto.'},
- {ag:'pedro',sel:'.pd-pop',prep:()=>{if(!PED.pop){PED.pop=true;render()}},tit:'Anote do seu jeito',txt:'Escreva normal: "protocolar contestação do Marcio sexta 10h", "ligar pro cartório amanhã", "conferir o DJEN daqui a 2 horas". Toque na minha foto, escreva e toque em Anotar. Embaixo eu mostro quando vou lembrar. Sem data, lembro na hora; com data e sem hora, às 9h.'},
- {ag:'pedro',sel:'.eq-chat',prep:()=>{PED.pop=false;irPedro()},tit:'Ou fale comigo na Equipe',txt:'Também estou na Equipe. Tudo o que você escrever para mim vira lembrete, e aqui ficam os de agora e os anotados para depois.'},
- {ag:'pedro',txt:'E eu insisto, viu? Na hora certa eu apareço no canto da tela com ✓ Visto, Daqui 1h e Amanhã. Se você fechar no ✕, volto em 20 minutos. O número na aba do navegador mostra quantos estão esperando. Só paro quando você marca visto. E fique tranquila: cada pessoa vê só os próprios lembretes.'},
- {ag:'klaus',sel:'[data-pesc="abrir"]',prep:irLer,tit:'Documentos já anexados',txt:'Novidade minha: em Ler processo, toque aqui, escolha o cliente e marque os documentos que já estão nos processos dele. Eu leio direto, sem você baixar e subir de novo.'},
- {ag:'klaus',txt:'A equipe também ficou mais esperta. Quando você pergunta algo na Equipe, cada agente recebe os dados da área dele: eu vejo processos, intimações e prazos; a Dona Vera vê o caixa (só para a dona); o Theo e a Nina veem de onde vêm os contatos; a Lívia vê a agenda.'},
- {ag:'klaus',txt:'Sobre a IA: usamos o GPT-OSS 120B, um modelo aberto da OpenAI, rodando nos servidores da Groq. É gratuito, com até 80 usos por dia. A chave fica guardada no servidor, nunca no navegador, e para a IA vão só primeiros nomes e dados do processo, nunca CPF ou telefone. É ótima para resumir e organizar, mas pode errar lei e jurisprudência: confira sempre na fonte.'},
+ {ag:'pedro',txt:'Oi de novo! Agora o escritório tem um quadro de tarefas, do jeito que você pediu: clica e arrasta. Vou te mostrar rapidinho.'},
+ {ag:'pedro',sel:'.kb-board',prep:irTarefas,tit:'O quadro',txt:'São quatro colunas: A fazer, Fazendo, Aguardando (cliente, cartório, fórum) e Feito. Cada cartão é uma tarefa.'},
+ {ag:'pedro',sel:'.kb-col[data-kbcol="afazer"] .kb-mais',prep:irTarefas,tit:'Criar tarefa',txt:'Toque em "+ Adicionar tarefa", escreva e aperte Enter. Para pôr prazo, prioridade, cliente e processo, use "+ Nova tarefa" lá em cima.'},
+ {ag:'pedro',sel:'.kb-card',prep:irTarefas,tit:'Clica e arrasta',txt:'Arraste o cartão para outra coluna, ou para cima e para baixo para mudar a ordem. No celular, segure um instante e arraste. Tocando no cartão, você edita.'},
+ {ag:'pedro',sel:'.kb-ferr',prep:irTarefas,tit:'Buscar e filtrar',txt:'Busque por tarefa, cliente ou processo e veja só as atrasadas ou as que vencem em 7 dias. Prazo vencido fica vermelho no cartão.'},
  {ag:'narra',tit:'Ficou claro?',txt:'Se entendeu, toque em Entendi e eu não mostro mais. Se quiser rever, é só tocar em Ver novamente. E se preferir ver depois, eu mostro de novo no próximo login.',fim:true,novoFim:true},
 ];
 
@@ -3921,6 +3942,117 @@ document.addEventListener('submit',async e=>{const f=e.target;if(f.id!=='hon-for
       const p=await salvarPlano(l,tot,n,v1);toast('Contrato atualizado: total de '+brl(tot)+'. '+txtRedis(p))}
   }catch(x){console.error(x);toast('Não consegui salvar agora. Recarreguei os dados.');if(REAL)await carregarFin()}
   HON.modo=null;HON.id=null;render()});
+
+/* =================== Tarefas: quadro Kanban (clica e arrasta) =================== */
+/* Quadro da equipe. Arrastar funciona com mouse e com o dedo (no celular: segure o cartão um instante e arraste). */
+TAB_LOCAL.tarefas='tarefas';
+const KB_COLS=[['afazer','A fazer','#5E8FA8'],['fazendo','Fazendo','#C9A24A'],['aguardando','Aguardando','#9B7BC8'],['feito','Feito','#3FA06B']];
+const KB_PRIO=[['Normal',''],['Alta','#E8A317'],['Urgente','#E5484D']];
+const KB={carregado:false,prom:null,add:null,busca:'',filtro:'todas',edit:null};
+function seedTarefas(){const h=hojeISO(),T=(titulo,coluna,ordem,extra)=>Object.assign({id:uid(),titulo,coluna,ordem,obs:'',prazo:null,prioridade:0,cliente_id:null,processo_id:null,criado_em:new Date().toISOString(),concluido_em:coluna==='feito'?new Date().toISOString():null,exemplo:true},extra||{});
+  return [T('Exemplo: protocolar contestação','afazer',1024,{prazo:addDias(h,2),prioridade:2}),T('Exemplo: pedir certidão de casamento atualizada','afazer',2048,{prazo:addDias(h,6)}),
+    T('Exemplo: montar cálculo da pensão atrasada','fazendo',1024,{prioridade:1}),T('Exemplo: aguardar documentos da cliente','aguardando',1024,{prazo:addDias(h,-1)}),T('Exemplo: enviar procuração para assinatura','feito',1024)]}
+function carregarTarefas(){if(KB.prom)return KB.prom;
+  KB.prom=(async()=>{try{if(REAL)await STORE.load('tarefas','ordem');else{await new Promise(r=>setTimeout(r,40));if(!D.tarefas){D.tarefas=seedTarefas();salvar()}}}catch(e){console.error(e);D.tarefas=D.tarefas||[]}
+    KB.carregado=true;if(!CLI.carregado)await carregarClientes()})();
+  return KB.prom}
+const kbDe=col=>(D.tarefas||[]).filter(t=>t.coluna===col).sort((a,b)=>a.ordem-b.ordem);
+function kbPassa(t){const h=hojeISO();if(KB.filtro==='atrasadas'&&!(t.prazo&&t.prazo<h&&t.coluna!=='feito'))return false;if(KB.filtro==='semana'&&!(t.prazo&&t.prazo<=addDias(h,7)&&t.coluna!=='feito'))return false;
+  if(!KB.busca)return true;const c=(D.clientes||[]).find(x=>x.id===t.cliente_id),p=(D.processos||[]).find(x=>x.id===t.processo_id);
+  return semAcento([t.titulo,t.obs,c&&c.nome,p&&p.titulo].join(' ')).includes(semAcento(KB.busca))}
+function kbPrazo(t){if(!t.prazo)return '';const h=hojeISO(),d=novaData(t.prazo).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+  if(t.coluna==='feito')return '<span class="kb-chip">📅 '+d+'</span>';
+  if(t.prazo<h)return '<span class="kb-chip atr">⏰ Atrasada · '+d+'</span>';if(t.prazo===h)return '<span class="kb-chip hoje">⏰ Hoje</span>';
+  if(t.prazo===addDias(h,1))return '<span class="kb-chip breve">📅 Amanhã</span>';return '<span class="kb-chip">📅 '+d+'</span>'}
+function kbCard(t){const c=(D.clientes||[]).find(x=>x.id===t.cliente_id),p=(D.processos||[]).find(x=>x.id===t.processo_id),pr=KB_PRIO[t.prioridade||0];
+  return '<div class="kb-card'+(t.coluna==='feito'?' feito':'')+'" data-kbcard="'+t.id+'" tabindex="0" role="button" aria-label="'+esc(t.titulo)+'. Toque para editar; arraste para mudar de coluna."'+(pr[1]?' style="--pr:'+pr[1]+'"':'')+'>'+
+    (pr[1]?'<span class="kb-prio">'+pr[0]+'</span>':'')+'<b>'+(t.coluna==='feito'?'✓ ':'')+esc(t.titulo)+'</b>'+
+    '<div class="kb-meta">'+kbPrazo(t)+(c?'<span class="kb-chip">👤 '+esc(primeiroNome(c.nome))+'</span>':'')+(p?'<span class="kb-chip">⚖ '+esc(String(p.titulo).slice(0,28))+'</span>':'')+(t.obs?'<span class="kb-chip" title="Tem observação">📝</span>':'')+'</div></div>'}
+function telaTarefas(){if(!KB.carregado){carregarTarefas().then(()=>{if(UI.tela==='tarefas')render()});return '<div class="lead ivazio"><div class="carregando"><span></span><span></span><span></span></div><p>Abrindo o quadro…</p></div>'}
+  const h=hojeISO(),T=D.tarefas||[],atr=T.filter(t=>t.prazo&&t.prazo<h&&t.coluna!=='feito').length;
+  const cols=KB_COLS.map(([k,nome,cor])=>{let L=kbDe(k).filter(kbPassa);const tot=L.length;if(k==='feito'){const lim=addDias(h,-30);L=L.filter(t=>!t.concluido_em||t.concluido_em.slice(0,10)>=lim).slice(-40)}
+    return '<section class="kb-col" data-kbcol="'+k+'" style="--cc:'+cor+'"><header><span class="kb-dot"></span><b>'+nome+'</b><span class="kb-n">'+tot+'</span></header>'+
+      '<div class="kb-lista" data-kblista="'+k+'">'+L.map(kbCard).join('')+(L.length?'':'<p class="kb-vazio">'+(k==='feito'?'Arraste para cá o que terminar.':'Nada aqui.')+'</p>')+'</div>'+
+      (KB.add===k?'<form class="kb-add" id="kb-add" data-col="'+k+'"><textarea class="inp" id="kb-add-t" rows="2" maxlength="160" placeholder="O que precisa ser feito?"></textarea><div class="acoes"><button class="btn pri sm" type="submit">Adicionar</button><button class="btn sm" type="button" data-kb="cancela">Cancelar</button></div></form>'
+        :'<button class="kb-mais" data-kb="add" data-col="'+k+'">+ Adicionar tarefa</button>')+'</section>'}).join('');
+  return '<div class="kb-topo"><div><h2 style="margin:0">Tarefas</h2><p class="mut" style="margin:2px 0 0">Arraste os cartões entre as colunas. Toque num cartão para editar.'+(atr?' <b style="color:var(--perigo)">'+atr+(atr===1?' atrasada':' atrasadas')+'.</b>':'')+'</p></div>'+
+    '<div class="kb-ferr"><input class="inp" id="kb-busca" placeholder="Buscar tarefa, cliente ou processo" value="'+esc(KB.busca)+'" autocomplete="off"><div class="seg">'+[['todas','Todas'],['semana','Prazo em 7 dias'],['atrasadas','Atrasadas']].map(f=>'<button data-kb="filtro" data-f="'+f[0]+'" class="'+(KB.filtro===f[0]?'on':'')+'">'+f[1]+'</button>').join('')+'</div>'+
+    '<button class="btn pri" data-kb="nova">+ Nova tarefa</button></div></div><div class="kb-board" id="kb-board">'+cols+'</div>'}
+/* formulário de tarefa (nova ou edição) */
+function kbForm(t){const novo=!t.id,C=(D.clientes||[]).slice().sort((a,b)=>String(a.nome).localeCompare(String(b.nome)));const P=(D.processos||[]).filter(p=>!t.cliente_id||p.cliente_id===t.cliente_id);
+  abrirModal('<h2>'+(novo?'Nova tarefa':'Editar tarefa')+'</h2><form id="kb-form" data-id="'+(t.id||'')+'">'+
+    '<label class="f">O que fazer<input class="inp" id="kf-tit" maxlength="160" required value="'+esc(t.titulo||'')+'"></label>'+
+    '<div class="grid2"><label class="f">Coluna<select class="inp" id="kf-col">'+KB_COLS.map(c=>'<option value="'+c[0]+'"'+(c[0]===(t.coluna||'afazer')?' selected':'')+'>'+c[1]+'</option>').join('')+'</select></label>'+
+    '<label class="f">Prazo<input class="inp" type="date" id="kf-prazo" value="'+esc(t.prazo||'')+'"></label>'+
+    '<label class="f">Prioridade<select class="inp" id="kf-prio">'+KB_PRIO.map((p,i)=>'<option value="'+i+'"'+(i===(t.prioridade||0)?' selected':'')+'>'+p[0]+'</option>').join('')+'</select></label>'+
+    '<label class="f">Cliente<select class="inp" id="kf-cli"><option value="">—</option>'+C.map(c=>'<option value="'+c.id+'"'+(c.id===t.cliente_id?' selected':'')+'>'+esc(c.nome)+'</option>').join('')+'</select></label></div>'+
+    '<label class="f">Processo<select class="inp" id="kf-proc"><option value="">—</option>'+P.map(p=>'<option value="'+p.id+'"'+(p.id===t.processo_id?' selected':'')+'>'+esc(p.titulo)+(p.numero?' · '+esc(p.numero):'')+'</option>').join('')+'</select></label>'+
+    '<label class="f">Observação (curta, sem relatar o caso)<textarea class="inp" id="kf-obs" rows="3" maxlength="500">'+esc(t.obs||'')+'</textarea></label>'+
+    '<div class="acoes"><button class="btn pri" type="submit">Salvar</button>'+(novo?'':(t.coluna!=='feito'?'<button class="btn" type="button" data-kb="concluir" data-id="'+t.id+'">✓ Concluir</button>':'')+'<button class="btn perigo" type="button" data-kb="apagar" data-id="'+t.id+'">Apagar</button>')+'<button class="btn" type="button" data-fechar="1">Cancelar</button></div></form>');
+  setTimeout(()=>{const i=$('#kf-tit');if(i&&novo)i.focus()},30)}
+const kbProxOrdem=col=>{const L=kbDe(col);return L.length?L[L.length-1].ordem+1024:1024};
+async function kbMover(id,col,ordem){const t=(D.tarefas||[]).find(x=>x.id===id);if(!t)return;const antes=t.coluna;
+  try{await STORE.upd('tarefas',id,{coluna:col,ordem});if(!REAL&&col==='feito'&&!t.concluido_em)t.concluido_em=new Date().toISOString();if(col!=='feito')t.concluido_em=null;
+    if(col==='feito'&&antes!=='feito')toast('Tarefa concluída! ✓')}
+  catch(e){console.error(e);toast('Não consegui mover agora. Recarreguei o quadro.');KB.prom=null;KB.carregado=false;await carregarTarefas()}
+  render()}
+document.addEventListener('click',async e=>{const c=e.target.closest('[data-kbcard]');if(c&&!KB.arrastou){const t=(D.tarefas||[]).find(x=>x.id===c.dataset.kbcard);if(t)kbForm(t);return}
+  const b=e.target.closest('[data-kb]');if(!b)return;const a=b.dataset.kb;
+  if(a==='add'){KB.add=b.dataset.col;render();const i=$('#kb-add-t');if(i)i.focus();return}
+  if(a==='cancela'){KB.add=null;render();return}
+  if(a==='filtro'){KB.filtro=b.dataset.f;render();return}
+  if(a==='nova'){kbForm({coluna:'afazer'});return}
+  if(a==='concluir'){fecharModal();await kbMover(b.dataset.id,'feito',kbProxOrdem('feito'));return}
+  if(a==='apagar'){if(!KB.apagar||KB.apagar!==b.dataset.id){KB.apagar=b.dataset.id;b.textContent='Tocar de novo para apagar';setTimeout(()=>{KB.apagar=null},4000);return}
+    KB.apagar=null;try{await STORE.del('tarefas',b.dataset.id);fecharModal();toast('Tarefa apagada.')}catch(x){toast('Não consegui apagar agora.')}render();return}});
+document.addEventListener('submit',async e=>{const f=e.target;
+  if(f.id==='kb-add'){e.preventDefault();const v=$('#kb-add-t').value.trim();if(!v)return;const col=f.dataset.col;
+    try{await STORE.ins('tarefas',[{titulo:v.slice(0,160),coluna:col,ordem:kbProxOrdem(col),prioridade:0,obs:null,prazo:null,cliente_id:null,processo_id:null,criado_em:new Date().toISOString(),concluido_em:col==='feito'?new Date().toISOString():null}])}catch(x){console.error(x);toast('Não consegui adicionar agora.')}
+    render();const i=$('#kb-add-t');if(i)i.focus();return}
+  if(f.id!=='kb-form')return;e.preventDefault();const id=f.dataset.id,tit=$('#kf-tit').value.trim();if(!tit){toast('Escreva o que precisa ser feito.');return}
+  const col=$('#kf-col').value,c={titulo:tit.slice(0,160),coluna:col,prazo:$('#kf-prazo').value||null,prioridade:+$('#kf-prio').value||0,cliente_id:$('#kf-cli').value||null,processo_id:$('#kf-proc').value||null,obs:($('#kf-obs').value||'').trim().slice(0,500)||null};
+  try{if(id){const t=D.tarefas.find(x=>x.id===id);if(t&&t.coluna!==col)c.ordem=kbProxOrdem(col);if(!REAL&&col==='feito'&&t&&!t.concluido_em)c.concluido_em=new Date().toISOString();await STORE.upd('tarefas',id,c)}
+    else await STORE.ins('tarefas',[Object.assign(c,{ordem:kbProxOrdem(col),criado_em:new Date().toISOString(),concluido_em:col==='feito'?new Date().toISOString():null})]);
+    fecharModal();toast(id?'Tarefa salva.':'Tarefa criada.')}catch(x){console.error(x);toast('Não consegui salvar agora.')}render()});
+document.addEventListener('change',e=>{if(e.target.id!=='kf-cli')return;const cid=e.target.value,s=$('#kf-proc');if(!s)return;const P=(D.processos||[]).filter(p=>!cid||p.cliente_id===cid);
+  s.innerHTML='<option value="">—</option>'+P.map(p=>'<option value="'+p.id+'">'+esc(p.titulo)+'</option>').join('')});
+document.addEventListener('keydown',e=>{if(e.target.id==='kb-add-t'&&e.key==='Enter'&&!e.shiftKey){e.preventDefault();e.target.form.requestSubmit()}
+  if(e.target.closest&&e.target.closest('[data-kbcard]')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();e.target.click()}});
+document.addEventListener('input',e=>{if(e.target.id!=='kb-busca')return;KB.busca=e.target.value;const p=e.target.selectionStart;render();const i=$('#kb-busca');if(i){i.focus();i.setSelectionRange(p,p)}});
+
+/* ---- arrastar e soltar (mouse e dedo) ---- */
+let ARR=null;
+function kbIniciar(){const r=ARR.el.getBoundingClientRect();ARR.ativo=true;ARR.dx=ARR.x0-r.left;ARR.dy=ARR.y0-r.top;
+  const g=ARR.el.cloneNode(true);g.classList.add('kb-fantasma');g.style.width=r.width+'px';g.style.left=r.left+'px';g.style.top=r.top+'px';document.body.appendChild(g);ARR.g=g;
+  const ph=document.createElement('div');ph.className='kb-ph';ph.style.height=r.height+'px';ARR.el.after(ph);ARR.ph=ph;ARR.el.classList.add('kb-origem');
+  document.body.classList.add('kb-arrastando');if(navigator.vibrate&&ARR.toque)try{navigator.vibrate(15)}catch(e){}}
+function kbMove(x,y){const g=ARR.g;g.style.left=(x-ARR.dx)+'px';g.style.top=(y-ARR.dy)+'px';
+  g.style.display='none';const alvo=document.elementFromPoint(x,y);g.style.display='';
+  const lista=alvo&&(alvo.closest('[data-kblista]')||(alvo.closest('[data-kbcol]')&&alvo.closest('[data-kbcol]').querySelector('[data-kblista]')));
+  if(lista){const cards=[...lista.querySelectorAll('.kb-card:not(.kb-origem)')];const antes=cards.find(c=>{const r=c.getBoundingClientRect();return y<r.top+r.height/2});
+    const vazio=lista.querySelector('.kb-vazio');if(vazio)vazio.remove();
+    if(antes){if(ARR.ph.nextSibling!==antes)lista.insertBefore(ARR.ph,antes)}else if(ARR.ph.parentNode!==lista||ARR.ph.nextSibling)lista.appendChild(ARR.ph)}
+  const b=document.getElementById('kb-board');if(b){const r=b.getBoundingClientRect();if(x>r.right-50)b.scrollLeft+=14;else if(x<r.left+50)b.scrollLeft-=14}
+  if(y<70)scrollBy(0,-14);else if(y>innerHeight-70)scrollBy(0,14)}
+async function kbSoltar(){const lista=ARR.ph.parentNode,col=lista&&lista.dataset.kblista,id=ARR.id;
+  const viz=[...lista.children].filter(c=>c.classList.contains('kb-card')&&!c.classList.contains('kb-origem')||c===ARR.ph),i=viz.indexOf(ARR.ph);
+  const ord=c=>{const t=(D.tarefas||[]).find(x=>x.id===c.dataset.kbcard);return t?t.ordem:0};
+  const ant=i>0?ord(viz[i-1]):null,dep=i<viz.length-1?ord(viz[i+1]):null;
+  const nova=ant==null&&dep==null?1024:ant==null?dep-1024:dep==null?ant+1024:(ant+dep)/2;
+  ARR.g.remove();document.body.classList.remove('kb-arrastando');const t=(D.tarefas||[]).find(x=>x.id===id);ARR=null;
+  if(!col||!t){render();return}
+  if(t.coluna===col&&Math.abs(t.ordem-nova)<1e-9){render();return}
+  t.coluna=col;t.ordem=nova;render();await kbMover(id,col,nova)}
+document.addEventListener('pointerdown',e=>{const c=e.target.closest('.kb-card');if(!c||e.button>0||e.target.closest('button,a,input,select,textarea')||c.classList.contains('kb-fantasma'))return;
+  ARR={id:c.dataset.kbcard,el:c,x0:e.clientX,y0:e.clientY,ativo:false,toque:e.pointerType!=='mouse'};KB.arrastou=false;
+  if(ARR.toque)ARR.timer=setTimeout(()=>{if(ARR&&!ARR.ativo&&!ARR.cancel){kbIniciar();kbMove(ARR.x0,ARR.y0)}},260)});
+document.addEventListener('pointermove',e=>{if(!ARR)return;const d=Math.hypot(e.clientX-ARR.x0,e.clientY-ARR.y0);
+  if(!ARR.ativo){if(ARR.toque){if(d>8){ARR.cancel=true;clearTimeout(ARR.timer);ARR=null}return}if(d>6)kbIniciar();else return}
+  e.preventDefault();KB.arrastou=true;kbMove(e.clientX,e.clientY)});
+document.addEventListener('pointerup',e=>{if(!ARR)return;clearTimeout(ARR.timer);if(ARR.ativo){KB.arrastou=true;setTimeout(()=>{KB.arrastou=false},60);kbSoltar()}else ARR=null});
+document.addEventListener('pointercancel',()=>{if(!ARR)return;clearTimeout(ARR.timer);if(ARR.ativo){ARR.g.remove();document.body.classList.remove('kb-arrastando');ARR=null;render()}else ARR=null});
+document.addEventListener('touchmove',e=>{if(ARR&&ARR.ativo)e.preventDefault()},{passive:false});
+document.addEventListener('contextmenu',e=>{if(ARR&&e.target.closest('.kb-card'))e.preventDefault()});
 
 function carregarLib(){return new Promise((ok,falha)=>{if(window.supabase)return ok();const s=document.createElement('script');s.src=CONFIG.lib;s.onload=ok;s.onerror=()=>falha(new Error('Sem internet para carregar o sistema.'));document.head.appendChild(s)})}
 (async()=>{
