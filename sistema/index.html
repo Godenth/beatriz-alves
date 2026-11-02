@@ -832,6 +832,20 @@ body.kb-arrastando,body.kb-arrastando *{cursor:grabbing!important;user-select:no
 .btn.perigo{color:#fff;background:#C53030;border-color:#C53030}
 @media (max-width:760px){.kb-board{grid-template-columns:repeat(4,82vw);margin:0 -16px;padding:0 16px 10px}.kb-ferr #kb-busca{width:100%}.kb-topo{align-items:stretch}}
 @media (prefers-reduced-motion: reduce){.kb-card,.kb-fantasma{transition:none;transform:none}}
+/* Tarefa urgente */
+.kb-urg-bt{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:1px solid var(--rule);background:var(--card);cursor:pointer;font-size:14px;line-height:1;filter:grayscale(1);opacity:.55;transition:all .15s}
+.kb-urg-bt:hover{opacity:1;filter:none;transform:scale(1.1)}.kb-urg-bt.on{filter:none;opacity:1;border-color:#E5484D;background:#FFE3E3}
+.kb-card{padding-right:40px}
+.kb-card.urg{--pr:#E5484D;border-color:#E5484D;color:#5A0E0E;background:linear-gradient(110deg,#FFE9E9 0%,#FFC9C9 22%,#FFE9E9 44%,#FFD5D5 66%,#FFE9E9 88%);background-size:250% 100%;animation:kbOnda 2.4s ease-in-out infinite,kbPisca 1.1s ease-in-out infinite,kbFaixa 3.2s linear infinite}
+.kb-card.urg b{color:#7A1010}.kb-card.urg .kb-prio{color:#C81E1E}.kb-card.urg .kb-chip{background:rgba(255,255,255,.7);color:#5A0E0E}.kb-card.urg .kb-chip.atr{background:#E5484D;color:#fff}
+@keyframes kbOnda{0%,100%{transform:rotate(0) skewX(0)}20%{transform:rotate(-.7deg) skewX(-1.2deg) translateY(-1px)}40%{transform:rotate(.5deg) skewX(.8deg)}60%{transform:rotate(-.4deg) skewX(-.6deg) translateY(1px)}80%{transform:rotate(.6deg) skewX(1deg)}}
+@keyframes kbPisca{0%,100%{box-shadow:0 0 0 0 rgba(229,72,77,.65),0 2px 6px -3px rgba(0,0,0,.35)}50%{box-shadow:0 0 0 7px rgba(229,72,77,0),0 2px 6px -3px rgba(0,0,0,.35)}}
+@keyframes kbFaixa{from{background-position:0% 0}to{background-position:-250% 0}}
+#pedro-aviso.nv-tarefa{border-color:#FF6B6B;background:linear-gradient(135deg,#C81E1E,#7F1D1D);color:#fff;max-width:min(470px,calc(100vw - 32px));animation:paEntra .4s cubic-bezier(.2,1.4,.4,1) both,paTremeVar var(--vel,2.4s) ease-in-out .4s infinite,paBrilho 1.3s ease-in-out infinite}
+#pedro-aviso.nv-tarefa .pa-urg{display:block;font:900 20px/1.1 var(--f);color:#FFE27A}#pedro-aviso.nv-tarefa p{font-weight:600}#pedro-aviso.nv-tarefa small{color:rgba(255,255,255,.85)}
+#pedro-aviso.nv-tarefa .btn{background:#fff;color:#7F1D1D;border-color:#fff}#pedro-aviso.nv-tarefa .btn.pri{background:#FFE27A;color:#3A1500;border-color:#FFE27A}#pedro-aviso.nv-tarefa .pa-x,#pedro-aviso.nv-tarefa .lnk{color:#fff}
+.tf-escolha{margin-top:8px;display:flex;flex-direction:column;gap:5px}.tf-escolha b{font-size:13px}.tf-escolha>div{display:flex;flex-wrap:wrap;gap:6px}.tf-escolha .btn{padding:6px 11px;font-size:13.5px}
+@media (prefers-reduced-motion: reduce){.kb-card.urg,#pedro-aviso.nv-tarefa{animation:none}}
 </style>
 
 <div id="app"></div>
@@ -3815,6 +3829,7 @@ function mostrarNovidade(){if(tourAberto()||document.getElementById('novidade'))
     '<div class="festa-balao nv-balao"><span class="festa-nome">🎆 Nova atualização</span><h3>'+(quem?esc(quem)+', o sistema ganhou novidades!':'O sistema ganhou novidades!')+'</h3>'+
     '<ul class="nv-lista">'+
     '<li><span class="nv-ic">🗂️</span><div><b>Quadro de tarefas (Kanban)</b><small>Nova aba Tarefas, com as colunas A fazer, Fazendo, Aguardando e Feito. É só clicar e arrastar os cartões.</small></div></li>'+
+    '<li><span class="nv-ic">🔥</span><div><b>Marcar urgente</b><small>Toque no 🔥 do cartão: ele fica vermelho e piscando, e o Pedro te lembra cada vez mais seguido enquanto não resolver. Dá para pedir "lembrar depois".</small></div></li>'+
     '<li><span class="nv-ic">📅</span><div><b>Prazo, prioridade e cliente</b><small>Cada tarefa pode ter prazo (fica vermelha quando atrasa), prioridade e ficar ligada a um cliente e a um processo.</small></div></li>'+
     '<li><span class="nv-ic">📱</span><div><b>Funciona no celular</b><small>Segure o cartão um instante e arraste. No celular, a aba Tarefas fica em Mais.</small></div></li>'+
     '<li><span class="nv-ic">👥</span><div><b>Da equipe toda</b><small>Todo mundo do escritório vê o mesmo quadro. Os lembretes do Pedro continuam sendo só de quem anotou.</small></div></li></ul>'+
@@ -3835,6 +3850,7 @@ const TOUR_NOVO=[
  {ag:'pedro',sel:'.kb-board',prep:irTarefas,tit:'O quadro',txt:'São quatro colunas: A fazer, Fazendo, Aguardando (cliente, cartório, fórum) e Feito. Cada cartão é uma tarefa.'},
  {ag:'pedro',sel:'.kb-col[data-kbcol="afazer"] .kb-mais',prep:irTarefas,tit:'Criar tarefa',txt:'Toque em "+ Adicionar tarefa", escreva e aperte Enter. Para pôr prazo, prioridade, cliente e processo, use "+ Nova tarefa" lá em cima.'},
  {ag:'pedro',sel:'.kb-card',prep:irTarefas,tit:'Clica e arrasta',txt:'Arraste o cartão para outra coluna, ou para cima e para baixo para mudar a ordem. No celular, segure um instante e arraste. Tocando no cartão, você edita.'},
+ {ag:'pedro',sel:'.kb-urg-bt',prep:irTarefas,tit:'Marcar urgente',txt:'Toque no 🔥 do cartão e ele fica vermelho, piscando. Aí eu fico no seu pé: no começo lembro de vez em quando; se ficar parada, lembro cada vez mais seguido. Em "Lembrar depois" você escolhe: hoje, em minutos ou horas, ou outro dia.'},
  {ag:'pedro',sel:'.kb-ferr',prep:irTarefas,tit:'Buscar e filtrar',txt:'Busque por tarefa, cliente ou processo e veja só as atrasadas ou as que vencem em 7 dias. Prazo vencido fica vermelho no cartão.'},
  {ag:'narra',tit:'Ficou claro?',txt:'Se entendeu, toque em Entendi e eu não mostro mais. Se quiser rever, é só tocar em Ver novamente. E se preferir ver depois, eu mostro de novo no próximo login.',fim:true,novoFim:true},
 ];
@@ -3950,7 +3966,7 @@ const KB_COLS=[['afazer','A fazer','#5E8FA8'],['fazendo','Fazendo','#C9A24A'],['
 const KB_PRIO=[['Normal',''],['Alta','#E8A317'],['Urgente','#E5484D']];
 const KB={carregado:false,prom:null,add:null,busca:'',filtro:'todas',edit:null};
 function seedTarefas(){const h=hojeISO(),T=(titulo,coluna,ordem,extra)=>Object.assign({id:uid(),titulo,coluna,ordem,obs:'',prazo:null,prioridade:0,cliente_id:null,processo_id:null,criado_em:new Date().toISOString(),concluido_em:coluna==='feito'?new Date().toISOString():null,exemplo:true},extra||{});
-  return [T('Exemplo: protocolar contestação','afazer',1024,{prazo:addDias(h,2),prioridade:2}),T('Exemplo: pedir certidão de casamento atualizada','afazer',2048,{prazo:addDias(h,6)}),
+  return [T('Exemplo: protocolar contestação','afazer',1024,{prazo:addDias(h,2),prioridade:2,urgente_desde:new Date(Date.now()-3*36e5).toISOString()}),T('Exemplo: pedir certidão de casamento atualizada','afazer',2048,{prazo:addDias(h,6)}),
     T('Exemplo: montar cálculo da pensão atrasada','fazendo',1024,{prioridade:1}),T('Exemplo: aguardar documentos da cliente','aguardando',1024,{prazo:addDias(h,-1)}),T('Exemplo: enviar procuração para assinatura','feito',1024)]}
 function carregarTarefas(){if(KB.prom)return KB.prom;
   KB.prom=(async()=>{try{if(REAL)await STORE.load('tarefas','ordem');else{await new Promise(r=>setTimeout(r,40));if(!D.tarefas){D.tarefas=seedTarefas();salvar()}}}catch(e){console.error(e);D.tarefas=D.tarefas||[]}
@@ -3965,8 +3981,8 @@ function kbPrazo(t){if(!t.prazo)return '';const h=hojeISO(),d=novaData(t.prazo).
   if(t.prazo<h)return '<span class="kb-chip atr">⏰ Atrasada · '+d+'</span>';if(t.prazo===h)return '<span class="kb-chip hoje">⏰ Hoje</span>';
   if(t.prazo===addDias(h,1))return '<span class="kb-chip breve">📅 Amanhã</span>';return '<span class="kb-chip">📅 '+d+'</span>'}
 function kbCard(t){const c=(D.clientes||[]).find(x=>x.id===t.cliente_id),p=(D.processos||[]).find(x=>x.id===t.processo_id),pr=KB_PRIO[t.prioridade||0];
-  return '<div class="kb-card'+(t.coluna==='feito'?' feito':'')+'" data-kbcard="'+t.id+'" tabindex="0" role="button" aria-label="'+esc(t.titulo)+'. Toque para editar; arraste para mudar de coluna."'+(pr[1]?' style="--pr:'+pr[1]+'"':'')+'>'+
-    (pr[1]?'<span class="kb-prio">'+pr[0]+'</span>':'')+'<b>'+(t.coluna==='feito'?'✓ ':'')+esc(t.titulo)+'</b>'+
+  return '<div class="kb-card'+(t.coluna==='feito'?' feito':'')+(tfUrg(t)?' urg':'')+'" data-kbcard="'+t.id+'" tabindex="0" role="button" aria-label="'+esc(t.titulo)+'. Toque para editar; arraste para mudar de coluna."'+(pr[1]?' style="--pr:'+pr[1]+'"':'')+'>'+
+    (t.coluna!=='feito'?'<button class="kb-urg-bt'+(t.prioridade===2?' on':'')+'" data-kb="urg" data-id="'+t.id+'" aria-pressed="'+(t.prioridade===2)+'" title="'+(t.prioridade===2?'Tirar urgência':'Marcar urgente')+'" aria-label="'+(t.prioridade===2?'Tirar urgência':'Marcar urgente')+'">🔥</button>':'')+(pr[1]?'<span class="kb-prio">'+(tfUrg(t)?'🔥 '+pr[0]+(t.lembrar_em&&new Date(t.lembrar_em)>new Date()?' · lembrar '+esc(fmtQuando(t.lembrar_em)):''):pr[0])+'</span>':'')+'<b>'+(t.coluna==='feito'?'✓ ':'')+esc(t.titulo)+'</b>'+
     '<div class="kb-meta">'+kbPrazo(t)+(c?'<span class="kb-chip">👤 '+esc(primeiroNome(c.nome))+'</span>':'')+(p?'<span class="kb-chip">⚖ '+esc(String(p.titulo).slice(0,28))+'</span>':'')+(t.obs?'<span class="kb-chip" title="Tem observação">📝</span>':'')+'</div></div>'}
 function telaTarefas(){if(!KB.carregado){carregarTarefas().then(()=>{if(UI.tela==='tarefas')render()});return '<div class="lead ivazio"><div class="carregando"><span></span><span></span><span></span></div><p>Abrindo o quadro…</p></div>'}
   const h=hojeISO(),T=D.tarefas||[],atr=T.filter(t=>t.prazo&&t.prazo<h&&t.coluna!=='feito').length;
@@ -3996,8 +4012,9 @@ async function kbMover(id,col,ordem){const t=(D.tarefas||[]).find(x=>x.id===id);
     if(col==='feito'&&antes!=='feito')toast('Tarefa concluída! ✓')}
   catch(e){console.error(e);toast('Não consegui mover agora. Recarreguei o quadro.');KB.prom=null;KB.carregado=false;await carregarTarefas()}
   render()}
-document.addEventListener('click',async e=>{const c=e.target.closest('[data-kbcard]');if(c&&!KB.arrastou){const t=(D.tarefas||[]).find(x=>x.id===c.dataset.kbcard);if(t)kbForm(t);return}
+document.addEventListener('click',async e=>{const c=e.target.closest('[data-kbcard]');if(c&&!KB.arrastou&&!e.target.closest('[data-kb]')){const t=(D.tarefas||[]).find(x=>x.id===c.dataset.kbcard);if(t)kbForm(t);return}
   const b=e.target.closest('[data-kb]');if(!b)return;const a=b.dataset.kb;
+  if(a==='urg'){const t=(D.tarefas||[]).find(x=>x.id===b.dataset.id);if(t)await tfMarcar(t.id,t.prioridade!==2);return}
   if(a==='add'){KB.add=b.dataset.col;render();const i=$('#kb-add-t');if(i)i.focus();return}
   if(a==='cancela'){KB.add=null;render();return}
   if(a==='filtro'){KB.filtro=b.dataset.f;render();return}
@@ -4011,6 +4028,7 @@ document.addEventListener('submit',async e=>{const f=e.target;
     render();const i=$('#kb-add-t');if(i)i.focus();return}
   if(f.id!=='kb-form')return;e.preventDefault();const id=f.dataset.id,tit=$('#kf-tit').value.trim();if(!tit){toast('Escreva o que precisa ser feito.');return}
   const col=$('#kf-col').value,c={titulo:tit.slice(0,160),coluna:col,prazo:$('#kf-prazo').value||null,prioridade:+$('#kf-prio').value||0,cliente_id:$('#kf-cli').value||null,processo_id:$('#kf-proc').value||null,obs:($('#kf-obs').value||'').trim().slice(0,500)||null};
+  {const t0=id&&D.tarefas.find(x=>x.id===id);if(c.prioridade===2){if(!t0||t0.prioridade!==2){c.urgente_desde=new Date().toISOString();if(id)delete TF.prox[id]}}else{c.urgente_desde=null;c.lembrar_em=null}}
   try{if(id){const t=D.tarefas.find(x=>x.id===id);if(t&&t.coluna!==col)c.ordem=kbProxOrdem(col);if(!REAL&&col==='feito'&&t&&!t.concluido_em)c.concluido_em=new Date().toISOString();await STORE.upd('tarefas',id,c)}
     else await STORE.ins('tarefas',[Object.assign(c,{ordem:kbProxOrdem(col),criado_em:new Date().toISOString(),concluido_em:col==='feito'?new Date().toISOString():null})]);
     fecharModal();toast(id?'Tarefa salva.':'Tarefa criada.')}catch(x){console.error(x);toast('Não consegui salvar agora.')}render()});
@@ -4053,6 +4071,49 @@ document.addEventListener('pointerup',e=>{if(!ARR)return;clearTimeout(ARR.timer)
 document.addEventListener('pointercancel',()=>{if(!ARR)return;clearTimeout(ARR.timer);if(ARR.ativo){ARR.g.remove();document.body.classList.remove('kb-arrastando');ARR=null;render()}else ARR=null});
 document.addEventListener('touchmove',e=>{if(ARR&&ARR.ativo)e.preventDefault()},{passive:false});
 document.addEventListener('contextmenu',e=>{if(ARR&&e.target.closest('.kb-card'))e.preventDefault()});
+
+/* ---- Tarefa urgente: cartão vermelho piscando e ondulando; o Pedro lembra em intervalos aleatórios,
+        cada vez mais seguido quanto mais tempo ela fica parada, até "Lembrar depois" (hoje ou outro dia) ---- */
+const TF={prox:{}};
+const tfUrg=t=>t&&t.prioridade===2&&t.coluna!=='feito';
+const tfDesde=t=>new Date(t.urgente_desde||t.criado_em||Date.now()).getTime();
+function tfFaixa(t){const h=(Date.now()-tfDesde(t))/36e5;if(t.prazo&&t.prazo<hojeISO())return [2,4];return h<.5?[25,40]:h<2?[15,25]:h<24?[8,15]:h<72?[4,8]:[2,4]}
+function tfIntervalo(t){const r=tfFaixa(t);return (r[0]+Math.random()*(r[1]-r[0]))*60000}
+async function tfMarcar(id,urg){const t=(D.tarefas||[]).find(x=>x.id===id);if(!t)return;
+  const c={prioridade:urg?2:0,urgente_desde:urg?new Date().toISOString():null,lembrar_em:null};
+  try{await STORE.upd('tarefas',id,c);delete TF.prox[id];toast(urg?'🔥 Marcada como urgente. O Pedro vai ficar de olho.':'Tirei a urgência.')}catch(e){console.error(e);toast('Não consegui salvar agora.')}render()}
+function tfFrase(t){const ms=Date.now()-tfDesde(t),h=ms/36e5,x=tempoTxt(ms);
+  if(t.prazo&&t.prazo<hojeISO())return 'O prazo dessa urgente já passou!';
+  return h<.5?'Tem uma tarefa urgente esperando:':h<2?'Essa urgente ainda está aberta:':h<24?'Já faz '+x+'! Vamos resolver?':h<72?'Faz '+x+' que essa urgente está parada!':'Socorro! Essa urgente está há '+x+':'}
+function tfChecar(){if(!UI.logado)return;if(!KB.carregado){carregarTarefas();return}
+  if(document.getElementById('pedro-aviso')||tourAberto()||document.getElementById('festa')||document.getElementById('novidade')||document.getElementById('vera-centro')||document.querySelector('#modal .modal'))return;
+  const n=Date.now();let alvo=null;
+  for(const t of (D.tarefas||[]).filter(tfUrg)){const le=t.lembrar_em?new Date(t.lembrar_em).getTime():0;if(le>n){TF.prox[t.id]=le;continue}
+    if(TF.prox[t.id]==null)TF.prox[t.id]=le?le:Math.max(tfDesde(t)+tfIntervalo(t),n+20000);
+    if(TF.prox[t.id]<=n&&(!alvo||TF.prox[t.id]<TF.prox[alvo.id]))alvo=t}
+  if(alvo){TF.prox[alvo.id]=n+tfIntervalo(alvo);tfAviso(alvo)}}
+setInterval(tfChecar,20000);
+function tfAviso(t,escolher){const ap=document.getElementById('pedro-aviso');if(ap)ap.remove();
+  const ms=Date.now()-tfDesde(t),h=ms/36e5,c=(D.clientes||[]).find(x=>x.id===t.cliente_id);
+  const el=document.createElement('div');el.id='pedro-aviso';el.className='nv-tarefa';el.dataset.tf=t.id;el.dataset.rank=3;el.setAttribute('role','alert');
+  el.style.setProperty('--amp',Math.min(7,1+h/6).toFixed(2));el.style.setProperty('--vel',(h<2?3.2:h<24?2.4:1.6)+'s');
+  const bts=escolher?'<div class="tf-escolha"><b>Lembrar hoje:</b><div>'+[[15,'15 min'],[30,'30 min'],[60,'1 h'],[120,'2 h'],[240,'4 h']].map(x=>'<button class="btn" data-tf="adiar" data-min="'+x[0]+'">'+x[1]+'</button>').join('')+'</div>'+
+      '<b>Outro dia:</b><div>'+[[1,'Amanhã'],[2,'2 dias'],[3,'3 dias'],[7,'1 semana']].map(x=>'<button class="btn" data-tf="adiar" data-dias="'+x[0]+'">'+x[1]+'</button>').join('')+'</div><button class="lnk" data-tf="voltar">‹ voltar</button></div>'
+    :'<div class="pa-bts"><button class="btn pri" data-tf="feito">✓ Concluída</button><button class="btn" data-tf="abrir">Abrir</button><button class="btn" data-tf="depois">Lembrar depois</button></div>';
+  el.innerHTML='<div class="pa-av">'+av('pedro',58)+'</div><div class="pa-corpo"><span class="pa-urg">🔥 Tarefa urgente</span><p>'+esc(tfFrase(t))+'</p><b class="pa-txt">'+esc(t.titulo)+'</b>'+
+    '<small>urgente há '+esc(tempoTxt(ms))+(t.prazo?' · prazo '+novaData(t.prazo).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'')+(c?' · '+esc(primeiroNome(c.nome)):'')+'</small>'+bts+'</div>'+
+    '<button class="pa-x" data-tf="fecha" aria-label="Fechar por agora" title="Fechar por agora">✕</button>';
+  document.body.appendChild(el)}
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-tf]');if(!b)return;const a=b.dataset.tf,av_=b.closest('#pedro-aviso'),id=av_&&av_.dataset.tf,t=id&&(D.tarefas||[]).find(x=>x.id===id);
+  if(a==='fecha'){if(av_)av_.remove();return}
+  if(!t){if(av_)av_.remove();return}
+  if(a==='depois'){tfAviso(t,true);return}
+  if(a==='voltar'){tfAviso(t,false);return}
+  av_.remove();
+  if(a==='feito'){await kbMover(id,'feito',kbProxOrdem('feito'));toast('Ufa! Urgente resolvida. ✓');return}
+  if(a==='abrir'){UI.tela='tarefas';render();scrollTo(0,0);kbForm(t);return}
+  if(a==='adiar'){const q=new Date();q.setSeconds(0,0);if(b.dataset.min)q.setMinutes(q.getMinutes()+ +b.dataset.min);else{q.setDate(q.getDate()+ +b.dataset.dias);q.setHours(9,0,0,0)}
+    try{await STORE.upd('tarefas',id,{lembrar_em:q.toISOString()});TF.prox[id]=q.getTime();toast('Combinado. Te lembro '+fmtQuando(q.toISOString())+'.')}catch(x){console.error(x);toast('Não consegui salvar agora.')}render()}});
 
 function carregarLib(){return new Promise((ok,falha)=>{if(window.supabase)return ok();const s=document.createElement('script');s.src=CONFIG.lib;s.onload=ok;s.onerror=()=>falha(new Error('Sem internet para carregar o sistema.'));document.head.appendChild(s)})}
 (async()=>{
