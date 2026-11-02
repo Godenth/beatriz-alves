@@ -920,7 +920,7 @@ const TEMAS = {
   acusacao:{nome:'Acusação Maria da Penha',ag:'bento',palavra:'a acusação que você recebeu',chaves:['acusad','acusação','fui acusado']},
   outro:{nome:'Outro',ag:'livia',palavra:'o seu assunto',chaves:[]},
 };
-const ORIGENS = ['Anúncio Instagram','Anúncio Facebook','Site','WhatsApp direto','Indicação','Google'];
+const ORIGENS = ['Anúncio Instagram','Anúncio Facebook','Site','WhatsApp direto','Indicação','Google','Anúncio Meta'];
 const STATUS = [['novo','Novo'],['conversa','Em conversa'],['consulta','Consulta agendada'],['cliente','Cliente'],['sem','Sem interesse']];
 
 /* Mensagens prontas (revisadas pelas regras da OAB: sóbrias, sem preço, sem promessa, sem insistência) */
@@ -940,7 +940,7 @@ function FIG_VERA_SRC(){return 'data:image/webp;base64,UklGRuY+AABXRUJQVlA4WAoAA
 const CHAVE='ideali-adv-demo-v1';
 let D={leads:[]};
 let SB=null, USUARIO=null;
-const ORIG2DB={'Anúncio Instagram':'instagram','Anúncio Facebook':'facebook','Site':'site','WhatsApp direto':'whatsapp','Indicação':'indicacao','Google':'google'};
+const ORIG2DB={'Anúncio Meta':'anuncio_meta','Anúncio Instagram':'instagram','Anúncio Facebook':'facebook','Site':'site','WhatsApp direto':'whatsapp','Indicação':'indicacao','Google':'google'};
 const DB2ORIG=Object.fromEntries(Object.entries(ORIG2DB).map(([a,b])=>[b,a]));DB2ORIG.outro='Outro';
 function doBanco(r,hs){return {id:r.id,nome:r.nome,tel:r.telefone,tema:r.tema,origem:DB2ORIG[r.origem]||'Outro',status:r.status,etapa:r.etapa,retornos:r.retornos,prox:r.proximo,criado:r.criado_em,
   consulta:r.consulta_data?{data:r.consulta_data,hora:(r.consulta_hora||'14:00').slice(0,5),tipo:r.consulta_tipo==='online'?'videochamada':'presencial'}:null,lembrou:r.lembrete_feito,
@@ -1191,6 +1191,9 @@ function telaPainel(){const ab=UI.pab||'contatos';const nf=(D.leads||[]).filter(
 document.addEventListener('click',e=>{const b=e.target.closest('[data-pab]');if(!b)return;UI.pab=b.dataset.pab;render()});
 document.addEventListener('click',e=>{const t=e.target.closest('[data-festateste]');if(!t)return;const [tema,origem]=t.dataset.festateste.split('|');FESTA.fila.push({tema,origem,pagina:'teste',n:1});proximaFesta()});
 /* Funil do site: visitas -> abriu o formulário -> preencheu (só contagens, sem dado pessoal) */
+/* Nome de cada página do site no painel (as duas de divórcio ficam separadas) */
+const PAG_NOME={'divorcio-sem-acordo.html':'Divórcio sem acordo (anúncio)','divorcio-e-partilha.html':'Divórcio e partilha'};
+function nomePagina(p,tema){return /^(index\.html|inicio|\?)$/.test(p||'')?'Página inicial':PAG_NOME[p]||(TEMAS[tema]||TEMAS.outro).nome}
 function funilSite(dias){
   if(!REAL) return '<p class="nota" style="margin-top:12px">As visitas do site e quem abriu o formulário sem preencher entram aqui quando o banco de dados for ligado.</p>';
   const lim=new Date();lim.setDate(lim.getDate()-dias);const li=lim.toISOString().slice(0,10);
@@ -1199,12 +1202,12 @@ function funilSite(dias){
   const vis=soma('visita'),abr=soma('abriu'),env=soma('enviou'),des=Math.max(0,abr-env);
   const pc=(a,b)=>b?Math.round(a/b*100)+'%':'—';
   const passo=(ic,n,t,sub,cor)=>'<div class="kpi" style="border-left:3px solid '+cor+'"><small>'+ic+' '+t+'</small><b>'+n+'</b><em>'+sub+'</em></div>';
-  const ORI=[['facebook','Facebook'],['instagram','Instagram'],['google','Google'],['direto','Direto / outros']];
+  const ORI=[['anuncio_meta','📣 Anúncio Meta'],['facebook','Facebook'],['instagram','Instagram'],['google','Google'],['direto','Direto / outros']];
   const linhas=ORI.map(([k,nm])=>{const o=k==='direto'?null:k;const v=k==='direto'?F.filter(f=>f.etapa==='visita'&&(f.origem==='direto'||f.origem==='outro')).reduce((a,f)=>a+f.total,0):soma('visita',k);
     const ab=k==='direto'?F.filter(f=>f.etapa==='abriu'&&(f.origem==='direto'||f.origem==='outro')).reduce((a,f)=>a+f.total,0):soma('abriu',k);
     const en=k==='direto'?F.filter(f=>f.etapa==='enviou'&&(f.origem==='direto'||f.origem==='outro')).reduce((a,f)=>a+f.total,0):soma('enviou',k);
     return (v||ab||en)?'<tr><td>'+nm+'</td><td>'+v+'</td><td>'+ab+'</td><td>'+en+'</td><td>'+Math.max(0,ab-en)+'</td></tr>':''}).join('');
-  const pag={};F.filter(f=>f.etapa==='visita').forEach(f=>{const k=/^(index\.html|inicio)$/.test(f.pagina)?'Página inicial':(TEMAS[f.tema]||TEMAS.outro).nome;pag[k]=(pag[k]||0)+f.total});
+  const pag={};F.filter(f=>f.etapa==='visita').forEach(f=>{const k=nomePagina(f.pagina,f.tema);pag[k]=(pag[k]||0)+f.total});
   const dica=!vis?'Ainda não há visitas registradas neste período.':
     abr===0?'Pessoas visitam, mas ninguém tocou no botão de WhatsApp. Vale revisar o começo da página e o anúncio.':
     des/abr>=.6?'A maioria abre o formulário e desiste. Vale testar um formulário mais curto ou um texto mais acolhedor.':
@@ -3250,7 +3253,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-certcopia]
 /* =================== Comemoração: alguém tocou no WhatsApp do site =================== */
 /* Sem dado pessoal: o site só conta página, assunto e origem. O agente do assunto comemora com fogos.
    Violência doméstica é diferente: aviso discreto da Sofia, sem fogos, lembrando a regra do sigilo. */
-const ORIGEM_TXT={instagram:'pelo Instagram',facebook:'pelo Facebook',google:'pelo Google',direto:'direto pelo site',outro:'pelo site'};
+const ORIGEM_TXT={anuncio_meta:'pelo anúncio do Meta',instagram:'pelo Instagram',facebook:'pelo Facebook',google:'pelo Google',direto:'direto pelo site',outro:'pelo site'};
 const FESTA={fila:[],ativa:false,vistos:null,timer:null};
 const chaveClq=c=>c.dia+'|'+c.pagina+'|'+c.tema+'|'+(c.origem||'direto');
 function lerVistos(){try{return JSON.parse(localStorage.getItem('ideali-cliques-vistos-'+ESCRITORIO.id)||'null')}catch(e){return null}}
@@ -4173,8 +4176,8 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-tf]'
 /* =================== Visitas do site com horário: quem entrou, quais páginas, quanto tempo e se leu =================== */
 /* Sem dado pessoal: cada "pessoa" é só um código da aba do navegador. Violência doméstica nunca aparece (o banco nem grava). */
 const VT={per:'hoje',mais:false,aberta:null};
-const VT_ORI={instagram:['📸','Instagram'],facebook:['📘','Facebook'],google:['🔎','Google'],direto:['🔗','Direto'],outro:['🌐','Outro']};
-const vtPagina=v=>/^(index\.html|inicio|\?)$/.test(v.pagina)?'Página inicial':(TEMAS[v.tema]||TEMAS.outro).nome;
+const VT_ORI={anuncio_meta:['📣','Anúncio Meta'],instagram:['📸','Instagram'],facebook:['📘','Facebook'],google:['🔎','Google'],direto:['🔗','Direto'],outro:['🌐','Outro']};
+const vtPagina=v=>nomePagina(v.pagina,v.tema);
 const vtMin=s=>{s=Math.max(0,s|0);const m=Math.floor(s/60),x=s%60;return m?m+' min'+(x?' '+x+' s':''):x+' s'};
 function vtLeitura(v){const l=v.leitura||0,t=v.tempo_seg||0;
   return l>=75&&t>=30?['Leu tudo','#1F9D55']:l>=75&&t<15?['Rolou rápido','#8A94A6']:(l>=40||t>=20)?['Leu parte','#BF9440']:['Só passou','#8A94A6']}
@@ -4236,7 +4239,7 @@ function theoProximo(){if(THV.mostrando||!THV.fila.length)return;if(tourAberto()
   const it=THV.fila.shift();THV.mostrando=true;theoCard(it.tipo,it.V)}
 function theoCard(tipo,V){const v=V[0],o=VT_ORI[v.origem]||VT_ORI.outro,n=V.length;
   const tit=tipo==='chegou'?(n>1?n+' pessoas chegaram no site!':'Chegou gente no site!'):tipo==='abriu'?'👀 Abriu o formulário!':'🎉 Preencheu o formulário!';
-  const txt=tipo==='chegou'?(n>1?'Vieram de '+[...new Set(V.map(x=>(VT_ORI[x.origem]||VT_ORI.outro)[1]))].join(', ')+'.':'Veio do '+o[1]+', pelo '+(v.aparelho==='celular'?'celular':'computador')+', na página '+vtPagina(v)+'.')
+  const txt=tipo==='chegou'?(n>1?'Vieram de '+[...new Set(V.map(x=>(VT_ORI[x.origem]||VT_ORI.outro)[1]))].join(', ')+'.':'Veio '+(ORIGEM_TXT[v.origem]||'pelo site')+', pelo '+(v.aparelho==='celular'?'celular':'computador')+', na página '+vtPagina(v)+'.')
     :tipo==='abriu'?'Está na página '+vtPagina(v)+' ('+o[1]+'). Se desistir, aparece em "Quem entrou no site".':'Já está em Contatos, com a mensagem pronta para responder.';
   const el=document.createElement('div');el.id='theo-aviso';el.className='th-'+tipo;el.setAttribute('role','status');el.style.setProperty('--c',AGENTES.theo.cor);
   el.innerHTML='<div class="th-radar" aria-hidden="true"><span></span><span></span><span></span>'+av('theo',54)+'</div><div class="th-corpo"><span class="th-nome">Theo · marketing</span><b>'+esc(tit)+'</b><p>'+esc(txt)+'</p>'+
