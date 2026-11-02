@@ -657,8 +657,20 @@ function ctIr(h){
   try{ ctRpc('registrar_clique',{p_origem:origemVisita(),p_escritorio:CT_ESC,p_pagina:ctPagina(),p_tema:CT_TEMA}).catch(()=>{}); }catch(e){}
   setTimeout(function(){ if(ABRIR_NA_MESMA_ABA) location.href=h; else window.open(h,'_blank','noopener'); },350);
 }
-function ctFunil(et){ try{ ctRpc('registrar_funil',{p_escritorio:CT_ESC,p_pagina:ctPagina(),p_tema:CT_TEMA,p_origem:origemVisita(),p_etapa:et}).catch(()=>{}); }catch(e){} }
+function ctFunil(et){ try{ ctRpc('registrar_funil',{p_escritorio:CT_ESC,p_pagina:ctPagina(),p_tema:CT_TEMA,p_origem:origemVisita(),p_etapa:et}).catch(()=>{}); }catch(e){} if(et!=='visita'&&typeof vEnv==='function')vEnv(et); }
 (function(){ var k='ba-vis-'+ctPagina(); try{ if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k,'1'); }catch(e){} ctFunil('visita'); })();
+/* ===== Linha do tempo das visitas: horário, páginas, tempo e quanto leu. Sem dado pessoal: o código some quando a aba fecha.
+   Violência doméstica nunca é registrada. Modo teste (?teste=1) não envia nada. ===== */
+var VS=(function(){if(CT_TEMA==='violencia')return '';try{var s=sessionStorage.getItem('ba-sess');if(!s){s=(Math.random().toString(36).slice(2,10)+Date.now().toString(36)).replace(/[^a-z0-9]/g,'').slice(0,24);sessionStorage.setItem('ba-sess',s)}return s}catch(e){return ''}})();
+var VMax=0,VVis=0,VUlt=Date.now(),VAtivo=!document.hidden,VApar=((window.matchMedia&&matchMedia('(max-width: 760px)').matches)||/Mobi|Android|iPhone/i.test(navigator.userAgent))?'celular':'computador';
+function vLer(){var h=document.documentElement,p=Math.round(Math.min(1,(scrollY+innerHeight)/Math.max(1,h.scrollHeight))*100);if(p>VMax)VMax=p}
+function vTempo(){var n=Date.now();if(VAtivo)VVis+=n-VUlt;VUlt=n;return Math.round(VVis/1000)}
+function vEnv(ev){if(!VS)return;try{ctRpc('registrar_visita',{p_escritorio:CT_ESC,p_sessao:VS,p_pagina:ctPagina(),p_tema:CT_TEMA,p_origem:origemVisita(),p_aparelho:VApar,p_evento:ev,p_tempo:vTempo(),p_leitura:VMax}).catch(function(){})}catch(e){}}
+if(VS){addEventListener('scroll',vLer,{passive:true});vLer();vEnv('visita');
+  document.addEventListener('visibilitychange',function(){vTempo();VAtivo=!document.hidden;VUlt=Date.now();if(document.hidden)vEnv('saiu')});
+  addEventListener('pagehide',function(){vEnv('saiu')});
+  setInterval(function(){if(!document.hidden)vEnv('ping')},30000);}
+
 function ctJaEnviou(){ try{ return sessionStorage.getItem('ba-enviou')==='1'; }catch(e){ return false; } }
 function ctAbrir(a){
   var antigo=document.getElementById('ct-fundo'); if(antigo) antigo.remove(); ctFunil('abriu');

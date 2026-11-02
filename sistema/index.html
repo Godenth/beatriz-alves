@@ -846,6 +846,17 @@ body.kb-arrastando,body.kb-arrastando *{cursor:grabbing!important;user-select:no
 #pedro-aviso.nv-tarefa .btn{background:#fff;color:#7F1D1D;border-color:#fff}#pedro-aviso.nv-tarefa .btn.pri{background:#FFE27A;color:#3A1500;border-color:#FFE27A}#pedro-aviso.nv-tarefa .pa-x,#pedro-aviso.nv-tarefa .lnk{color:#fff}
 .tf-escolha{margin-top:8px;display:flex;flex-direction:column;gap:5px}.tf-escolha b{font-size:13px}.tf-escolha>div{display:flex;flex-wrap:wrap;gap:6px}.tf-escolha .btn{padding:6px 11px;font-size:13.5px}
 @media (prefers-reduced-motion: reduce){.kb-card.urg,#pedro-aviso.nv-tarefa{animation:none}}
+.vt-topo{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between}
+.vt-s{border:1px solid var(--rule);border-left:4px solid var(--st);border-radius:12px;padding:10px 12px;margin-top:8px}
+.vt-cab{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.vt-h{font-size:16px;margin-right:4px;font-variant-numeric:tabular-nums}
+.vt-chip{font-size:12px;padding:2px 8px;border-radius:8px;background:var(--rule)}.vt-st{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--st)}
+.vt-pags{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:5px}
+.vt-pags li{display:grid;grid-template-columns:48px minmax(110px,1fr) 120px 118px 70px;align-items:center;gap:8px;font-size:13px}
+.vt-ph{color:var(--mut);font-variant-numeric:tabular-nums}.vt-pn{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vt-bar{height:7px;border-radius:4px;background:var(--rule);overflow:hidden}.vt-bar i{display:block;height:100%;border-radius:4px}
+.vt-lt{font-size:12px;font-weight:600}.vt-t{text-align:right;color:var(--mut);font-variant-numeric:tabular-nums}
+.vt-ev{grid-column:2/-1;font-size:12px;font-weight:600}.vt-ev.ok{color:#1F9D55}.vt-ev.ab{color:#C2410C}
+@media (max-width:760px){.vt-lt{white-space:nowrap}.vt-pags li{grid-template-columns:44px 1fr 112px}.vt-bar{grid-column:2/3}.vt-lt{grid-column:3/4;grid-row:1}.vt-t{grid-column:3/4}.vt-st{margin-left:0;flex-basis:100%}}
 </style>
 
 <div id="app"></div>
@@ -937,6 +948,7 @@ async function carregarReal(){
   const {data:cq}=await SB.from('cliques').select('dia,pagina,tema,total').eq('escritorio_id',e.id).gte('dia',desde.toISOString().slice(0,10));
   D.cliques=cq||[];
   try{const {data:fu}=await SB.from('funil').select('dia,pagina,tema,origem,etapa,total').eq('escritorio_id',e.id).gte('dia',desde.toISOString().slice(0,10));D.funil=fu||[]}catch(_){D.funil=[]}
+  try{const {data:vi}=await SB.from('visitas').select('sessao,pagina,tema,origem,aparelho,entrou,ultimo,tempo_seg,leitura,abriu_em,enviou_em').eq('escritorio_id',e.id).gte('entrou',desde.toISOString()).order('entrou',{ascending:false}).limit(2000);D.visitas=vi||[]}catch(_){D.visitas=[]}
 }
 async function recarregar(){if(!REAL||!USUARIO)return;try{await carregarReal();
     await Promise.all([CLI.carregado?carregarClientes():null,MP.docs?carregarDocs():null,FIN.carregado&&podeFinanceiro()?carregarFin():null,AGD.carregado?carregarAgenda():null]);
@@ -1199,7 +1211,7 @@ function telaPainelCorpo(){
   return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><h2>Painel</h2><div class="seg" style="margin-left:auto">'+[['semana','Semana'],['mes','Mês']].map(p=>'<button data-per="'+p[0]+'" class="'+(UI.per===p[0]?'on':'')+'">'+p[1]+'</button>').join('')+'</div></div>'+
    '<div class="kpis"><div class="kpi"><small>Contatos</small><b>'+tot+'</b><em>últimos '+dias+' dias</em></div><div class="kpi"><small>Viraram consulta</small><b>'+pct(cons)+'</b><em>'+cons+' consulta'+(cons===1?'':'s')+'</em></div><div class="kpi"><small>Viraram cliente</small><b>'+pct(cli)+'</b><em>'+cli+' cliente'+(cli===1?'':'s')+'</em></div><div class="kpi"><small>1ª resposta (média)</small><b>'+fmtH(med)+'</b><em>do contato até abrir o WhatsApp</em></div></div>'+
    '<div class="graf"><div class="box"><h3>Por assunto</h3>'+barras(conta(l=>TEMAS[l.tema].nome),corTema)+'</div><div class="box"><h3>Por agente</h3>'+barras(conta(l=>AGENTES[agDe(l)].nome),corAg)+'</div><div class="box"><h3>Por origem</h3>'+barras(conta(l=>l.origem))+'</div></div>'+
-   funilSite(dias)+
+   funilSite(dias)+linhaTempoVisitas()+
    (REAL?'<div class="graf" style="grid-template-columns:1fr"><div class="box"><h3>Cliques no WhatsApp do site (30 dias)</h3>'+(()=>{const m={};(D.cliques||[]).forEach(c=>{const k=(TEMAS[c.tema]||TEMAS.outro).nome;m[k]=(m[k]||0)+c.total});return barras(Object.entries(m).sort((a,b)=>b[1]-a[1]),corTema)})()+'</div></div>'
      :'<p class="nota" style="margin-top:12px">Os cliques do site por assunto entram aqui quando o banco de dados for ligado.</p>');
 }
@@ -4114,6 +4126,48 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-tf]'
   if(a==='abrir'){UI.tela='tarefas';render();scrollTo(0,0);kbForm(t);return}
   if(a==='adiar'){const q=new Date();q.setSeconds(0,0);if(b.dataset.min)q.setMinutes(q.getMinutes()+ +b.dataset.min);else{q.setDate(q.getDate()+ +b.dataset.dias);q.setHours(9,0,0,0)}
     try{await STORE.upd('tarefas',id,{lembrar_em:q.toISOString()});TF.prox[id]=q.getTime();toast('Combinado. Te lembro '+fmtQuando(q.toISOString())+'.')}catch(x){console.error(x);toast('Não consegui salvar agora.')}render()}});
+
+/* =================== Visitas do site com horário: quem entrou, quais páginas, quanto tempo e se leu =================== */
+/* Sem dado pessoal: cada "pessoa" é só um código da aba do navegador. Violência doméstica nunca aparece (o banco nem grava). */
+const VT={per:'hoje',mais:false,aberta:null};
+const VT_ORI={instagram:['📸','Instagram'],facebook:['📘','Facebook'],google:['🔎','Google'],direto:['🔗','Direto'],outro:['🌐','Outro']};
+const vtPagina=v=>/^(index\.html|inicio|\?)$/.test(v.pagina)?'Página inicial':(TEMAS[v.tema]||TEMAS.outro).nome;
+const vtMin=s=>{s=Math.max(0,s|0);const m=Math.floor(s/60),x=s%60;return m?m+' min'+(x?' '+x+' s':''):x+' s'};
+function vtLeitura(v){const l=v.leitura||0,t=v.tempo_seg||0;
+  return l>=75&&t>=30?['Leu tudo','#1F9D55']:(l>=40||t>=20)?['Leu parte','#BF9440']:['Só passou','#8A94A6']}
+function seedVisitas(){const n=Date.now(),m=x=>new Date(n-x*60000).toISOString(),V=[];
+  const s=(id,ori,ap,pags)=>pags.forEach(p=>V.push(Object.assign({sessao:id,origem:ori,aparelho:ap,abriu_em:null,enviou_em:null},p)));
+  s('demo1','instagram','celular',[{pagina:'divorcio-e-partilha.html',tema:'divorcio',entrou:m(12),tempo_seg:154,leitura:92,abriu_em:m(9),enviou_em:m(8)}]);
+  s('demo2','facebook','celular',[{pagina:'index.html',tema:'outro',entrou:m(47),tempo_seg:21,leitura:38},{pagina:'pensao-alimenticia.html',tema:'pensao',entrou:m(46),tempo_seg:73,leitura:64,abriu_em:m(45)}]);
+  s('demo3','google','computador',[{pagina:'guarda-e-convivencia.html',tema:'guarda',entrou:m(130),tempo_seg:6,leitura:12}]);
+  s('demo4','direto','computador',[{pagina:'index.html',tema:'outro',entrou:m(60*26),tempo_seg:95,leitura:80}]);
+  return V}
+function linhaTempoVisitas(){
+  const V0=REAL?(D.visitas||[]):(D.visitasDemo||(D.visitasDemo=seedVisitas()));
+  const ini=new Date();ini.setHours(0,0,0,0);if(VT.per==='7')ini.setDate(ini.getDate()-6);if(VT.per==='30')ini.setDate(ini.getDate()-29);
+  const V=V0.filter(v=>new Date(v.entrou)>=ini);
+  const S={};V.forEach(v=>{(S[v.sessao]=S[v.sessao]||[]).push(v)});
+  const sess=Object.values(S).map(L=>{L.sort((a,b)=>a.entrou<b.entrou?-1:1);const tempo=L.reduce((a,v)=>a+(v.tempo_seg||0),0);
+    return {L,ini:L[0].entrou,tempo,ori:L[0].origem,ap:L[0].aparelho,enviou:L.some(v=>v.enviou_em),abriu:L.some(v=>v.abriu_em),leu:L.some(v=>vtLeitura(v)[0]==='Leu tudo')}}).sort((a,b)=>a.ini<b.ini?1:-1);
+  const n=sess.length,med=n?Math.round(sess.reduce((a,s)=>a+s.tempo,0)/n):0,leram=sess.filter(s=>s.leu).length,env=sess.filter(s=>s.enviou).length,abr=sess.filter(s=>s.abriu&&!s.enviou).length;
+  const hoje=new Date().toDateString();
+  const hora=iso=>{const d=new Date(iso);return (d.toDateString()===hoje?'':d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' ')+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})};
+  const card=(s,i)=>{const o=VT_ORI[s.ori]||VT_ORI.outro,st=s.enviou?['✅ Enviou o formulário','#1F9D55']:s.abriu?['📝 Abriu o formulário e não enviou','#C2410C']:['👀 Só visitou','#5B8DEF'];
+    return '<div class="vt-s" style="--st:'+st[1]+'"><div class="vt-cab"><b class="vt-h">'+hora(s.ini)+'</b><span class="vt-chip">'+o[0]+' '+o[1]+'</span><span class="vt-chip">'+(s.ap==='celular'?'📱 Celular':'💻 Computador')+'</span><span class="vt-chip">⏱ '+vtMin(s.tempo)+'</span><span class="vt-st">'+st[0]+'</span></div>'+
+      '<ol class="vt-pags">'+s.L.map(v=>{const lt=vtLeitura(v);return '<li><span class="vt-ph">'+new Date(v.entrou).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</span><span class="vt-pn">'+esc(vtPagina(v))+'</span>'+
+        '<span class="vt-bar" title="Leu '+(v.leitura||0)+'% da página"><i style="width:'+(v.leitura||0)+'%;background:'+lt[1]+'"></i></span><span class="vt-lt" style="color:'+lt[1]+'">'+lt[0]+' · '+(v.leitura||0)+'%</span><span class="vt-t">'+vtMin(v.tempo_seg)+'</span>'+
+        (v.enviou_em?'<span class="vt-ev ok">enviou '+new Date(v.enviou_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</span>':v.abriu_em?'<span class="vt-ev ab">abriu o formulário '+new Date(v.abriu_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</span>':'')+'</li>'}).join('')+'</ol></div>'};
+  const lim=VT.mais?120:15;
+  return '<div class="graf" style="grid-template-columns:1fr"><div class="box vt"><div class="vt-topo"><h3 style="margin:0">Quem entrou no site</h3><div class="seg">'+[['hoje','Hoje'],['7','7 dias'],['30','30 dias']].map(p=>'<button data-vt="'+p[0]+'" class="'+(VT.per===p[0]?'on':'')+'">'+p[1]+'</button>').join('')+'</div></div>'+
+    (REAL?'':'<p class="nota" style="margin:6px 0 0">Exemplo. No sistema publicado aparecem as visitas de verdade.</p>')+
+    '<div class="kpis" style="margin:10px 0 12px">'+
+      '<div class="kpi" style="border-left:3px solid #5B8DEF"><small>👀 Pessoas</small><b>'+n+'</b><em>visitas no período</em></div>'+
+      '<div class="kpi" style="border-left:3px solid #BF9440"><small>⏱ Tempo médio</small><b>'+vtMin(med)+'</b><em>por pessoa</em></div>'+
+      '<div class="kpi" style="border-left:3px solid #1F9D55"><small>📖 Leram a página toda</small><b>'+leram+'</b><em>'+(n?Math.round(leram/n*100):0)+'% das pessoas</em></div>'+
+      '<div class="kpi" style="border-left:3px solid #C2410C"><small>📝 Abriram e não enviaram</small><b>'+abr+'</b><em>'+env+(env===1?' enviou':' enviaram')+'</em></div></div>'+
+    (n?sess.slice(0,lim).map(card).join('')+(n>lim?'<button class="btn sm" data-vt="mais">Ver mais ('+(n-lim)+')</button>':''):'<p class="mut">Ninguém entrou no site neste período'+(REAL?' (ou só os seus testes, que não contam).':'.')+'</p>')+
+    '<p class="mut" style="margin-top:10px;font-size:12px">Sem nome, telefone ou IP: cada pessoa é só um código que some quando ela fecha a aba. Páginas de violência doméstica nunca são registradas. Homem/mulher e idade não aparecem por pessoa; o resumo por idade e gênero de quem clicou nos anúncios fica no Gerenciador de Anúncios do Meta (Detalhamento › Idade e gênero).</p></div></div>'}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-vt]');if(!b)return;const v=b.dataset.vt;if(v==='mais')VT.mais=!VT.mais;else{VT.per=v;VT.mais=false}render()});
 
 function carregarLib(){return new Promise((ok,falha)=>{if(window.supabase)return ok();const s=document.createElement('script');s.src=CONFIG.lib;s.onload=ok;s.onerror=()=>falha(new Error('Sem internet para carregar o sistema.'));document.head.appendChild(s)})}
 (async()=>{
