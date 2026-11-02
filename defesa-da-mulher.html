@@ -655,7 +655,6 @@ const CT_AK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZi
 function ctRpc(f,b){ if(window.BA_TESTE) return Promise.resolve({ok:true,teste:true}); return fetch(CT_SB+f,{method:'POST',keepalive:true,headers:{'Content-Type':'application/json','apikey':CT_AK},body:JSON.stringify(b)}); }
 function ctPagina(){ return location.pathname.split('/').pop()||'inicio'; }
 function ctIr(h){
-  try{ if(window.fbq&&!window.BA_TESTE) fbq('track','Contact'); }catch(e){}
   try{ ctRpc('registrar_clique',{p_origem:origemVisita(),p_escritorio:CT_ESC,p_pagina:ctPagina(),p_tema:CT_TEMA}).catch(()=>{}); }catch(e){}
   setTimeout(function(){ if(ABRIR_NA_MESMA_ABA) location.href=h; else window.open(h,'_blank','noopener'); },350);
 }
@@ -702,10 +701,14 @@ function ctAbrir(a){
     setTimeout(seguir,2500); /* se a internet estiver lenta, não segura a pessoa */
   });
 }
+/* Pixel do Meta: evento padrão Contact, UMA vez por toque no WhatsApp (trava de 1,5 s contra toque duplo; eventID para o Meta descartar repetidos). */
+var BA_CT_ULT=0;
+function baContato(){ var n=Date.now(); if(n-BA_CT_ULT<1500) return; BA_CT_ULT=n;
+  try{ if(window.fbq&&!window.BA_TESTE) fbq('track','Contact',{},{eventID:'ct-'+n.toString(36)+'-'+Math.random().toString(36).slice(2,8)}); }catch(e){} }
 function ctClique(ev,a){
   if(ev.ctrlKey||ev.metaKey||ev.shiftKey||ev.button!==0) return;
   ev.preventDefault();
-  try{ if(window.fbq&&!window.BA_TESTE) fbq('trackCustom','CliqueWhatsApp'); }catch(e){} /* tocou no botão (Contact só quando vai mesmo para o WhatsApp) */
+  baContato();
   if(CT_DIRETO||ctJaEnviou()) ctIr(a.href); else ctAbrir(a);
 }
 document.querySelectorAll('.wa').forEach(a=>{
