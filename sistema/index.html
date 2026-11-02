@@ -868,6 +868,20 @@ body.kb-arrastando,body.kb-arrastando *{cursor:grabbing!important;user-select:no
 .kb-catb.on{background:var(--cat);color:#fff;box-shadow:0 2px 8px -2px var(--cat)}
 .kb-legenda{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 12px;align-items:center}
 .kb-add select{font-size:13px}
+/* Theo avisa quem chega no site */
+#theo-aviso{position:fixed;right:16px;top:86px;z-index:44;display:flex;gap:12px;align-items:flex-start;width:min(380px,calc(100vw - 32px));background:var(--card);color:var(--fg);border:2px solid var(--c);border-radius:20px;padding:14px 36px 14px 14px;box-shadow:0 22px 50px -18px rgba(0,0,0,.55);animation:thEntra .55s cubic-bezier(.2,1.4,.4,1) both}
+#theo-aviso.sai{animation:thSai .35s ease-in forwards}
+#theo-aviso.th-enviou{border-color:#1F9D55}#theo-aviso.th-abriu{border-color:#E8A317}
+.th-radar{position:relative;flex:none;width:58px;height:58px;display:grid;place-items:center}.th-radar .av{position:relative;z-index:1;border-radius:50%}
+.th-radar span{position:absolute;inset:0;border-radius:50%;border:2px solid var(--c);opacity:0;animation:thRadar 2.4s ease-out infinite}.th-radar span:nth-child(2){animation-delay:.8s}.th-radar span:nth-child(3){animation-delay:1.6s}
+#theo-aviso.th-enviou .th-radar span{border-color:#1F9D55}#theo-aviso.th-abriu .th-radar span{border-color:#E8A317}
+.th-corpo{min-width:0}.th-nome{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--c)}.th-corpo b{display:block;font-size:16px;margin:2px 0}.th-corpo p{margin:0 0 8px;font-size:13.5px;line-height:1.4}
+.th-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}.th-chips span{font-size:12px;padding:2px 8px;border-radius:8px;background:var(--rule)}
+.th-bts{display:flex;gap:6px;flex-wrap:wrap}
+@keyframes thEntra{from{opacity:0;transform:translateX(60px) scale(.95)}}@keyframes thSai{to{opacity:0;transform:translateX(60px)}}
+@keyframes thRadar{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(1.9)}}
+@media (max-width:760px){#theo-aviso{top:auto;bottom:calc(84px + env(safe-area-inset-bottom,0px));right:10px;left:10px;width:auto}}
+@media (prefers-reduced-motion: reduce){#theo-aviso,.th-radar span{animation:none}}
 </style>
 
 <div id="app"></div>
@@ -1785,7 +1799,9 @@ function msgsAgente(k){
   }
   if(k==='vera'){const C=cobrancas();if(!C.length)M.push({de:k,tit:'Movimento bom hoje.',txt:'Não se acostumem.'});C.forEach(c=>M.push({de:k,tit:esc(c.txt),bot:'<button class="eq-b" data-eqchip="'+c.acao+'">'+esc(c.bot)+'</button>'}));return M}
   if(k==='klaus'){M.push({de:k,tit:'Mande o processo.',txt:'PDF, foto ou texto. Eu leio, digo onde ele está, o que nos favorece, o que pesa contra e os erros da outra parte.',bot:'<button class="eq-b" data-eqchip="ir:processos">📂 Abrir leitor de processos</button>'});return M}
-  if(k==='theo'){const A=ADS();M.push({de:k,tit:'Anúncios'+(A.exemplo?' (exemplo)':'')+':',txt:insightTheo(A),bot:'<button class="eq-b" data-eqchip="ir:anuncios">📣 Ver anúncios</button>'});return M}
+  if(k==='theo'){{const h0=new Date();h0.setHours(0,0,0,0);const V=(REAL?(D.visitas||[]):(D.visitasDemo||(D.visitasDemo=seedVisitas()))).filter(v=>new Date(v.entrou)>=h0);const ns=new Set(V.map(v=>v.sessao)).size,ab=new Set(V.filter(v=>v.abriu_em).map(v=>v.sessao)).size,en=new Set(V.filter(v=>v.enviou_em).map(v=>v.sessao)).size;
+    M.push({de:k,tit:'Site hoje: '+ns+(ns===1?' pessoa entrou':' pessoas entraram')+'.',txt:ns?(ab?ab+' abriram o formulário e '+en+(en===1?' enviou.':' enviaram.'):'Ninguém abriu o formulário ainda.')+' Eu aviso aqui no canto quando chegar alguém.':'Assim que alguém entrar, eu aviso aqui no canto.',bot:'<button class="eq-b" data-th="ver">🕒 Ver quem entrou</button>'})}
+    const A=ADS();M.push({de:k,tit:'Anúncios'+(A.exemplo?' (exemplo)':'')+':',txt:insightTheo(A),bot:'<button class="eq-b" data-eqchip="ir:anuncios">📣 Ver anúncios</button>'});return M}
   if(k==='nina'){const I=INS();M.push({de:k,tit:'Como foi o Instagram'+(I.exemplo?' (exemplo)':'')+':',txt:insightNina(I),bot:'<button class="eq-b" data-eqchip="ir:desempenho">📊 Ver desempenho</button>'});M.push({de:k,tit:'Tenho '+POSTS.length+' ideias de post.',txt:'Começo pelos assuntos que mais chegaram nos contatos. Textos já revisados pelas regras da OAB.',bot:'<button class="eq-b" data-eqchip="ir:conteudo">🖼️ Ver posts</button>'});return M}
   if(k==='sofia')M.push({de:k,tit:'⚠ O celular pode ser acessado por outra pessoa.',txt:'Só responda se a pessoa iniciar a conversa. Aqui eu nunca sugiro retorno.'});
   if(!hoje.length)M.push({de:k,tit:'Tudo em dia por aqui. ✓',txt:meusLeads(k).length?'Ninguém para chamar hoje. Te aviso quando for a vez de alguém.':'Ainda não chegou ninguém do meu assunto.'});
@@ -4161,7 +4177,7 @@ const VT_ORI={instagram:['📸','Instagram'],facebook:['📘','Facebook'],google
 const vtPagina=v=>/^(index\.html|inicio|\?)$/.test(v.pagina)?'Página inicial':(TEMAS[v.tema]||TEMAS.outro).nome;
 const vtMin=s=>{s=Math.max(0,s|0);const m=Math.floor(s/60),x=s%60;return m?m+' min'+(x?' '+x+' s':''):x+' s'};
 function vtLeitura(v){const l=v.leitura||0,t=v.tempo_seg||0;
-  return l>=75&&t>=30?['Leu tudo','#1F9D55']:(l>=40||t>=20)?['Leu parte','#BF9440']:['Só passou','#8A94A6']}
+  return l>=75&&t>=30?['Leu tudo','#1F9D55']:l>=75&&t<15?['Rolou rápido','#8A94A6']:(l>=40||t>=20)?['Leu parte','#BF9440']:['Só passou','#8A94A6']}
 function seedVisitas(){const n=Date.now(),m=x=>new Date(n-x*60000).toISOString(),V=[];
   const s=(id,ori,ap,pags)=>pags.forEach(p=>V.push(Object.assign({sessao:id,origem:ori,aparelho:ap,abriu_em:null,enviou_em:null},p)));
   s('demo1','instagram','celular',[{pagina:'divorcio-e-partilha.html',tema:'divorcio',entrou:m(12),tempo_seg:154,leitura:92,abriu_em:m(9),enviou_em:m(8)}]);
@@ -4185,7 +4201,7 @@ function linhaTempoVisitas(){
         '<span class="vt-bar" title="Leu '+(v.leitura||0)+'% da página"><i style="width:'+(v.leitura||0)+'%;background:'+lt[1]+'"></i></span><span class="vt-lt" style="color:'+lt[1]+'">'+lt[0]+' · '+(v.leitura||0)+'%</span><span class="vt-t">'+vtMin(v.tempo_seg)+'</span>'+
         (v.enviou_em?'<span class="vt-ev ok">enviou '+new Date(v.enviou_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</span>':v.abriu_em?'<span class="vt-ev ab">abriu o formulário '+new Date(v.abriu_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</span>':'')+'</li>'}).join('')+'</ol></div>'};
   const lim=VT.mais?120:15;
-  return '<div class="graf" style="grid-template-columns:1fr"><div class="box vt"><div class="vt-topo"><h3 style="margin:0">Quem entrou no site</h3><div class="seg">'+[['hoje','Hoje'],['7','7 dias'],['30','30 dias']].map(p=>'<button data-vt="'+p[0]+'" class="'+(VT.per===p[0]?'on':'')+'">'+p[1]+'</button>').join('')+'</div></div>'+
+  return '<div class="graf" style="grid-template-columns:1fr"><div class="box vt"><div class="vt-topo"><h3 style="margin:0;display:flex;align-items:center;gap:8px">'+av('theo',30)+'Quem entrou no site <small class="mut" style="font-weight:500;font-size:12px;text-transform:none;letter-spacing:0">· o Theo, do marketing, acompanha</small></h3><div class="seg">'+[['hoje','Hoje'],['7','7 dias'],['30','30 dias']].map(p=>'<button data-vt="'+p[0]+'" class="'+(VT.per===p[0]?'on':'')+'">'+p[1]+'</button>').join('')+'</div></div>'+
     (REAL?'':'<p class="nota" style="margin:6px 0 0">Exemplo. No sistema publicado aparecem as visitas de verdade.</p>')+
     '<div class="kpis" style="margin:10px 0 12px">'+
       '<div class="kpi" style="border-left:3px solid #5B8DEF"><small>👀 Pessoas</small><b>'+n+'</b><em>visitas no período</em></div>'+
@@ -4195,6 +4211,44 @@ function linhaTempoVisitas(){
     (n?sess.slice(0,lim).map(card).join('')+(n>lim?'<button class="btn sm" data-vt="mais">Ver mais ('+(n-lim)+')</button>':''):'<p class="mut">Ninguém entrou no site neste período'+(REAL?' (ou só os seus testes, que não contam).':'.')+'</p>')+
     '<p class="mut" style="margin-top:10px;font-size:12px">Sem nome, telefone ou IP: cada pessoa é só um código que some quando ela fecha a aba. Páginas de violência doméstica nunca são registradas. Homem/mulher e idade não aparecem por pessoa; o resumo por idade e gênero de quem clicou nos anúncios fica no Gerenciador de Anúncios do Meta (Detalhamento › Idade e gênero).</p></div></div>'}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-vt]');if(!b)return;const v=b.dataset.vt;if(v==='mais')VT.mais=!VT.mais;else{VT.per=v;VT.mais=false}render()});
+
+/* =================== Theo (marketing) avisa ao vivo quem chega no site =================== */
+/* A cada minuto olha as visitas novas (só do sistema publicado). Silenciável pelo resto do dia. */
+const THV={desde:null,visto:{},abriu:{},enviou:{},fila:[],mostrando:false};
+const thSilencio=()=>{try{return localStorage.getItem('ideali-theo-silencio')===hojeISO()}catch(e){return false}};
+async function theoVigiar(){if(!REAL||!UI.logado||!SB||!ESCRITORIO.id)return;
+  const agora=new Date(),inicial=!THV.desde;if(inicial)THV.desde=new Date(agora-30*60000).toISOString();
+  try{const {data}=await SB.from('visitas').select('sessao,pagina,tema,origem,aparelho,entrou,ultimo,tempo_seg,leitura,abriu_em,enviou_em').eq('escritorio_id',ESCRITORIO.id).gte('ultimo',THV.desde).order('entrou').limit(100);
+    THV.desde=new Date(agora-5000).toISOString();if(!data)return;
+    const D2=D.visitas=D.visitas||[];data.forEach(v=>{const i=D2.findIndex(x=>x.sessao===v.sessao&&x.pagina===v.pagina);if(i>=0)D2[i]=v;else D2.unshift(v)});
+    if(inicial){data.forEach(v=>{THV.visto[v.sessao]=1;if(v.abriu_em)THV.abriu[v.sessao]=1;if(v.enviou_em)THV.enviou[v.sessao]=1});return}
+    const novas=[],abr=[],env=[];
+    data.forEach(v=>{const k=v.sessao;
+      if(!THV.visto[k]&&!THV.abriu[k]){THV.visto[k]=1;if(new Date(v.entrou)>=new Date(agora-3*60000))novas.push(v)}
+      if(v.abriu_em&&!THV.abriu[k]){THV.abriu[k]=1;THV.visto[k]=1;if(!v.enviou_em)abr.push(v)}
+      if(v.enviou_em&&!THV.enviou[k]){THV.enviou[k]=1;THV.abriu[k]=1;THV.visto[k]=1;env.push(v)}});
+    if(novas.length)theoAvisar('chegou',novas);abr.forEach(v=>theoAvisar('abriu',[v]));env.forEach(v=>theoAvisar('enviou',[v]));
+    if((novas.length||abr.length||env.length)&&UI.tela==='painel'&&UI.pab==='resultados'&&!document.querySelector('input:focus'))render()}
+  catch(e){console.error(e)}}
+setInterval(theoVigiar,60000);
+function theoAvisar(tipo,V){if(thSilencio())return;THV.fila.push({tipo,V});theoProximo()}
+function theoProximo(){if(THV.mostrando||!THV.fila.length)return;if(tourAberto()||document.getElementById('novidade')||document.getElementById('festa')){setTimeout(theoProximo,5000);return}
+  const it=THV.fila.shift();THV.mostrando=true;theoCard(it.tipo,it.V)}
+function theoCard(tipo,V){const v=V[0],o=VT_ORI[v.origem]||VT_ORI.outro,n=V.length;
+  const tit=tipo==='chegou'?(n>1?n+' pessoas chegaram no site!':'Chegou gente no site!'):tipo==='abriu'?'👀 Abriu o formulário!':'🎉 Preencheu o formulário!';
+  const txt=tipo==='chegou'?(n>1?'Vieram de '+[...new Set(V.map(x=>(VT_ORI[x.origem]||VT_ORI.outro)[1]))].join(', ')+'.':'Veio do '+o[1]+', pelo '+(v.aparelho==='celular'?'celular':'computador')+', na página '+vtPagina(v)+'.')
+    :tipo==='abriu'?'Está na página '+vtPagina(v)+' ('+o[1]+'). Se desistir, aparece em "Quem entrou no site".':'Já está em Contatos, com a mensagem pronta para responder.';
+  const el=document.createElement('div');el.id='theo-aviso';el.className='th-'+tipo;el.setAttribute('role','status');el.style.setProperty('--c',AGENTES.theo.cor);
+  el.innerHTML='<div class="th-radar" aria-hidden="true"><span></span><span></span><span></span>'+av('theo',54)+'</div><div class="th-corpo"><span class="th-nome">Theo · marketing</span><b>'+esc(tit)+'</b><p>'+esc(txt)+'</p>'+
+    '<div class="th-chips"><span>'+o[0]+' '+o[1]+'</span><span>'+(v.aparelho==='celular'?'📱 Celular':'💻 Computador')+'</span><span>🕒 '+new Date(tipo==='chegou'?v.entrou:(v.enviou_em||v.abriu_em)).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</span></div>'+
+    '<div class="th-bts"><button class="btn sm pri" data-th="ver">Ver quem entrou</button><button class="btn sm" data-th="calar" title="Não avisar mais hoje">🔕 Silenciar hoje</button></div></div>'+
+    '<button class="pa-x" data-th="fecha" aria-label="Fechar">✕</button>';
+  document.body.appendChild(el);clearTimeout(THV.t);THV.t=setTimeout(theoFechar,tipo==='enviou'?14000:9000)}
+function theoFechar(){const el=document.getElementById('theo-aviso');if(el){el.classList.add('sai');setTimeout(()=>{el.remove();THV.mostrando=false;setTimeout(theoProximo,800)},350)}else{THV.mostrando=false}}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-th]');if(!b)return;const a=b.dataset.th;
+  if(a==='calar'){try{localStorage.setItem('ideali-theo-silencio',hojeISO())}catch(x){}THV.fila=[];toast('Combinado: o Theo não avisa mais hoje.')}
+  if(a==='ver'){UI.tela='painel';UI.pab='resultados';VT.per='hoje';render();setTimeout(()=>{const s=document.querySelector('.vt');if(s)s.scrollIntoView({behavior:'smooth',block:'start'})},60)}
+  clearTimeout(THV.t);theoFechar()});
 
 function carregarLib(){return new Promise((ok,falha)=>{if(window.supabase)return ok();const s=document.createElement('script');s.src=CONFIG.lib;s.onload=ok;s.onerror=()=>falha(new Error('Sem internet para carregar o sistema.'));document.head.appendChild(s)})}
 (async()=>{
