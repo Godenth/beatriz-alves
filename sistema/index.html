@@ -1222,7 +1222,7 @@ function telaPainelCorpo(){
   return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><h2>Painel</h2><div class="seg" style="margin-left:auto">'+[['semana','Semana'],['mes','Mês']].map(p=>'<button data-per="'+p[0]+'" class="'+(UI.per===p[0]?'on':'')+'">'+p[1]+'</button>').join('')+'</div></div>'+
    '<div class="kpis"><div class="kpi"><small>Contatos</small><b>'+tot+'</b><em>últimos '+dias+' dias</em></div><div class="kpi"><small>Viraram consulta</small><b>'+pct(cons)+'</b><em>'+cons+' consulta'+(cons===1?'':'s')+'</em></div><div class="kpi"><small>Viraram cliente</small><b>'+pct(cli)+'</b><em>'+cli+' cliente'+(cli===1?'':'s')+'</em></div><div class="kpi"><small>1ª resposta (média)</small><b>'+fmtH(med)+'</b><em>do contato até abrir o WhatsApp</em></div></div>'+
    '<div class="graf"><div class="box"><h3>Por assunto</h3>'+barras(conta(l=>TEMAS[l.tema].nome),corTema)+'</div><div class="box"><h3>Por agente</h3>'+barras(conta(l=>AGENTES[agDe(l)].nome),corAg)+'</div><div class="box"><h3>Por origem</h3>'+barras(conta(l=>l.origem))+'</div></div>'+
-   funilSite(dias)+linhaTempoVisitas()+
+   linhaTempoVisitas()+funilSite(dias)+
    (REAL?'<div class="graf" style="grid-template-columns:1fr"><div class="box"><h3>Cliques no WhatsApp do site (30 dias)</h3>'+(()=>{const m={};(D.cliques||[]).forEach(c=>{const k=(TEMAS[c.tema]||TEMAS.outro).nome;m[k]=(m[k]||0)+c.total});return barras(Object.entries(m).sort((a,b)=>b[1]-a[1]),corTema)})()+'</div></div>'
      :'<p class="nota" style="margin-top:12px">Os cliques do site por assunto entram aqui quando o banco de dados for ligado.</p>');
 }
