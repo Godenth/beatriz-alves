@@ -857,6 +857,17 @@ body.kb-arrastando,body.kb-arrastando *{cursor:grabbing!important;user-select:no
 .vt-lt{font-size:12px;font-weight:600}.vt-t{text-align:right;color:var(--mut);font-variant-numeric:tabular-nums}
 .vt-ev{grid-column:2/-1;font-size:12px;font-weight:600}.vt-ev.ok{color:#1F9D55}.vt-ev.ab{color:#C2410C}
 @media (max-width:760px){.vt-lt{white-space:nowrap}.vt-pags li{grid-template-columns:44px 1fr 112px}.vt-bar{grid-column:2/3}.vt-lt{grid-column:3/4;grid-row:1}.vt-t{grid-column:3/4}.vt-st{margin-left:0;flex-basis:100%}}
+/* tipos de tarefa: cor forte */
+.kb-card{background:color-mix(in srgb,var(--cat,#94A3B8) 20%,var(--card));border-color:color-mix(in srgb,var(--cat,#94A3B8) 45%,var(--rule));border-left:6px solid var(--cat,#94A3B8)}
+.kb-card b{font-size:14.5px}
+.kb-cat{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--cat,#94A3B8);padding:2px 8px;border-radius:999px;margin:0 6px 4px 0}
+.kb-card .kb-prio{display:inline-block;margin:0 0 4px}
+.kb-card.feito{background:color-mix(in srgb,var(--cat,#94A3B8) 8%,var(--card));opacity:.85}
+.kb-cats{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.kb-catb{border:2px solid var(--cat);background:color-mix(in srgb,var(--cat) 12%,transparent);color:var(--fg);border-radius:999px;padding:4px 10px;font:600 12.5px var(--f);cursor:pointer}
+.kb-catb.on{background:var(--cat);color:#fff;box-shadow:0 2px 8px -2px var(--cat)}
+.kb-legenda{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 12px;align-items:center}
+.kb-add select{font-size:13px}
 </style>
 
 <div id="app"></div>
@@ -3976,16 +3987,19 @@ document.addEventListener('submit',async e=>{const f=e.target;if(f.id!=='hon-for
 TAB_LOCAL.tarefas='tarefas';
 const KB_COLS=[['afazer','A fazer','#5E8FA8'],['fazendo','Fazendo','#C9A24A'],['aguardando','Aguardando','#9B7BC8'],['feito','Feito','#3FA06B']];
 const KB_PRIO=[['Normal',''],['Alta','#E8A317'],['Urgente','#E5484D']];
+const KB_CAT=[['cliente','👤','Cliente','#3B82F6'],['processo','⚖️','Processo','#8B5CF6'],['prazo','⏰','Prazo','#E11D48'],['financeiro','💰','Financeiro','#10B981'],['agenda','📅','Agenda','#F59E0B'],['reuniao','🤝','Reunião','#06B6D4'],['outro','📌','Outro','#94A3B8']];
+const kbCat=t=>KB_CAT.find(c=>c[0]===(t&&t.categoria))||KB_CAT[6];
+const kbChipsCat=(sel,alvo)=>'<div class="kb-cats" role="radiogroup" aria-label="Tipo da tarefa">'+KB_CAT.map(c=>'<button type="button" role="radio" aria-checked="'+(c[0]===sel)+'" class="kb-catb'+(c[0]===sel?' on':'')+'" data-kbcat="'+c[0]+'" data-alvo="'+alvo+'" style="--cat:'+c[3]+'">'+c[1]+' '+c[2]+'</button>').join('')+'</div>';
 const KB={carregado:false,prom:null,add:null,busca:'',filtro:'todas',edit:null};
 function seedTarefas(){const h=hojeISO(),T=(titulo,coluna,ordem,extra)=>Object.assign({id:uid(),titulo,coluna,ordem,obs:'',prazo:null,prioridade:0,cliente_id:null,processo_id:null,criado_em:new Date().toISOString(),concluido_em:coluna==='feito'?new Date().toISOString():null,exemplo:true},extra||{});
-  return [T('Exemplo: protocolar contestação','afazer',1024,{prazo:addDias(h,2),prioridade:2,urgente_desde:new Date(Date.now()-3*36e5).toISOString()}),T('Exemplo: pedir certidão de casamento atualizada','afazer',2048,{prazo:addDias(h,6)}),
-    T('Exemplo: montar cálculo da pensão atrasada','fazendo',1024,{prioridade:1}),T('Exemplo: aguardar documentos da cliente','aguardando',1024,{prazo:addDias(h,-1)}),T('Exemplo: enviar procuração para assinatura','feito',1024)]}
+  return [T('Exemplo: protocolar contestação','afazer',1024,{categoria:'prazo',prazo:addDias(h,2),prioridade:2,urgente_desde:new Date(Date.now()-3*36e5).toISOString()}),T('Exemplo: pedir certidão de casamento atualizada','afazer',2048,{categoria:'cliente',prazo:addDias(h,6)}),
+    T('Exemplo: montar cálculo da pensão atrasada','fazendo',1024,{categoria:'processo',prioridade:1}),T('Exemplo: aguardar documentos da cliente','aguardando',1024,{categoria:'cliente',prazo:addDias(h,-1)}),T('Exemplo: enviar procuração para assinatura','feito',1024,{categoria:'cliente'}),T('Exemplo: cobrar 2ª parcela de honorários','afazer',3072,{categoria:'financeiro',prazo:addDias(h,3)}),T('Exemplo: reunião com a cliente sobre acordo','aguardando',2048,{categoria:'reuniao',prazo:addDias(h,1)})]}
 function carregarTarefas(){if(KB.prom)return KB.prom;
   KB.prom=(async()=>{try{if(REAL)await STORE.load('tarefas','ordem');else{await new Promise(r=>setTimeout(r,40));if(!D.tarefas){D.tarefas=seedTarefas();salvar()}}}catch(e){console.error(e);D.tarefas=D.tarefas||[]}
     KB.carregado=true;if(!CLI.carregado)await carregarClientes()})();
   return KB.prom}
 const kbDe=col=>(D.tarefas||[]).filter(t=>t.coluna===col).sort((a,b)=>a.ordem-b.ordem);
-function kbPassa(t){const h=hojeISO();if(KB.filtro==='atrasadas'&&!(t.prazo&&t.prazo<h&&t.coluna!=='feito'))return false;if(KB.filtro==='semana'&&!(t.prazo&&t.prazo<=addDias(h,7)&&t.coluna!=='feito'))return false;
+function kbPassa(t){const h=hojeISO();if(KB.cat&&(t.categoria||'outro')!==KB.cat)return false;if(KB.filtro==='atrasadas'&&!(t.prazo&&t.prazo<h&&t.coluna!=='feito'))return false;if(KB.filtro==='semana'&&!(t.prazo&&t.prazo<=addDias(h,7)&&t.coluna!=='feito'))return false;
   if(!KB.busca)return true;const c=(D.clientes||[]).find(x=>x.id===t.cliente_id),p=(D.processos||[]).find(x=>x.id===t.processo_id);
   return semAcento([t.titulo,t.obs,c&&c.nome,p&&p.titulo].join(' ')).includes(semAcento(KB.busca))}
 function kbPrazo(t){if(!t.prazo)return '';const h=hojeISO(),d=novaData(t.prazo).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
@@ -3993,7 +4007,7 @@ function kbPrazo(t){if(!t.prazo)return '';const h=hojeISO(),d=novaData(t.prazo).
   if(t.prazo<h)return '<span class="kb-chip atr">⏰ Atrasada · '+d+'</span>';if(t.prazo===h)return '<span class="kb-chip hoje">⏰ Hoje</span>';
   if(t.prazo===addDias(h,1))return '<span class="kb-chip breve">📅 Amanhã</span>';return '<span class="kb-chip">📅 '+d+'</span>'}
 function kbCard(t){const c=(D.clientes||[]).find(x=>x.id===t.cliente_id),p=(D.processos||[]).find(x=>x.id===t.processo_id),pr=KB_PRIO[t.prioridade||0];
-  return '<div class="kb-card'+(t.coluna==='feito'?' feito':'')+(tfUrg(t)?' urg':'')+'" data-kbcard="'+t.id+'" tabindex="0" role="button" aria-label="'+esc(t.titulo)+'. Toque para editar; arraste para mudar de coluna."'+(pr[1]?' style="--pr:'+pr[1]+'"':'')+'>'+
+  return '<div class="kb-card'+(t.coluna==='feito'?' feito':'')+(tfUrg(t)?' urg':'')+'" data-kbcard="'+t.id+'" tabindex="0" role="button" aria-label="'+esc(t.titulo)+'. Toque para editar; arraste para mudar de coluna."'+' style="--cat:'+kbCat(t)[3]+(pr[1]?';--pr:'+pr[1]:'')+'">'+'<span class="kb-cat">'+kbCat(t)[1]+' '+kbCat(t)[2]+'</span>'+
     (t.coluna!=='feito'?'<button class="kb-urg-bt'+(t.prioridade===2?' on':'')+'" data-kb="urg" data-id="'+t.id+'" aria-pressed="'+(t.prioridade===2)+'" title="'+(t.prioridade===2?'Tirar urgência':'Marcar urgente')+'" aria-label="'+(t.prioridade===2?'Tirar urgência':'Marcar urgente')+'">🔥</button>':'')+(pr[1]?'<span class="kb-prio">'+(tfUrg(t)?'🔥 '+pr[0]+(t.lembrar_em&&new Date(t.lembrar_em)>new Date()?' · lembrar '+esc(fmtQuando(t.lembrar_em)):''):pr[0])+'</span>':'')+'<b>'+(t.coluna==='feito'?'✓ ':'')+esc(t.titulo)+'</b>'+
     '<div class="kb-meta">'+kbPrazo(t)+(c?'<span class="kb-chip">👤 '+esc(primeiroNome(c.nome))+'</span>':'')+(p?'<span class="kb-chip">⚖ '+esc(String(p.titulo).slice(0,28))+'</span>':'')+(t.obs?'<span class="kb-chip" title="Tem observação">📝</span>':'')+'</div></div>'}
 function telaTarefas(){if(!KB.carregado){carregarTarefas().then(()=>{if(UI.tela==='tarefas')render()});return '<div class="lead ivazio"><div class="carregando"><span></span><span></span><span></span></div><p>Abrindo o quadro…</p></div>'}
@@ -4001,15 +4015,17 @@ function telaTarefas(){if(!KB.carregado){carregarTarefas().then(()=>{if(UI.tela=
   const cols=KB_COLS.map(([k,nome,cor])=>{let L=kbDe(k).filter(kbPassa);const tot=L.length;if(k==='feito'){const lim=addDias(h,-30);L=L.filter(t=>!t.concluido_em||t.concluido_em.slice(0,10)>=lim).slice(-40)}
     return '<section class="kb-col" data-kbcol="'+k+'" style="--cc:'+cor+'"><header><span class="kb-dot"></span><b>'+nome+'</b><span class="kb-n">'+tot+'</span></header>'+
       '<div class="kb-lista" data-kblista="'+k+'">'+L.map(kbCard).join('')+(L.length?'':'<p class="kb-vazio">'+(k==='feito'?'Arraste para cá o que terminar.':'Nada aqui.')+'</p>')+'</div>'+
-      (KB.add===k?'<form class="kb-add" id="kb-add" data-col="'+k+'"><textarea class="inp" id="kb-add-t" rows="2" maxlength="160" placeholder="O que precisa ser feito?"></textarea><div class="acoes"><button class="btn pri sm" type="submit">Adicionar</button><button class="btn sm" type="button" data-kb="cancela">Cancelar</button></div></form>'
+      (KB.add===k?'<form class="kb-add" id="kb-add" data-col="'+k+'"><textarea class="inp" id="kb-add-t" rows="2" maxlength="160" placeholder="O que precisa ser feito?"></textarea>'+kbChipsCat(KB.addCat||'outro','add')+'<select class="inp" id="kb-add-cli" aria-label="Cliente (opcional)"><option value="">Cliente (opcional)</option>'+(D.clientes||[]).slice().sort((a,b)=>String(a.nome).localeCompare(String(b.nome))).map(c=>'<option value="'+c.id+'">'+esc(c.nome)+'</option>').join('')+'</select><div class="acoes"><button class="btn pri sm" type="submit">Adicionar</button><button class="btn sm" type="button" data-kb="cancela">Cancelar</button></div></form>'
         :'<button class="kb-mais" data-kb="add" data-col="'+k+'">+ Adicionar tarefa</button>')+'</section>'}).join('');
   return '<div class="kb-topo"><div><h2 style="margin:0">Tarefas</h2><p class="mut" style="margin:2px 0 0">Arraste os cartões entre as colunas. Toque num cartão para editar.'+(atr?' <b style="color:var(--perigo)">'+atr+(atr===1?' atrasada':' atrasadas')+'.</b>':'')+'</p></div>'+
     '<div class="kb-ferr"><input class="inp" id="kb-busca" placeholder="Buscar tarefa, cliente ou processo" value="'+esc(KB.busca)+'" autocomplete="off"><div class="seg">'+[['todas','Todas'],['semana','Prazo em 7 dias'],['atrasadas','Atrasadas']].map(f=>'<button data-kb="filtro" data-f="'+f[0]+'" class="'+(KB.filtro===f[0]?'on':'')+'">'+f[1]+'</button>').join('')+'</div>'+
-    '<button class="btn pri" data-kb="nova">+ Nova tarefa</button></div></div><div class="kb-board" id="kb-board">'+cols+'</div>'}
+    '<button class="btn pri" data-kb="nova">+ Nova tarefa</button></div></div>'+
+    '<div class="kb-legenda" aria-label="Filtrar por tipo">'+KB_CAT.map(c=>'<button class="kb-catb'+(KB.cat===c[0]?' on':'')+'" data-kb="cat" data-c="'+c[0]+'" style="--cat:'+c[3]+'" aria-pressed="'+(KB.cat===c[0])+'">'+c[1]+' '+c[2]+'</button>').join('')+(KB.cat?'<button class="lnk" data-kb="cat" data-c="">limpar filtro</button>':'')+'</div><div class="kb-board" id="kb-board">'+cols+'</div>'}
 /* formulário de tarefa (nova ou edição) */
 function kbForm(t){const novo=!t.id,C=(D.clientes||[]).slice().sort((a,b)=>String(a.nome).localeCompare(String(b.nome)));const P=(D.processos||[]).filter(p=>!t.cliente_id||p.cliente_id===t.cliente_id);
   abrirModal('<h2>'+(novo?'Nova tarefa':'Editar tarefa')+'</h2><form id="kb-form" data-id="'+(t.id||'')+'">'+
     '<label class="f">O que fazer<input class="inp" id="kf-tit" maxlength="160" required value="'+esc(t.titulo||'')+'"></label>'+
+    '<div class="f"><span>Tipo</span>'+kbChipsCat(t.categoria||'outro','kf')+'<input type="hidden" id="kf-cat" value="'+esc(t.categoria||'outro')+'"></div>'+
     '<div class="grid2"><label class="f">Coluna<select class="inp" id="kf-col">'+KB_COLS.map(c=>'<option value="'+c[0]+'"'+(c[0]===(t.coluna||'afazer')?' selected':'')+'>'+c[1]+'</option>').join('')+'</select></label>'+
     '<label class="f">Prazo<input class="inp" type="date" id="kf-prazo" value="'+esc(t.prazo||'')+'"></label>'+
     '<label class="f">Prioridade<select class="inp" id="kf-prio">'+KB_PRIO.map((p,i)=>'<option value="'+i+'"'+(i===(t.prioridade||0)?' selected':'')+'>'+p[0]+'</option>').join('')+'</select></label>'+
@@ -4028,23 +4044,30 @@ document.addEventListener('click',async e=>{const c=e.target.closest('[data-kbca
   const b=e.target.closest('[data-kb]');if(!b)return;const a=b.dataset.kb;
   if(a==='urg'){const t=(D.tarefas||[]).find(x=>x.id===b.dataset.id);if(t)await tfMarcar(t.id,t.prioridade!==2);return}
   if(a==='add'){KB.add=b.dataset.col;render();const i=$('#kb-add-t');if(i)i.focus();return}
-  if(a==='cancela'){KB.add=null;render();return}
+  if(a==='cancela'){KB.add=null;KB.addCat=null;render();return}
   if(a==='filtro'){KB.filtro=b.dataset.f;render();return}
+  if(a==='cat'){KB.cat=KB.cat===b.dataset.c?'':b.dataset.c;render();return}
   if(a==='nova'){kbForm({coluna:'afazer'});return}
   if(a==='concluir'){fecharModal();await kbMover(b.dataset.id,'feito',kbProxOrdem('feito'));return}
   if(a==='apagar'){if(!KB.apagar||KB.apagar!==b.dataset.id){KB.apagar=b.dataset.id;b.textContent='Tocar de novo para apagar';setTimeout(()=>{KB.apagar=null},4000);return}
     KB.apagar=null;try{await STORE.del('tarefas',b.dataset.id);fecharModal();toast('Tarefa apagada.')}catch(x){toast('Não consegui apagar agora.')}render();return}});
 document.addEventListener('submit',async e=>{const f=e.target;
   if(f.id==='kb-add'){e.preventDefault();const v=$('#kb-add-t').value.trim();if(!v)return;const col=f.dataset.col;
-    try{await STORE.ins('tarefas',[{titulo:v.slice(0,160),coluna:col,ordem:kbProxOrdem(col),prioridade:0,obs:null,prazo:null,cliente_id:null,processo_id:null,criado_em:new Date().toISOString(),concluido_em:col==='feito'?new Date().toISOString():null}])}catch(x){console.error(x);toast('Não consegui adicionar agora.')}
+    const cli=($('#kb-add-cli')||{}).value||null;let cat=KB.addCat||'outro';if(cli&&cat==='outro')cat='cliente';
+    try{await STORE.ins('tarefas',[{titulo:v.slice(0,160),coluna:col,categoria:cat,ordem:kbProxOrdem(col),prioridade:0,obs:null,prazo:null,cliente_id:cli,processo_id:null,criado_em:new Date().toISOString(),concluido_em:col==='feito'?new Date().toISOString():null}])}catch(x){console.error(x);toast('Não consegui adicionar agora.')}
     render();const i=$('#kb-add-t');if(i)i.focus();return}
   if(f.id!=='kb-form')return;e.preventDefault();const id=f.dataset.id,tit=$('#kf-tit').value.trim();if(!tit){toast('Escreva o que precisa ser feito.');return}
-  const col=$('#kf-col').value,c={titulo:tit.slice(0,160),coluna:col,prazo:$('#kf-prazo').value||null,prioridade:+$('#kf-prio').value||0,cliente_id:$('#kf-cli').value||null,processo_id:$('#kf-proc').value||null,obs:($('#kf-obs').value||'').trim().slice(0,500)||null};
+  const col=$('#kf-col').value,c={titulo:tit.slice(0,160),coluna:col,categoria:($('#kf-cat')||{}).value||'outro',prazo:$('#kf-prazo').value||null,prioridade:+$('#kf-prio').value||0,cliente_id:$('#kf-cli').value||null,processo_id:$('#kf-proc').value||null,obs:($('#kf-obs').value||'').trim().slice(0,500)||null};
   {const t0=id&&D.tarefas.find(x=>x.id===id);if(c.prioridade===2){if(!t0||t0.prioridade!==2){c.urgente_desde=new Date().toISOString();if(id)delete TF.prox[id]}}else{c.urgente_desde=null;c.lembrar_em=null}}
   try{if(id){const t=D.tarefas.find(x=>x.id===id);if(t&&t.coluna!==col)c.ordem=kbProxOrdem(col);if(!REAL&&col==='feito'&&t&&!t.concluido_em)c.concluido_em=new Date().toISOString();await STORE.upd('tarefas',id,c)}
     else await STORE.ins('tarefas',[Object.assign(c,{ordem:kbProxOrdem(col),criado_em:new Date().toISOString(),concluido_em:col==='feito'?new Date().toISOString():null})]);
     fecharModal();toast(id?'Tarefa salva.':'Tarefa criada.')}catch(x){console.error(x);toast('Não consegui salvar agora.')}render()});
-document.addEventListener('change',e=>{if(e.target.id!=='kf-cli')return;const cid=e.target.value,s=$('#kf-proc');if(!s)return;const P=(D.processos||[]).filter(p=>!cid||p.cliente_id===cid);
+function kbSetCat(alvo,cat){if(alvo==='add')KB.addCat=cat;else{const h=$('#kf-cat');if(h)h.value=cat}
+  document.querySelectorAll('[data-kbcat][data-alvo="'+alvo+'"]').forEach(b=>{const on=b.dataset.kbcat===cat;b.classList.toggle('on',on);b.setAttribute('aria-checked',on)})}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-kbcat]');if(!b)return;e.preventDefault();kbSetCat(b.dataset.alvo,b.dataset.kbcat)});
+document.addEventListener('change',e=>{if(e.target.id==='kb-add-cli'&&e.target.value&&(KB.addCat||'outro')==='outro')kbSetCat('add','cliente');
+  if(e.target.id==='kf-proc'&&e.target.value&&['outro','cliente'].includes(($('#kf-cat')||{}).value))kbSetCat('kf','processo')});
+document.addEventListener('change',e=>{if(e.target.id!=='kf-cli')return;if(e.target.value&&($('#kf-cat')||{}).value==='outro')kbSetCat('kf','cliente');const cid=e.target.value,s=$('#kf-proc');if(!s)return;const P=(D.processos||[]).filter(p=>!cid||p.cliente_id===cid);
   s.innerHTML='<option value="">—</option>'+P.map(p=>'<option value="'+p.id+'">'+esc(p.titulo)+'</option>').join('')});
 document.addEventListener('keydown',e=>{if(e.target.id==='kb-add-t'&&e.key==='Enter'&&!e.shiftKey){e.preventDefault();e.target.form.requestSubmit()}
   if(e.target.closest&&e.target.closest('[data-kbcard]')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();e.target.click()}});
@@ -4055,21 +4078,25 @@ let ARR=null;
 function kbIniciar(){const r=ARR.el.getBoundingClientRect();ARR.ativo=true;ARR.dx=ARR.x0-r.left;ARR.dy=ARR.y0-r.top;
   const g=ARR.el.cloneNode(true);g.classList.add('kb-fantasma');g.style.width=r.width+'px';g.style.left=r.left+'px';g.style.top=r.top+'px';document.body.appendChild(g);ARR.g=g;
   const ph=document.createElement('div');ph.className='kb-ph';ph.style.height=r.height+'px';ARR.el.after(ph);ARR.ph=ph;ARR.el.classList.add('kb-origem');
-  document.body.classList.add('kb-arrastando');if(navigator.vibrate&&ARR.toque)try{navigator.vibrate(15)}catch(e){}}
-function kbMove(x,y){const g=ARR.g;g.style.left=(x-ARR.dx)+'px';g.style.top=(y-ARR.dy)+'px';
+  document.body.classList.add('kb-arrastando');ARR.lx=ARR.x0;ARR.ly=ARR.y0;ARR.auto=setInterval(()=>{if(!ARR||!ARR.ativo)return;if(kbBeirada()){const x=ARR.lx,y=ARR.ly;kbMove(x,y)}},40);if(navigator.vibrate&&ARR.toque)try{navigator.vibrate(15)}catch(e){}}
+function kbMove(x,y){ARR.lx=x;ARR.ly=y;const g=ARR.g;g.style.left=(x-ARR.dx)+'px';g.style.top=(y-ARR.dy)+'px';
   g.style.display='none';const alvo=document.elementFromPoint(x,y);g.style.display='';
   const lista=alvo&&(alvo.closest('[data-kblista]')||(alvo.closest('[data-kbcol]')&&alvo.closest('[data-kbcol]').querySelector('[data-kblista]')));
   if(lista){const cards=[...lista.querySelectorAll('.kb-card:not(.kb-origem)')];const antes=cards.find(c=>{const r=c.getBoundingClientRect();return y<r.top+r.height/2});
     const vazio=lista.querySelector('.kb-vazio');if(vazio)vazio.remove();
     if(antes){if(ARR.ph.nextSibling!==antes)lista.insertBefore(ARR.ph,antes)}else if(ARR.ph.parentNode!==lista||ARR.ph.nextSibling)lista.appendChild(ARR.ph)}
-  const b=document.getElementById('kb-board');if(b){const r=b.getBoundingClientRect();if(x>r.right-50)b.scrollLeft+=14;else if(x<r.left+50)b.scrollLeft-=14}
-  if(y<70)scrollBy(0,-14);else if(y>innerHeight-70)scrollBy(0,14)}
+  kbBeirada()}
+function kbBeirada(){if(!ARR||!ARR.ativo)return false;const x=ARR.lx,y=ARR.ly;let mexeu=false;
+  const b=document.getElementById('kb-board');if(b){const r=b.getBoundingClientRect(),dir=Math.min(r.right,innerWidth),esq=Math.max(r.left,0);
+    if(x>dir-50&&b.scrollLeft<b.scrollWidth-b.clientWidth){b.scrollLeft+=14;mexeu=true}else if(x<esq+50&&b.scrollLeft>0){b.scrollLeft-=14;mexeu=true}}
+  if(y<70&&scrollY>0){scrollBy(0,-14);mexeu=true}else if(y>innerHeight-70){const a=scrollY;scrollBy(0,14);mexeu=mexeu||scrollY!==a}
+  return mexeu}
 async function kbSoltar(){const lista=ARR.ph.parentNode,col=lista&&lista.dataset.kblista,id=ARR.id;
   const viz=[...lista.children].filter(c=>c.classList.contains('kb-card')&&!c.classList.contains('kb-origem')||c===ARR.ph),i=viz.indexOf(ARR.ph);
   const ord=c=>{const t=(D.tarefas||[]).find(x=>x.id===c.dataset.kbcard);return t?t.ordem:0};
   const ant=i>0?ord(viz[i-1]):null,dep=i<viz.length-1?ord(viz[i+1]):null;
   const nova=ant==null&&dep==null?1024:ant==null?dep-1024:dep==null?ant+1024:(ant+dep)/2;
-  ARR.g.remove();document.body.classList.remove('kb-arrastando');const t=(D.tarefas||[]).find(x=>x.id===id);ARR=null;
+  clearInterval(ARR.auto);ARR.g.remove();document.body.classList.remove('kb-arrastando');const t=(D.tarefas||[]).find(x=>x.id===id);ARR=null;
   if(!col||!t){render();return}
   if(t.coluna===col&&Math.abs(t.ordem-nova)<1e-9){render();return}
   t.coluna=col;t.ordem=nova;render();await kbMover(id,col,nova)}
@@ -4080,7 +4107,7 @@ document.addEventListener('pointermove',e=>{if(!ARR)return;const d=Math.hypot(e.
   if(!ARR.ativo){if(ARR.toque){if(d>8){ARR.cancel=true;clearTimeout(ARR.timer);ARR=null}return}if(d>6)kbIniciar();else return}
   e.preventDefault();KB.arrastou=true;kbMove(e.clientX,e.clientY)});
 document.addEventListener('pointerup',e=>{if(!ARR)return;clearTimeout(ARR.timer);if(ARR.ativo){KB.arrastou=true;setTimeout(()=>{KB.arrastou=false},60);kbSoltar()}else ARR=null});
-document.addEventListener('pointercancel',()=>{if(!ARR)return;clearTimeout(ARR.timer);if(ARR.ativo){ARR.g.remove();document.body.classList.remove('kb-arrastando');ARR=null;render()}else ARR=null});
+document.addEventListener('pointercancel',()=>{if(!ARR)return;clearTimeout(ARR.timer);clearInterval(ARR.auto);if(ARR.ativo){ARR.g.remove();document.body.classList.remove('kb-arrastando');ARR=null;render()}else ARR=null});
 document.addEventListener('touchmove',e=>{if(ARR&&ARR.ativo)e.preventDefault()},{passive:false});
 document.addEventListener('contextmenu',e=>{if(ARR&&e.target.closest('.kb-card'))e.preventDefault()});
 
