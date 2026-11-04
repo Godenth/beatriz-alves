@@ -540,24 +540,6 @@ footer .rod-links a{color:#fff}
 function origemVisita(){var o='';/* Anúncio pago do Meta: utm_source=meta&utm_medium=anuncio (vale mesmo dentro do app do Instagram/Facebook) */try{var q0=new URLSearchParams(location.search),s0=(q0.get('utm_source')||'').toLowerCase(),m0=(q0.get('utm_medium')||'').toLowerCase();if(s0==='meta'||(/^(facebook|fb|instagram|ig)$/.test(s0)&&/^(anuncio|paid|cpc|ads?|pago)$/.test(m0))){o='anuncio_meta';try{sessionStorage.setItem('ba-origem',o)}catch(e){}return o}}catch(e){}try{o=sessionStorage.getItem('ba-origem')||''}catch(e){}if(o)return o;var u=new URLSearchParams(location.search),ua=navigator.userAgent||'',r=document.referrer||'',src=(u.get('utm_source')||'').toLowerCase();o=/Instagram/i.test(ua)||/instagram/.test(src)||/instagram\.com/.test(r)?'instagram':/FBAN|FBAV|FB_IAB|FBIOS/i.test(ua)||/facebook|fb/.test(src)||/facebook\.com/.test(r)?'facebook':u.get('gclid')||/google/.test(src)||/google\./.test(r)?'google':(src==='meta'||u.get('fbclid'))?'facebook':'direto';try{sessionStorage.setItem('ba-origem',o)}catch(e){}return o}
 origemVisita();
 </script>
-<style id="ct-css">
-.ct-fundo{position:fixed;inset:0;z-index:90;background:rgba(10,16,32,.62);display:flex;align-items:flex-end;justify-content:center;padding:16px}
-@media(min-width:640px){.ct-fundo{align-items:center}}
-.ct-caixa{width:100%;max-width:420px;background:#fff;color:#14213D;border-radius:18px;padding:22px 20px 18px;box-shadow:0 20px 50px rgba(0,0,0,.35);font-family:'Manrope','Segoe UI',system-ui,sans-serif;position:relative}
-.ct-caixa h2{margin:0 0 4px;font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;line-height:1.15;color:#14213D}
-.ct-caixa p.ct-sub{margin:0 0 14px;font-size:14px;color:#56607A}
-.ct-caixa label.ct-l{display:block;font-size:13px;font-weight:600;margin:10px 0 4px}
-.ct-caixa input[type=text],.ct-caixa input[type=tel]{width:100%;font:inherit;font-size:16px;padding:12px 13px;border:1.5px solid #D9D5CC;border-radius:11px;color:#14213D;background:#FAF9F6}
-.ct-caixa input:focus{outline:none;border-color:#BF9440;background:#fff}
-.ct-ok{display:flex;gap:9px;align-items:flex-start;margin:14px 0 4px;font-size:12.5px;line-height:1.4;color:#56607A}
-.ct-ok input{margin-top:2px;width:18px;height:18px;flex:none;accent-color:#14213D}
-.ct-bt{margin-top:14px;width:100%;border:0;border-radius:12px;padding:15px;font:inherit;font-weight:700;font-size:16px;background:#1F9D55;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
-.ct-bt[disabled]{opacity:.65;cursor:wait}
-.ct-bt svg{width:20px;height:20px}
-.ct-erro{color:#B42318;font-size:13px;margin:8px 0 0;min-height:1em}
-.ct-x{position:absolute;top:8px;right:10px;border:0;background:none;font-size:26px;line-height:1;color:#56607A;cursor:pointer;padding:6px}
-.ct-arm{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
-</style>
 </head>
 <body>
 <header class="nav">
@@ -647,7 +629,7 @@ if(grid){ grid.innerHTML = DUVIDAS.map(d=>`
   </article>`; }
 
 /* ===== Antes do WhatsApp: nome + telefone vão para o sistema (Leads) ===== */
-const CT_ESC='beatriz-alves', CT_TEMA='acusacao', CT_DIRETO=false;
+const CT_ESC='beatriz-alves', CT_TEMA='acusacao', CT_DIRETO=true;
 const CT_SB='https://bjxfxoieamlnkkllbjib.supabase.co/rest/v1/rpc/';
 const CT_AK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqeGZ4b2llYW1sbmtrbGxiamliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3MTM0MDksImV4cCI6MjEwODI4OTQwOX0.XxHWblbOH49eNEhtIkTjKMkB9PMcwjfW7zHKjqt6gmw';
 /* Robôs (Meta, Google, pré-visualizações, navegadores automáticos) não entram na contagem. Contato com nome e telefone nunca é bloqueado. */
@@ -656,7 +638,7 @@ function ctRpc(f,b){ if(window.BA_TESTE) return Promise.resolve({ok:true,teste:t
 function ctPagina(){ return location.pathname.split('/').pop()||'inicio'; }
 function ctIr(h){
   try{ ctRpc('registrar_clique',{p_origem:origemVisita(),p_escritorio:CT_ESC,p_pagina:ctPagina(),p_tema:CT_TEMA}).catch(()=>{}); }catch(e){}
-  setTimeout(function(){ if(ABRIR_NA_MESMA_ABA) location.href=h; else window.open(h,'_blank','noopener'); },350);
+  if(h) setTimeout(function(){ if(ABRIR_NA_MESMA_ABA) location.href=h; else window.open(h,'_blank','noopener'); },350);
 }
 function ctFunil(et){ if(et!=='visita'&&!BA_CONTOU&&!BA_ROBO){ BA_CONTOU=true; clearTimeout(BA_ESPERA); baContar(); } /* tocou em algo: é gente, conta já */
   try{ ctRpc('registrar_funil',{p_escritorio:CT_ESC,p_pagina:ctPagina(),p_tema:CT_TEMA,p_origem:origemVisita(),p_etapa:et}).catch(()=>{}); }catch(e){} if(et!=='visita'&&typeof vEnv==='function')vEnv(et); }
@@ -684,56 +666,16 @@ if(VS){addEventListener('scroll',vLer,{passive:true});
   addEventListener('pagehide',function(){vEnv('saiu')});
 }
 
-function ctJaEnviou(){ try{ return sessionStorage.getItem('ba-enviou')==='1'; }catch(e){ return false; } }
-function ctAbrir(a){
-  var antigo=document.getElementById('ct-fundo'); if(antigo) antigo.remove(); ctFunil('abriu');
-  var f=document.createElement('div'); f.className='ct-fundo'; f.id='ct-fundo';
-  f.innerHTML='<form class="ct-caixa" role="dialog" aria-modal="true" aria-labelledby="ct-t" novalidate>'+
-    '<button type="button" class="ct-x" aria-label="Fechar">&times;</button>'+
-    '<h2 id="ct-t">Falar com a Dra. Beatriz</h2>'+
-    '<p class="ct-sub">Deixe seu nome e WhatsApp e continue a conversa direto no WhatsApp.</p>'+
-    '<label class="ct-l" for="ct-nome">Seu nome</label><input id="ct-nome" type="text" autocomplete="name" maxlength="80" required>'+
-    '<label class="ct-l" for="ct-tel">Seu WhatsApp (com DDD)</label><input id="ct-tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="(11) 90000-0000" maxlength="20" required>'+
-    '<div class="ct-arm" aria-hidden="true"><input id="ct-arm" type="text" tabindex="-1" autocomplete="off"></div>'+
-    '<label class="ct-ok"><input id="ct-ok" type="checkbox"> <span>Autorizo o uso do meu nome e telefone somente para a Dra. Beatriz Alves responder este contato. Não escreva detalhes do caso aqui.</span></label>'+
-    '<p class="ct-erro" id="ct-erro" role="alert"></p>'+
-    '<button type="submit" class="ct-bt">'+WPP+' Entrar em contato agora</button></form>';
-  document.body.appendChild(f);
-  var form=f.querySelector('form'), nome=f.querySelector('#ct-nome'), tel=f.querySelector('#ct-tel'), erro=f.querySelector('#ct-erro'), bt=f.querySelector('.ct-bt');
-  function fechar(){ f.remove(); document.removeEventListener('keydown',esc); }
-  function esc(e){ if(e.key==='Escape') fechar(); }
-  document.addEventListener('keydown',esc);
-  f.addEventListener('click',function(e){ if(e.target===f) fechar(); });
-  f.querySelector('.ct-x').addEventListener('click',fechar);
-  tel.addEventListener('input',function(){ var d=tel.value.replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,'').slice(0,11);
-    tel.value=d.length>6?'('+d.slice(0,2)+') '+d.slice(2,d.length-4)+'-'+d.slice(-4):d.length>2?'('+d.slice(0,2)+') '+d.slice(2):d; });
-  setTimeout(function(){ nome.focus(); },50);
-  form.addEventListener('submit',function(e){
-    e.preventDefault(); erro.textContent='';
-    var n=nome.value.trim(), d=tel.value.replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,'');
-    if(n.length<2){ erro.textContent='Digite seu nome.'; nome.focus(); return; }
-    if(!/^\d{10,11}$/.test(d)){ erro.textContent='Digite o WhatsApp com DDD, só números.'; tel.focus(); return; }
-    if(!f.querySelector('#ct-ok').checked){ erro.textContent='Marque a autorização para continuar.'; return; }
-    bt.disabled=true;
-    var h=link('Olá, Dra. Beatriz! Meu nome é '+n+'. '+(a.dataset.msg||'').replace(/^Olá, Dra\. Beatriz! ?/,''));
-    var feito=false; function seguir(){ if(feito) return; feito=true; try{ sessionStorage.setItem('ba-enviou','1'); }catch(_){} ctIr(h); }
-    try{
-      ctRpc('receber_contato',{p_escritorio:CT_ESC,p_nome:n,p_telefone:d,p_tema:CT_TEMA,p_pagina:ctPagina(),p_consentimento:true,p_armadilha:f.querySelector('#ct-arm').value,p_origem:origemVisita()})
-        .then(function(r){ if(r.ok){ ctFunil('enviou'); return seguir(); } /* banco ainda na versão antiga: manda sem a origem */
-          return ctRpc('receber_contato',{p_escritorio:CT_ESC,p_nome:n,p_telefone:d,p_tema:CT_TEMA,p_pagina:ctPagina()+' · '+origemVisita(),p_consentimento:true,p_armadilha:f.querySelector('#ct-arm').value}).then(seguir,seguir); },seguir);
-    }catch(_){ seguir(); }
-    setTimeout(seguir,2500); /* se a internet estiver lenta, não segura a pessoa */
-  });
-}
 /* Pixel do Meta: evento padrão Contact, UMA vez por toque no WhatsApp (trava de 1,5 s contra toque duplo; eventID para o Meta descartar repetidos). */
 var BA_CT_ULT=0;
-function baContato(){ var n=Date.now(); if(n-BA_CT_ULT<1500) return; BA_CT_ULT=n;
-  try{ if(window.fbq&&!window.BA_TESTE) fbq('track','Contact',{},{eventID:'ct-'+n.toString(36)+'-'+Math.random().toString(36).slice(2,8)}); }catch(e){} }
+function baContato(){ var n=Date.now(); if(n-BA_CT_ULT<1500) return false; BA_CT_ULT=n;
+  try{ if(window.fbq&&!window.BA_TESTE) fbq('track','Contact',{},{eventID:'ct-'+n.toString(36)+'-'+Math.random().toString(36).slice(2,8)}); }catch(e){} return true; }
+/* Toque no WhatsApp: abre o WhatsApp DIRETO (sem janela de nome e telefone).
+   1 Contact no pixel + "Tocou no WhatsApp" no painel, com a origem. Toque repetido em 1,5 s não conta de novo. */
 function ctClique(ev,a){
-  if(ev.ctrlKey||ev.metaKey||ev.shiftKey||ev.button!==0) return;
-  ev.preventDefault();
-  baContato();
-  if(CT_DIRETO||ctJaEnviou()) ctIr(a.href); else ctAbrir(a);
+  var novo=baContato(); if(novo&&CT_TEMA!=='violencia') ctFunil('abriu');
+  if(ev.ctrlKey||ev.metaKey||ev.shiftKey||ev.button!==0){ if(novo) ctIr(null); return; } /* abrir em nova aba: o navegador abre sozinho */
+  ev.preventDefault(); if(novo) ctIr(a.href);
 }
 document.querySelectorAll('.wa').forEach(a=>{
   a.href=link(a.dataset.msg); a.target=ABRIR_NA_MESMA_ABA?'_self':'_blank'; a.rel='noopener';
