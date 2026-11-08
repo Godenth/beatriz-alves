@@ -898,6 +898,13 @@ body.kb-arrastando,body.kb-arrastando *{cursor:grabbing!important;user-select:no
 .rq-ver-cab{margin:0 0 10px}.rq-ver-cab b{display:block;font-size:17px}.rq-ver-cab small{opacity:.75}
 .rq-conv{margin-top:12px;border:1px solid rgba(127,127,127,.3);border-radius:10px;padding:8px 10px}.rq-conv summary{cursor:pointer;font-weight:600}
 .rq-conv pre{white-space:pre-wrap;font-family:inherit;font-size:13px;max-height:280px;overflow:auto;margin:8px 0 0}
+.rq-fase{display:block;font-size:12px;font-weight:700;opacity:.8;margin-top:2px}
+.rq-obje{padding:10px 12px;border-radius:10px;background:rgba(225,29,72,.08);border:1px solid rgba(225,29,72,.3)}
+.rq-obje q{display:block;margin-top:6px;font-style:italic;opacity:.9}
+.rq-dupla{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:560px){.rq-dupla{grid-template-columns:1fr}}
+.rq-dupla>div{padding:8px 10px;border-radius:10px;border:1px solid rgba(127,127,127,.25)}.rq-dupla ul{margin:4px 0 0;padding-left:18px}
+.rq-obj{display:block;font-size:12px;opacity:.85;margin-top:2px}
+.rq-resp{background:rgba(91,141,239,.07)!important}
 /* Reconquistar contato */
 .modal:has(.rq){max-width:640px;width:calc(100vw - 24px)}
 .rq{position:relative;font-family:var(--sans,system-ui);color:var(--tx,inherit)}
@@ -1236,7 +1243,7 @@ const PAG_NOME={'divorcio-sem-acordo.html':'Divórcio sem acordo (anúncio)','di
 function nomeBotao(b){b=String(b||'').trim();let m;
   if(/^Topo do site$/.test(b))return '"Fale comigo" (cabeçalho)';if(/^Bot[aã]o flutuante$/i.test(b))return 'botão flutuante';if(b==='Hero')return 'botão do topo';if(b==='Apresentação')return 'botão da apresentação';if(b==='Outro assunto')return '"Outro assunto"';
   if((m=b.match(/\((topo|final)\)$/)))return m[1]==='topo'?'botão do topo':'botão do final da página';
-  if((m=b.match(/^(Tópico|Bloco|Dúvida): (.+)$/)))return m[1].toLowerCase()+' "'+m[2]+'"';return b||'botão'}
+  if((m=b.match(/^(Tópico|Bloco|Dúvida): (.+)$/)))return 'botão '+({Tópico:'do tópico',Bloco:'do bloco',Dúvida:'da dúvida'})[m[1]]+' "'+m[2]+'"';return b||'botão'}
 function nomePagina(p,tema){return /^(index\.html|inicio|\?)$/.test(p||'')?'Página inicial':PAG_NOME[p]||(TEMAS[tema]||TEMAS.outro).nome}
 function toquesHTML(li){const T=(D.toques||[]).filter(t=>t.dia>=li);if(!T.length)return '';
   const G={};T.forEach(t=>{const k=t.pagina+'|'+t.botao;const g=G[k]=G[k]||{p:t.pagina,b:t.botao,n:0,an:0};g.n+=t.total;if(t.origem==='anuncio_meta')g.an+=t.total});
@@ -4336,7 +4343,7 @@ function rqTela(){const a=AGENTES[RQ.ag];let corpo='';
       rqResultado(s.analise)+
       '<details class="rq-conv"'+(s.conversa?'':' data-rq="conv"')+'><summary>💬 Ver a conversa analisada</summary><pre>'+esc(s.conversa||'Carregando…')+'</pre></details>'+
       (outras.length?'<h4 class="rq-h">Outras análises deste contato</h4><div class="rq-cards">'+outras.map(rqCard).join('')+'</div>':'')+
-      '<div class="rq-acoes">'+(l?'<button class="btn pri" data-rq="nova" data-lead="'+l.id+'">➕ Nova análise deste contato</button>':'')+'<button class="btn" data-rq="lista">‹ Todas as estratégias</button>'+
+      '<div class="rq-acoes">'+(l?'<button class="btn pri" data-rq="refazer">🔁 Refazer com esta conversa</button><button class="btn" data-rq="nova" data-lead="'+l.id+'">➕ Nova análise deste contato</button>':'')+'<button class="btn" data-rq="lista">‹ Todas as estratégias</button>'+
       '<button class="btn" data-rq="apagar" style="margin-left:auto">'+(RQ.apagar?'Confirmar: apagar':'🗑 Apagar')+'</button></div>'}
   else if(RQ.modo==='nova'){const L=[...(D.leads||[])].sort((x,y)=>x.nome.localeCompare(y.nome,'pt-BR')),sel=rqLead();
     corpo='<div class="rq-ent">'+
@@ -4361,18 +4368,25 @@ function rqTela(){const a=AGENTES[RQ.ag];let corpo='';
   abrirModal('<div class="rq" style="--c:'+a.cor+'"><button class="pa-x" data-fechar="1" aria-label="Fechar">✕</button>'+
     '<div class="rq-cab">'+av(RQ.ag,48)+'<div><b>'+a.nome+' · Reconquistar contato</b><small>Mande a conversa. Eu leio, digo o que aconteceu e sugiro como retomar, com respeito e sem insistência.</small></div></div>'+corpo+'</div>')}
 function rqResultado(r){const tmp=RQ_TEMP[r.temperatura]||['•','—','#888'];
-  const bloco=(t,arr)=>arr&&arr.length?'<h4>'+t+'</h4><ul>'+arr.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'';
-  const msgCard=(rot,m,i)=>'<div class="rq-msg"><span>'+esc(rot)+'</span><p>'+esc(rqDesmascarar(m))+'</p><div><button class="btn sm" data-rq="copiar" data-i="'+i+'">📋 Copiar</button>'+(RQ.tel?'<a class="btn sm" target="_blank" rel="noopener" href="https://wa.me/'+RQ.tel+'?text='+encodeURIComponent(rqDesmascarar(m))+'">💬 Abrir no WhatsApp</a>':'')+'</div></div>';
-  const msgs=[[r.quando?'Mandar '+r.quando:'Mensagem sugerida',r.mensagem]].concat((r.alternativas||[]).map(x=>[x.rotulo||'Outra opção',x.mensagem])).filter(x=>x[1]);
-  RQ._msgs=msgs.map(x=>rqDesmascarar(x[1]));
+  const bloco=(t,arr)=>arr&&arr.length?'<h4>'+t+'</h4><ul>'+arr.map(x=>'<li>'+esc(typeof x==='string'?x:JSON.stringify(x))+'</li>').join('')+'</ul>':'';
+  const plano=(r.plano||[]).filter(p=>p&&p.mensagem);
+  const msgs=(plano.length?plano.map((p,i)=>[(i+1)+'º passo · '+(p.quando||''),p.mensagem,p.objetivo]):[[r.quando?'Mandar '+r.quando:'Mensagem sugerida',r.mensagem]])
+    .concat((r.alternativas||[]).map(x=>['Outra opção · '+(x.rotulo||''),x.mensagem])).filter(x=>x[1]);
+  const resp=(r.respostas_prontas||[]).filter(x=>x&&x.responda);
+  RQ._msgs=msgs.map(x=>rqDesmascarar(x[1])).concat(resp.map(x=>rqDesmascarar(x.responda)));
+  const msgCard=(rot,m,obj,i)=>'<div class="rq-msg"><span>'+esc(rot)+'</span>'+(obj?'<small class="rq-obj">🎯 '+esc(obj)+'</small>':'')+'<p>'+esc(rqDesmascarar(m))+'</p><div><button class="btn sm" data-rq="copiar" data-i="'+i+'">📋 Copiar</button>'+(RQ.tel?'<a class="btn sm" target="_blank" rel="noopener" href="https://wa.me/'+RQ.tel+'?text='+encodeURIComponent(rqDesmascarar(m))+'">💬 Abrir no WhatsApp</a>':'')+'</div></div>';
+  const ob=r.objecao_principal,sa=r.seu_atendimento||{};
   return '<div class="rq-res">'+(r.exemplo?'<p class="nota" style="margin:0 0 8px">Exemplo. No sistema publicado com IA, a análise é feita com a sua conversa.</p>':'')+
-    '<div class="rq-temp" style="--t:'+tmp[2]+'"><b>'+tmp[0]+' '+tmp[1]+'</b><p>'+esc(r.situacao||'')+'</p></div>'+
-    bloco('Sinais na conversa',r.sinais)+bloco('O que pode ter esfriado',r.o_que_pode_ter_afastado)+
-    (r.estrategia?'<h4>Estratégia</h4><p>'+esc(r.estrategia)+'</p>':'')+
-    (r.temperatura==='encerrado'||!msgs.length?'':'<h4>Mensagens prontas (curtas)</h4>'+msgs.map((m,i)=>msgCard(m[0],m[1],i)).join(''))+
-    (r.se_nao_responder?'<h4>Se não responder</h4><p>'+esc(r.se_nao_responder)+'</p>':'')+bloco('Evitar',r.evitar)+
+    '<div class="rq-temp" style="--t:'+tmp[2]+'"><b>'+tmp[0]+' '+tmp[1]+(r.chance?' · chance '+esc(r.chance):'')+'</b>'+(r.fase?'<small class="rq-fase">'+esc(r.fase)+'</small>':'')+'<p>'+esc(r.situacao||'')+'</p>'+(r.chance_por_que?'<p class="mut" style="font-size:13px">'+esc(r.chance_por_que)+'</p>':'')+'</div>'+
+    (ob&&ob.qual?'<h4>O que está travando</h4><div class="rq-obje"><b>'+esc(ob.qual)+'</b>'+(ob.trecho?'<q>'+esc(rqDesmascarar(ob.trecho))+'</q>':'')+'</div>':'')+
+    bloco('Outras objeções',r.outras_objecoes)+bloco('Sinais na conversa',(r.sinais||[]).map(rqDesmascarar))+
+    (sa.acertos&&sa.acertos.length||sa.ajustes&&sa.ajustes.length?'<h4>Seu atendimento</h4><div class="rq-dupla">'+(sa.acertos&&sa.acertos.length?'<div><b>✅ Funcionou</b><ul>'+sa.acertos.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>':'')+(sa.ajustes&&sa.ajustes.length?'<div><b>🔧 Ajustar</b><ul>'+sa.ajustes.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>':'')+'</div>':'')+
+    bloco('O que pode ter esfriado',r.o_que_pode_ter_afastado)+
+    (r.estrategia?'<h4>Estratégia (só para você)</h4><p>'+esc(r.estrategia)+'</p>':'')+
+    (r.temperatura==='encerrado'||!msgs.length?'':'<h4>'+(plano.length?'Plano e mensagens prontas':'Mensagens prontas')+'</h4>'+msgs.map((m,i)=>msgCard(m[0],m[1],m[2],i)).join(''))+
+    (resp.length&&r.temperatura!=='encerrado'?'<h4>Se ela(e) responder…</h4>'+resp.map((x,j)=>'<div class="rq-msg rq-resp"><span>Se disser: “'+esc(rqDesmascarar(x.se_disser||''))+'”</span><p>'+esc(rqDesmascarar(x.responda))+'</p><div><button class="btn sm" data-rq="copiar" data-i="'+(msgs.length+j)+'">📋 Copiar</button></div></div>').join(''):'')+
+    bloco('Na primeira ligação, pergunte',r.temperatura==='encerrado'?[]:r.perguntas_ligacao)+(r.se_nao_responder?'<h4>Se não responder</h4><p>'+esc(r.se_nao_responder)+'</p>':'')+bloco('Evitar',r.evitar)+
     (r.lembrete&&r.lembrete.quando&&r.temperatura!=='encerrado'?'<div class="rq-acoes"><button class="btn" data-rq="lembrar">⏰ Pedro me lembra '+esc(r.lembrete.quando)+'</button></div>':'')+'</div>'}
-/* nome e telefone: escondidos para a IA, devolvidos nas mensagens prontas */
 function rqNomeAuto(t){const m=String(t||'').match(/[Mm]eu nome (?:é|e)\s+([A-ZÀ-Ý][\p{L}]+(?:\s+(?:d[aeo]s?\s+)?[A-ZÀ-Ý][\p{L}]+){0,2})/u);return m?m[1]:''}
 function rqMascarar(t){let s=String(t||'');
   s=s.replace(/(?:\+?55[\s.-]?)?\(?\b\d{2}\)?[\s.-]?9?\d{4}[\s.-]?\d{4}\b/g,'[telefone]').replace(/[\w.+-]+@[\w-]+\.[\w.]+/g,'[email]');
@@ -4412,17 +4426,34 @@ async function rqLerArquivo(f){RQ.erro='';let t='';
   try{if(/\.zip$/i.test(f.name)||f.type==='application/zip'){RQ.estado='lendo';RQ.prog='Abrindo o arquivo…';rqTela();await rqLibZip();const z=await JSZip.loadAsync(f);const e=Object.values(z.files).find(x=>/\.txt$/i.test(x.name));if(!e)throw 0;t=await e.async('string')}
     else t=await f.text()}catch(e){RQ.estado='';RQ.erro='Não consegui abrir esse arquivo. Exporte a conversa "sem mídia" e mande o .txt ou o .zip.';rqTela();return}
   RQ.estado='';RQ.txt=rqDoExport(t).slice(-12000);rqTela()}
-function rqPrompt(conv){const a=AGENTES[RQ.ag];
-  return 'Você é '+a.nome+', agente de '+a.area+' no escritório da advogada '+ESCRITORIO.advogada+' (advocacia de família, atendimento presencial em São Paulo e online). '+
-  'Analise a conversa de WhatsApp abaixo entre a advogada ("Você") e um possível cliente ("Contato") que esfriou, e proponha como retomar o contato com respeito.\n\n'+
-  'REGRAS OBRIGATÓRIAS:\n- Código de Ética e Provimento 205/2021 da OAB: nada de preço, desconto, "consulta grátis", promessa de resultado, urgência artificial, pressão ou comparação com colegas.\n'+
-  '- Respeito acima de tudo: se a pessoa disse não, pediu para parar, ou já contratou outro, a temperatura é "encerrado", sem novas mensagens (no máximo um agradecimento, se ainda não houve).\n'+
-  '- No máximo 2 retomadas no total. Se a advogada já mandou várias mensagens sem resposta, diga isso e recomende esperar.\n'+
-  '- Se aparecer violência doméstica, ameaça ou risco: NÃO sugerir que a advogada procure a pessoa; temperatura "encerrado" e diga que só se responde se a pessoa voltar a escrever.\n'+
-  '- Mensagens prontas: CURTAS (2 a 4 frases), gentis, com postura de advogada experiente, em português do Brasil, sem emojis em excesso. NUNCA explicar estratégia jurídica, teses, artigos ou caminhos processuais na mensagem ao cliente (isso fica só na estratégia, para a advogada). Não diga o assunto de forma explícita se a pessoa pode ter alguém lendo o celular. Use [nome] onde entraria o nome.\n'+
+function rqPrompt(conv){const a=AGENTES[RQ.ag],l=rqLead();
+  const ficha=l?'\nFICHA DO CONTATO no sistema: assunto '+((TEMAS[l.tema]||{}).nome||'?')+'; situação '+((STATUS.find(s=>s[0]===l.status)||['',''])[1]||l.status||'?')+'; chegou por '+(l.origem||'?')+(l.criado?'; primeiro contato há '+Math.max(0,Math.round((Date.now()-new Date(l.criado))/864e5))+' dia(s)':'')+'; retornos já feitos: '+(l.retornos||0)+'.'+(l.obs?' Anotação da advogada: '+rqMascarar(String(l.obs)).slice(0,300):'')+((l.hist||[]).length?'\nHistórico no sistema:\n'+(l.hist||[]).slice(-5).map(x=>'- '+new Date(x.em).toLocaleDateString('pt-BR')+': '+rqMascarar(String(x.txt||'')).slice(0,140)).join('\n'):'')+'\n':'';
+  return 'Você é '+a.nome+', agente de '+a.area+' no escritório da advogada '+ESCRITORIO.advogada+' (advocacia de família, presencial em São Paulo e online para o Brasil). '+
+  'Pense como uma advogada de família com 20 anos de prática E como uma consultora experiente em atendimento humanizado. Hoje é '+new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit'})+'.\n'+
+  'Tarefa: ler a conversa de WhatsApp abaixo entre a advogada ("Você") e um possível cliente ("Contato") que esfriou, descobrir O QUE REALMENTE está travando a pessoa e montar um plano concreto para retomar, com respeito.\n'+ficha+
+  '\nCOMO ANALISAR (seja específica, nada genérico):\n'+
+  '- Identifique a fase da pessoa (ex.: ainda decidindo se vai se separar; já decidiu e está com medo do processo; preocupada com custo; comparando advogados; precisa do apoio de alguém da família; vergonha de expor a vida; sem tempo; esperando um evento).\n'+
+  '- Aponte a OBJEÇÃO PRINCIPAL e prove com um trecho LITERAL da conversa entre aspas. Se não houver prova, diga que é hipótese.\n'+
+  '- Avalie o atendimento da advogada com franqueza e gentileza: o que funcionou e o que ajustar (ex.: mensagem longa demais, várias mensagens seguidas, não fez pergunta, não ofereceu um próximo passo claro, falou de forma formal demais, demorou a responder).\n'+
+  '- Cada mensagem sugerida deve: (1) retomar algo que a PESSOA disse; (2) tirar um peso dela (acolher a objeção sem negar); (3) oferecer UM próximo passo pequeno e concreto (ex.: "posso te ligar 10 minutos amanhã às 10h ou às 18h?", "me conta só uma coisa: vocês têm filhos menores?"). Termine com pergunta fácil de responder.\n'+
+  '- PROIBIDO como mensagem principal: frases vazias como "continuo à disposição", "qualquer dúvida é só chamar", "estou aqui se precisar" sozinhas. Elas não reconquistam ninguém.\n'+
+  '- Plano em etapas com datas reais (hoje é '+new Date().toLocaleDateString('pt-BR')+'): no máximo 2 mensagens de retomada no total, com intervalo de pelo menos 2 dias. Diga o melhor horário.\n'+
+  '- Prepare respostas para as 3 objeções mais prováveis dessa pessoa (ex.: "vou pensar", "quanto custa?", "meu marido/minha esposa não vai aceitar", "não tenho dinheiro agora", "tenho medo").\n'+
+  '\nREGRAS OBRIGATÓRIAS:\n- Código de Ética e Provimento 205/2021 da OAB: nada de preço/valor/desconto/"consulta grátis", promessa de resultado, urgência artificial, pressão ou comparação com colegas. Sobre custo, a resposta é oferecer conversar e explicar as formas de contratação na conversa, sem dar número.\n'+
+  '- Respeito: se a pessoa disse não, pediu para parar ou já contratou outro, temperatura "encerrado" e nenhuma nova mensagem (no máximo um agradecimento, se ainda não houve).\n'+
+  '- Se aparecer violência doméstica, ameaça ou risco: NÃO sugerir procurar a pessoa; temperatura "encerrado"; só se responde se ela voltar a escrever.\n'+
+  '- Mensagens: 2 a 4 frases, gentis, postura de advogada experiente, português do Brasil, no máximo 1 emoji. NUNCA explicar teses, artigos ou caminhos processuais na mensagem ao cliente (isso fica só na estratégia, para a advogada). Não escrever o assunto de forma explícita (alguém pode ler o celular da pessoa). Use [nome] no lugar do nome.\n'+
   '- Não invente fatos que não estão na conversa.\n'+
   (RQ.obs.trim()?'\nObservação da advogada: '+rqMascarar(RQ.obs.trim()).slice(0,400)+'\n':'')+
-  '\nResponda SOMENTE com este JSON:\n{"situacao":"1-2 frases: em que pé está e o que a pessoa parece sentir","temperatura":"quente|morno|frio|encerrado","sinais":["até 4 sinais que você viu na conversa"],"o_que_pode_ter_afastado":["até 3 pontos, com franqueza e sem culpar a pessoa"],"estrategia":"até 4 frases, só para a advogada","quando":"quando mandar, ex.: amanhã de manhã","mensagem":"mensagem principal pronta","alternativas":[{"rotulo":"ex.: mais leve","mensagem":"..."},{"rotulo":"ex.: com pergunta fácil","mensagem":"..."}],"se_nao_responder":"o que fazer depois (ou parar)","evitar":["até 3 coisas a evitar"],"lembrete":{"quando":"ex.: amanhã 10h"}}\n\n'+
+  '\nResponda SOMENTE com este JSON (preencha tudo, com conteúdo específico desta conversa):\n'+
+  '{"situacao":"2-3 frases: em que pé está e o que a pessoa parece sentir","temperatura":"quente|morno|frio|encerrado","chance":"alta|média|baixa","chance_por_que":"1 frase",'+
+  '"fase":"fase da pessoa em poucas palavras","objecao_principal":{"qual":"...","trecho":"frase literal da conversa ou \'hipótese\'"},"outras_objecoes":["..."],'+
+  '"sinais":["sinal + trecho entre aspas (até 4)"],"seu_atendimento":{"acertos":["até 3"],"ajustes":["o que mudar e como (até 3)"]},'+
+  '"o_que_pode_ter_afastado":["até 3"],"estrategia":"4 a 6 frases, só para a advogada, com o porquê de cada passo",'+
+  '"plano":[{"quando":"data e horário, ex.: terça 10/11 às 9h","objetivo":"o que esse passo busca","mensagem":"mensagem pronta"}],'+
+  '"alternativas":[{"rotulo":"ex.: mais acolhedora","mensagem":"..."},{"rotulo":"ex.: só uma pergunta","mensagem":"..."}],'+
+  '"respostas_prontas":[{"se_disser":"objeção provável","responda":"resposta curta pronta"}],"perguntas_ligacao":["até 4 perguntas para a primeira ligação, para entender o caso e gerar confiança"],'+
+  '"se_nao_responder":"o que fazer depois (ou parar)","evitar":["até 3"],"lembrete":{"quando":"data e hora do primeiro passo, ex.: terça 9h"}}\n\n'+
   'CONVERSA:\n'+conv}
 const RQ_EXEMPLO={exemplo:true,situacao:'Ela agradeceu duas vezes e disse que vai pensar: está interessada, mas ainda insegura para dar o passo.',temperatura:'morno',
   sinais:['Respondeu rápido e com educação','Agradeceu mais de uma vez','Não fez perguntas sobre o processo'],o_que_pode_ter_afastado:['Várias mensagens seguidas da sua parte','A decisão é emocional e ela pode precisar de tempo'],
@@ -4450,7 +4481,7 @@ async function rqAnalisar(){RQ.txt=($('#rq-txt')||{}).value||RQ.txt;RQ.obs=($('#
   else{RQ.estado='analisando';rqTela();
     try{const conv=rqMascarar(RQ.txt.trim()).slice(-9000);
       const hist=ant&&ant.analise?'\nANÁLISE ANTERIOR deste mesmo contato ('+new Date(ant.criado_em).toLocaleDateString('pt-BR')+'): temperatura '+ant.analise.temperatura+'. Estratégia: '+rqMascarar(String(ant.analise.estrategia||'')).slice(0,400)+' Mensagem sugerida: '+rqMascarar(String(ant.analise.mensagem||'')).slice(0,300)+'\nLeve isso em conta (não repita a mesma abordagem se não funcionou).\n':'';
-      r=await SAMPLE.json(rqPrompt(conv).replace('\nResponda SOMENTE',hist+'\nResponda SOMENTE'),{max:2200});if(!r||!r.temperatura)throw{code:'invalid_json'}}
+      r=await SAMPLE.json(rqPrompt(conv).replace('\nResponda SOMENTE',hist+'\nResponda SOMENTE'),{max:3000});if(!r||!r.temperatura)throw{code:'invalid_json'};if(!r.mensagem&&r.plano&&r.plano[0]){r.mensagem=r.plano[0].mensagem;r.quando=r.plano[0].quando}}
     catch(e){RQ.estado='';RQ.erro=e&&e.code==='limite_dia'?'O limite de leituras de hoje acabou. Amanhã libera de novo.':e&&e.code==='limite_minuto'?'A IA está no limite deste minuto. Espere 1 minuto e tente de novo.':'Não consegui analisar agora. Tente de novo em instantes.';rqTela();return}}
   const rec={lead_id:lead.id,agente:RQ.ag,conversa:RQ.txt.trim().slice(-30000),analise:r};
   try{if(REAL){const {data,error}=await SB.from('reconquistas').insert(Object.assign({escritorio_id:ESCRITORIO.id},rec)).select('id,lead_id,agente,analise,criado_em').single();if(error)throw error;Object.assign(rec,data)}
@@ -4468,6 +4499,7 @@ document.addEventListener('change',e=>{const ler=()=>{RQ.txt=($('#rq-txt')||{}).
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-rq]');if(!b)return;const a=b.dataset.rq;
   if(a==='analisar'){rqAnalisar();return}
   if(a==='nova'){rqNovo(b.dataset.lead||'');return}
+  if(a==='refazer'&&RQ.sel){const c=RQ.sel.conversa,l=RQ.sel.lead_id;if(!c){toast('Espere a conversa carregar.');return}rqNovo(l);RQ.txt=c;rqTela();rqAnalisar();return}
   if(a==='lista'){RQ.modo='lista';RQ.sel=null;RQ.res=null;rqTela();return}
   if(a==='abrir'){rqAbrirSalva(b.dataset.id);return}
   if(a==='apagar'){if(!RQ.apagar){RQ.apagar=true;rqTela();return}const id=RQ.sel&&RQ.sel.id;
