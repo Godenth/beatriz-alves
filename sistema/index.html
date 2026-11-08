@@ -977,7 +977,8 @@ async function carregarReal(){
   const {data:cq}=await SB.from('cliques').select('dia,pagina,tema,total').eq('escritorio_id',e.id).gte('dia',desde.toISOString().slice(0,10));
   D.cliques=cq||[];
   try{const di=desde.toISOString().slice(0,10);let r=await SB.from('funil').select('dia,pagina,tema,origem,etapa,total,total_antes').eq('escritorio_id',e.id).gte('dia',di);if(r.error)r=await SB.from('funil').select('dia,pagina,tema,origem,etapa,total').eq('escritorio_id',e.id).gte('dia',di);D.funil=r.data||[]}catch(_){D.funil=[]}
-  try{const cols='sessao,pagina,tema,origem,aparelho,entrou,ultimo,tempo_seg,leitura,abriu_em,enviou_em';let r=await SB.from('visitas').select(cols+',antes_ajuste').eq('escritorio_id',e.id).gte('entrou',desde.toISOString()).order('entrou',{ascending:false}).limit(2000);if(r.error)r=await SB.from('visitas').select(cols).eq('escritorio_id',e.id).gte('entrou',desde.toISOString()).order('entrou',{ascending:false}).limit(2000);D.visitas=r.data||[]}catch(_){D.visitas=[]}
+  try{const cols='sessao,pagina,tema,origem,aparelho,entrou,ultimo,tempo_seg,leitura,abriu_em,enviou_em';let r=await SB.from('visitas').select(cols+',antes_ajuste,botao').eq('escritorio_id',e.id).gte('entrou',desde.toISOString()).order('entrou',{ascending:false}).limit(2000);if(r.error)r=await SB.from('visitas').select(cols).eq('escritorio_id',e.id).gte('entrou',desde.toISOString()).order('entrou',{ascending:false}).limit(2000);D.visitas=r.data||[]}catch(_){D.visitas=[]}
+  try{const r=await SB.from('toques').select('dia,pagina,botao,origem,total').eq('escritorio_id',e.id).gte('dia',desde.toISOString().slice(0,10));D.toques=r.error?[]:(r.data||[])}catch(_){D.toques=[]}
 }
 async function recarregar(){if(!REAL||!USUARIO)return;try{await carregarReal();
     await Promise.all([CLI.carregado?carregarClientes():null,MP.docs?carregarDocs():null,FIN.carregado&&podeFinanceiro()?carregarFin():null,AGD.carregado?carregarAgenda():null]);
@@ -1196,8 +1197,18 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-pab]');if(
 document.addEventListener('click',e=>{const t=e.target.closest('[data-festateste]');if(!t)return;const [tema,origem]=t.dataset.festateste.split('|');FESTA.fila.push({tema,origem,pagina:'teste',n:1});proximaFesta()});
 /* Funil do site: visitas -> tocou no WhatsApp (só contagens, sem dado pessoal). Até 03/11 havia a janela de nome e telefone. */
 /* Nome de cada página do site no painel (as duas de divórcio ficam separadas) */
-const PAG_NOME={'divorcio-sem-acordo.html':'Divórcio sem acordo (anúncio)','divorcio-e-partilha.html':'Divórcio e partilha'};
+const PAG_NOME={'divorcio-sem-acordo.html':'Divórcio sem acordo (anúncio)','divorcio-e-partilha.html':'Divórcio e partilha','pensao-alimenticia.html':'Pensão alimentícia','guarda-e-convivencia.html':'Guarda e convivência','casamento-e-uniao-estavel.html':'Casamento e união estável','defesa-criminal.html':'Defesa criminal','defesa-da-mulher.html':'Defesa da mulher','acusacao-maria-da-penha.html':'Acusações na Lei Maria da Penha'};
+/* Nome do botão de WhatsApp tocado (a mensagem é neutra; o interesse fica só aqui no painel) */
+function nomeBotao(b){b=String(b||'').trim();let m;
+  if(/^Topo do site$/.test(b))return '"Fale comigo" (cabeçalho)';if(/^Bot[aã]o flutuante$/i.test(b))return 'botão flutuante';if(b==='Hero')return 'botão do topo';if(b==='Apresentação')return 'botão da apresentação';if(b==='Outro assunto')return '"Outro assunto"';
+  if((m=b.match(/\((topo|final)\)$/)))return m[1]==='topo'?'botão do topo':'botão do final da página';
+  if((m=b.match(/^(Tópico|Bloco|Dúvida): (.+)$/)))return m[1].toLowerCase()+' "'+m[2]+'"';return b||'botão'}
 function nomePagina(p,tema){return /^(index\.html|inicio|\?)$/.test(p||'')?'Página inicial':PAG_NOME[p]||(TEMAS[tema]||TEMAS.outro).nome}
+function toquesHTML(li){const T=(D.toques||[]).filter(t=>t.dia>=li);if(!T.length)return '';
+  const G={};T.forEach(t=>{const k=t.pagina+'|'+t.botao;const g=G[k]=G[k]||{p:t.pagina,b:t.botao,n:0,an:0};g.n+=t.total;if(t.origem==='anuncio_meta')g.an+=t.total});
+  const L=Object.values(G).sort((a,b)=>b.n-a.n),mx=L[0].n;
+  return '<h3 style="margin-top:14px">Em qual botão tocaram</h3><p class="mut" style="margin:0 0 6px;font-size:12px">A mensagem que chega no WhatsApp não diz o assunto. Aqui você vê de onde a pessoa tocou, para saber o interesse dela.</p>'+
+    L.slice(0,15).map(g=>'<div class="bar" style="--c:#1F9D55"><span>'+esc(nomePagina(g.p,''))+' · '+esc(nomeBotao(g.b))+(g.an?' <small class="mut">(📣 '+g.an+' do anúncio)</small>':'')+'</span><i style="width:'+(g.n/mx*100)+'%"></i><b>'+g.n+'</b></div>').join('')}
 function funilSite(dias){
   if(!REAL) return '<p class="nota" style="margin-top:12px">As visitas do site e quem tocou no WhatsApp entram aqui quando o banco de dados for ligado.</p>';
   const lim=new Date();lim.setDate(lim.getDate()-dias);const li=lim.toISOString().slice(0,10);
@@ -1226,6 +1237,7 @@ function funilSite(dias){
     (envHist?'<p class="aviso-antes">🗂 <b>Antes da remoção da janela de contato ('+REMOCAO_TXT+')</b>: '+envHist+' pessoa'+(envHist===1?'':'s')+' '+(envHist===1?'deixou':'deixaram')+' nome e telefone. Esses contatos continuam salvos em Contatos.</p>':'')+
     '<p class="mut" style="margin:0 0 10px">'+dica+'</p>'+
     (linhas?'<div style="overflow-x:auto"><table class="tab-funil" style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="text-align:left;opacity:.75"><th>Origem</th><th>Visitas</th><th>Tocaram no WhatsApp</th><th>%</th></tr></thead><tbody>'+linhas+'</tbody></table></div>':'')+
+    toquesHTML(li)+
     (Object.keys(pag).length?'<h3 style="margin-top:14px">Visitas por página</h3>'+Object.entries(pag).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{const mx=Math.max(...Object.values(pag));return '<div class="bar" style="--c:var(--ouro)"><span>'+esc(k)+(pagA[k]?' <small class="mut">(+'+pagA[k]+' antes do ajuste)</small>':'')+'</span><i style="width:'+(mx?v/mx*100:0)+'%"></i><b>'+v+'</b></div>'}).join(''):'')+
     '<p class="mut" style="margin-top:8px;font-size:12px">Contagem sem dados pessoais. Só conta quem ficou pelo menos 1 segundo com a página aberta na tela; robôs e pré-carregamentos ficam de fora. A mesma pessoa conta uma visita por página em cada acesso. O botão de WhatsApp abre a conversa direto: quem tocou aparece aqui, e a conversa chega no seu WhatsApp.</p></div></div>';
 }
@@ -4209,7 +4221,7 @@ function linhaTempoVisitas(){
     return '<div class="vt-s'+(s.antes?' vt-antes':'')+'" style="--st:'+st[1]+'"><div class="vt-cab"><b class="vt-h">'+hora(s.ini)+'</b>'+(s.antes?'<span class="vt-chip vt-ant" title="Contada antes do ajuste: pode ser robô ou pré-carregamento">⚠ antes do ajuste</span>':'')+'<span class="vt-chip">'+o[0]+' '+o[1]+'</span><span class="vt-chip">'+(s.ap==='celular'?'📱 Celular':'💻 Computador')+'</span><span class="vt-chip">⏱ '+vtMin(s.tempo)+'</span><span class="vt-st">'+st[0]+'</span></div>'+
       '<ol class="vt-pags">'+s.L.map(v=>{const lt=vtLeitura(v);return '<li><span class="vt-ph">'+new Date(v.entrou).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</span><span class="vt-pn">'+esc(vtPagina(v))+'</span>'+
         '<span class="vt-bar" title="Leu '+(v.leitura||0)+'% da página"><i style="width:'+(v.leitura||0)+'%;background:'+lt[1]+'"></i></span><span class="vt-lt" style="color:'+lt[1]+'">'+lt[0]+' · '+(v.leitura||0)+'%</span><span class="vt-t">'+vtMin(v.tempo_seg)+'</span>'+
-        (v.enviou_em?'<span class="vt-ev ok">deixou nome e telefone '+new Date(v.enviou_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</span>':v.abriu_em?'<span class="vt-ev ab">tocou no WhatsApp '+new Date(v.abriu_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</span>':'')+'</li>'}).join('')+'</ol></div>'};
+        (v.enviou_em?'<span class="vt-ev ok">deixou nome e telefone '+new Date(v.enviou_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</span>':v.abriu_em?'<span class="vt-ev ab">tocou no WhatsApp '+new Date(v.abriu_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+(v.botao?' · '+esc(nomeBotao(v.botao)):'')+'</span>':'')+'</li>'}).join('')+'</ol></div>'};
   const lim=VT.mais?120:15;
   return '<div class="graf" style="grid-template-columns:1fr"><div class="box vt"><div class="vt-topo"><h3 style="margin:0;display:flex;align-items:center;gap:8px">'+av('theo',30)+'Quem entrou no site <small class="mut" style="font-weight:500;font-size:12px;text-transform:none;letter-spacing:0">· o Theo, do marketing, acompanha</small></h3><div class="seg">'+[['hoje','Hoje'],['7','7 dias'],['30','30 dias']].map(p=>'<button data-vt="'+p[0]+'" class="'+(VT.per===p[0]?'on':'')+'">'+p[1]+'</button>').join('')+'</div></div>'+
     (REAL?'':'<p class="nota" style="margin:6px 0 0">Exemplo. No sistema publicado aparecem as visitas de verdade.</p>')+
@@ -4228,7 +4240,7 @@ const THV={desde:null,visto:{},abriu:{},enviou:{},fila:[],mostrando:false};
 const thSilencio=()=>{try{return localStorage.getItem('ideali-theo-silencio')===hojeISO()}catch(e){return false}};
 async function theoVigiar(){if(!REAL||!UI.logado||!SB||!ESCRITORIO.id)return;
   const agora=new Date(),inicial=!THV.desde;if(inicial)THV.desde=new Date(agora-30*60000).toISOString();
-  try{const {data}=await SB.from('visitas').select('sessao,pagina,tema,origem,aparelho,entrou,ultimo,tempo_seg,leitura,abriu_em,enviou_em').eq('escritorio_id',ESCRITORIO.id).gte('ultimo',THV.desde).order('entrou').limit(100);
+  try{const {data}=await SB.from('visitas').select('sessao,pagina,tema,origem,aparelho,entrou,ultimo,tempo_seg,leitura,abriu_em,enviou_em,botao').eq('escritorio_id',ESCRITORIO.id).gte('ultimo',THV.desde).order('entrou').limit(100);
     THV.desde=new Date(agora-5000).toISOString();if(!data)return;
     const D2=D.visitas=D.visitas||[];data.forEach(v=>{const i=D2.findIndex(x=>x.sessao===v.sessao&&x.pagina===v.pagina);if(i>=0)D2[i]=v;else D2.unshift(v)});
     if(inicial){data.forEach(v=>{THV.visto[v.sessao]=1;if(v.abriu_em)THV.abriu[v.sessao]=1;if(v.enviou_em)THV.enviou[v.sessao]=1});return}
@@ -4247,7 +4259,7 @@ function theoProximo(){if(THV.mostrando||!THV.fila.length)return;if(tourAberto()
 function theoCard(tipo,V){const v=V[0],o=VT_ORI[v.origem]||VT_ORI.outro,n=V.length;
   const tit=tipo==='chegou'?(n>1?n+' pessoas chegaram no site!':'Chegou gente no site!'):tipo==='abriu'?'📲 Tocou no WhatsApp!':'🎉 Deixou nome e telefone!';
   const txt=tipo==='chegou'?(n>1?'Vieram de '+[...new Set(V.map(x=>(VT_ORI[x.origem]||VT_ORI.outro)[1]))].join(', ')+'.':'Veio '+(ORIGEM_TXT[v.origem]||'pelo site')+', pelo '+(v.aparelho==='celular'?'celular':'computador')+', na página '+vtPagina(v)+'.')
-    :tipo==='abriu'?'Estava na página '+vtPagina(v)+' ('+o[1]+'). A conversa deve chegar no seu WhatsApp, fica de olho!':'Já está em Contatos, com a mensagem pronta para responder.';
+    :tipo==='abriu'?'Estava na página '+vtPagina(v)+(v.botao?' e tocou em '+nomeBotao(v.botao):'')+' ('+o[1]+'). A conversa chega com a mensagem neutra, sem o assunto. Fica de olho no WhatsApp!':'Já está em Contatos, com a mensagem pronta para responder.';
   const el=document.createElement('div');el.id='theo-aviso';el.className='th-'+tipo;el.setAttribute('role','status');el.style.setProperty('--c',AGENTES.theo.cor);
   el.innerHTML='<div class="th-radar" aria-hidden="true"><span></span><span></span><span></span>'+av('theo',54)+'</div><div class="th-corpo"><span class="th-nome">Theo · marketing</span><b>'+esc(tit)+'</b><p>'+esc(txt)+'</p>'+
     '<div class="th-chips"><span>'+o[0]+' '+o[1]+'</span><span>'+(v.aparelho==='celular'?'📱 Celular':'💻 Computador')+'</span><span>🕒 '+new Date(tipo==='chegou'?v.entrou:(v.enviou_em||v.abriu_em)).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'</span></div>'+
