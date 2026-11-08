@@ -905,6 +905,10 @@ body.kb-arrastando,body.kb-arrastando *{cursor:grabbing!important;user-select:no
 .rq-dupla>div{padding:8px 10px;border-radius:10px;border:1px solid rgba(127,127,127,.25)}.rq-dupla ul{margin:4px 0 0;padding-left:18px}
 .rq-obj{display:block;font-size:12px;opacity:.85;margin-top:2px}
 .rq-resp{background:rgba(91,141,239,.07)!important}
+.rql{margin:12px 0;padding:12px 14px;border-radius:14px;border:1px solid color-mix(in srgb,var(--c,#C9A36A) 45%,transparent);background:color-mix(in srgb,var(--c,#C9A36A) 7%,transparent)}
+.rql-cab{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.rql-cab b{font-size:15px}.rql-cab .mut{font-size:12px}
+.rql-off{opacity:.8}.rql-sub{font-weight:700;font-size:13px;margin:12px 0 6px}
+.rql-alerta{padding:8px 10px;border-radius:10px;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.4);font-size:13px}
 /* Reconquistar contato */
 .modal:has(.rq){max-width:640px;width:calc(100vw - 24px)}
 .rq{position:relative;font-family:var(--sans,system-ui);color:var(--tx,inherit)}
@@ -1219,7 +1223,7 @@ function blocoLead(l,k){
     h+='<div class="acoes"><a class="btn wa" data-envia="'+tipo+'" data-id="'+l.id+'" href="'+waLink(l,txt)+'" target="_blank" rel="noopener">'+WPP+' Abrir no WhatsApp</a>'+(UI.editando===l.id?'<button class="btn" data-a="fimedit">Pronto</button>':'<button class="btn" data-a="editar" data-id="'+l.id+'">Editar texto</button>')+'</div>';
     if(!travado(l)&&['primeira','retorno'].includes(tipo))h+='<p class="nota">Ao abrir o WhatsApp, eu registro no histórico. Se a pessoa não responder, ela volta para a sua fila em '+DIAS_RETORNO+' dias.</p>';
   }
-  h+=fichaHTML(l)+'</article>';return h;
+  h+=reconquistaLead(l)+fichaHTML(l)+'</article>';return h;
 }
 const fmtTel=t=>{t=t.replace(/\D/g,'');return t.length===11?'('+t.slice(0,2)+') '+t.slice(2,3)+' '+t.slice(3,7)+'-'+t.slice(7):t.length===10?'('+t.slice(0,2)+') '+t.slice(2,6)+'-'+t.slice(6):t};
 function fichaHTML(l){
@@ -4337,7 +4341,7 @@ function rqCard(h){const l=(D.leads||[]).find(x=>x.id===h.lead_id),t=RQ_TEMP[(h.
   return '<button class="rq-card" data-rq="abrir" data-id="'+h.id+'" style="--t:'+t[2]+'"><span class="rq-card-t">'+t[0]+' '+t[1]+'</span><b>'+esc(l?l.nome:'Contato apagado')+'</b><small>'+new Date(h.criado_em).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' · '+esc(AGENTES[h.agente]?AGENTES[h.agente].nome:'')+'</small><em>'+esc(String((h.analise||{}).situacao||'').slice(0,110))+'</em></button>'}
 function rqTela(){const a=AGENTES[RQ.ag];let corpo='';
   if(RQ.estado==='carregando')corpo='<p class="mut">Abrindo o histórico…</p>';
-  else if(RQ.modo==='ver'&&RQ.sel){const s=RQ.sel,l=(D.leads||[]).find(x=>x.id===s.lead_id),outras=(RQ.hist||[]).filter(h=>h.lead_id===s.lead_id&&h.id!==s.id);
+  else if(RQ.modo==='ver'&&RQ.sel){const s=RQ.sel,l=(D.leads||[]).find(x=>x.id===s.lead_id),outras=(RQ.hist||[]).filter(h=>h.lead_id===s.lead_id&&h.id!==s.id&&(h.analise||{}).tipo!=='cuidado');
     RQ.nome=l?l.nome:'';RQ.tel=l&&rqNorm(l.tel)?'55'+rqNorm(l.tel):'';RQ.res=s.analise;
     corpo='<div class="rq-ver-cab"><b>'+esc(l?l.nome:'Contato apagado')+'</b><small>'+(l&&l.tel?esc(rqTelFmt(l.tel))+' · ':'')+'análise de '+new Date(s.criado_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '+esc(AGENTES[s.agente]?AGENTES[s.agente].nome:'')+'</small></div>'+
       rqResultado(s.analise)+
@@ -4362,7 +4366,7 @@ function rqTela(){const a=AGENTES[RQ.ag];let corpo='';
       (RQ.erro?'<p class="rq-erro">'+esc(RQ.erro)+'</p>':'')+
       '<div class="rq-acoes"><button class="btn pri" data-rq="analisar"'+(RQ.estado==='analisando'||RQ.estado==='lendo'?' disabled':'')+'>'+(RQ.estado==='analisando'?'⏳ Lendo a conversa…':RQ.pede==='nome'&&!sel?'💡 Cadastrar e bolar estratégia':'💡 Bolar estratégia')+'</button><button class="btn" data-rq="lista">‹ Voltar</button></div>'+
       '<p class="mut rq-priv">Os prints são lidos no seu computador; para a IA vai só o texto, sem nome e telefone. A conversa e a estratégia ficam guardadas no histórico do contato, só para o escritório.</p></div>'}
-  else{const H=(RQ.hist||[]).filter(h=>h.agente===RQ.ag);
+  else{const H=(RQ.hist||[]).filter(h=>h.agente===RQ.ag&&(h.analise||{}).tipo!=='cuidado');
     corpo='<div class="rq-acoes" style="margin-top:0"><button class="btn pri" data-rq="nova">➕ Nova estratégia</button></div>'+
       '<h4 class="rq-h">Estratégias salvas'+(H.length?' ('+H.length+')':'')+'</h4>'+(H.length?'<div class="rq-cards">'+H.map(rqCard).join('')+'</div>':'<p class="mut">Ainda não há estratégias salvas. Toque em "Nova estratégia" e mande a conversa de um contato que esfriou.</p>')}
   abrirModal('<div class="rq" style="--c:'+a.cor+'"><button class="pa-x" data-fechar="1" aria-label="Fechar">✕</button>'+
@@ -4370,7 +4374,7 @@ function rqTela(){const a=AGENTES[RQ.ag];let corpo='';
 function rqResultado(r){const tmp=RQ_TEMP[r.temperatura]||['•','—','#888'];
   const bloco=(t,arr)=>arr&&arr.length?'<h4>'+t+'</h4><ul>'+arr.map(x=>'<li>'+esc(typeof x==='string'?x:JSON.stringify(x))+'</li>').join('')+'</ul>':'';
   const plano=(r.plano||[]).filter(p=>p&&p.mensagem);
-  const msgs=(plano.length?plano.map((p,i)=>[(i+1)+'º passo · '+(p.quando||''),p.mensagem,p.objetivo]):[[r.quando?'Mandar '+r.quando:'Mensagem sugerida',r.mensagem]])
+  const msgs=(plano.length?plano.map((p,i)=>[(i+1)+'º passo · '+(p.quando||''),p.mensagem,(p.objetivo||'')+(p.gatilho?' · 🧠 '+p.gatilho:'')]):[[r.quando?'Mandar '+r.quando:'Mensagem sugerida',r.mensagem]])
     .concat((r.alternativas||[]).map(x=>['Outra opção · '+(x.rotulo||''),x.mensagem])).filter(x=>x[1]);
   const resp=(r.respostas_prontas||[]).filter(x=>x&&x.responda);
   RQ._msgs=msgs.map(x=>rqDesmascarar(x[1])).concat(resp.map(x=>rqDesmascarar(x.responda)));
@@ -4439,7 +4443,7 @@ function rqPrompt(conv){const a=AGENTES[RQ.ag],l=rqLead();
   '- PROIBIDO como mensagem principal: frases vazias como "continuo à disposição", "qualquer dúvida é só chamar", "estou aqui se precisar" sozinhas. Elas não reconquistam ninguém.\n'+
   '- Plano em etapas com datas reais (hoje é '+new Date().toLocaleDateString('pt-BR')+'): no máximo 2 mensagens de retomada no total, com intervalo de pelo menos 2 dias. Diga o melhor horário.\n'+
   '- Prepare respostas para as 3 objeções mais prováveis dessa pessoa (ex.: "vou pensar", "quanto custa?", "meu marido/minha esposa não vai aceitar", "não tenho dinheiro agora", "tenho medo").\n'+
-  '\nREGRAS OBRIGATÓRIAS:\n- Código de Ética e Provimento 205/2021 da OAB: nada de preço/valor/desconto/"consulta grátis", promessa de resultado, urgência artificial, pressão ou comparação com colegas. Sobre custo, a resposta é oferecer conversar e explicar as formas de contratação na conversa, sem dar número.\n'+
+  '\n'+RQ_TECNICAS+'\nREGRAS OBRIGATÓRIAS:\n- Código de Ética e Provimento 205/2021 da OAB: nada de preço/valor/desconto/"consulta grátis", promessa de resultado, urgência artificial, pressão ou comparação com colegas. Sobre custo, a resposta é oferecer conversar e explicar as formas de contratação na conversa, sem dar número.\n'+
   '- Respeito: se a pessoa disse não, pediu para parar ou já contratou outro, temperatura "encerrado" e nenhuma nova mensagem (no máximo um agradecimento, se ainda não houve).\n'+
   '- Se aparecer violência doméstica, ameaça ou risco: NÃO sugerir procurar a pessoa; temperatura "encerrado"; só se responde se ela voltar a escrever.\n'+
   '- Mensagens: 2 a 4 frases, gentis, postura de advogada experiente, português do Brasil, no máximo 1 emoji. NUNCA explicar teses, artigos ou caminhos processuais na mensagem ao cliente (isso fica só na estratégia, para a advogada). Não escrever o assunto de forma explícita (alguém pode ler o celular da pessoa). Use [nome] no lugar do nome.\n'+
@@ -4450,7 +4454,7 @@ function rqPrompt(conv){const a=AGENTES[RQ.ag],l=rqLead();
   '"fase":"fase da pessoa em poucas palavras","objecao_principal":{"qual":"...","trecho":"frase literal da conversa ou \'hipótese\'"},"outras_objecoes":["..."],'+
   '"sinais":["sinal + trecho entre aspas (até 4)"],"seu_atendimento":{"acertos":["até 3"],"ajustes":["o que mudar e como (até 3)"]},'+
   '"o_que_pode_ter_afastado":["até 3"],"estrategia":"4 a 6 frases, só para a advogada, com o porquê de cada passo",'+
-  '"plano":[{"quando":"data e horário, ex.: terça 10/11 às 9h","objetivo":"o que esse passo busca","mensagem":"mensagem pronta"}],'+
+  '"plano":[{"quando":"data e horário, ex.: terça 10/11 às 9h","objetivo":"o que esse passo busca","gatilho":"técnica da caixa de ferramentas","mensagem":"mensagem pronta"}],'+
   '"alternativas":[{"rotulo":"ex.: mais acolhedora","mensagem":"..."},{"rotulo":"ex.: só uma pergunta","mensagem":"..."}],'+
   '"respostas_prontas":[{"se_disser":"objeção provável","responda":"resposta curta pronta"}],"perguntas_ligacao":["até 4 perguntas para a primeira ligação, para entender o caso e gerar confiança"],'+
   '"se_nao_responder":"o que fazer depois (ou parar)","evitar":["até 3"],"lembrete":{"quando":"data e hora do primeiro passo, ex.: terça 9h"}}\n\n'+
@@ -4475,7 +4479,7 @@ async function rqAnalisar(){RQ.txt=($('#rq-txt')||{}).value||RQ.txt;RQ.obs=($('#
     else toast('Achei: '+lead.nome+'.');
     RQ.leadId=lead.id;RQ.pede=''}
   RQ.nome=lead.nome||'';RQ.tel=rqNorm(lead.tel)?'55'+rqNorm(lead.tel):'';
-  const ant=(RQ.hist||[]).find(h=>h.lead_id===lead.id);
+  const ant=(RQ.hist||[]).find(h=>h.lead_id===lead.id&&(h.analise||{}).tipo!=='cuidado');
   let r;
   if(!SAMPLE||typeof SAMPLE.json!=='function')r=RQ_EXEMPLO;
   else{RQ.estado='analisando';rqTela();
@@ -4508,6 +4512,77 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-rq]'
   if(a==='copiar'){const m=(RQ._msgs||[])[+b.dataset.i]||'';try{await navigator.clipboard.writeText(m);toast('Mensagem copiada.')}catch(x){toast('Não consegui copiar. Selecione o texto e copie.')}return}
   if(a==='lembrar'){const r=RQ.sel?RQ.sel.analise:RQ.res,q=r&&r.lembrete&&r.lembrete.quando||'amanhã 10h';const nm=primeiroNome(RQ.nome||'')||'o contato';
     await anotarLembrete('Retomar conversa com '+nm+' ('+AGENTES[RQ.ag].nome+') '+q);toast('Anotado. O Pedro te lembra '+q+'.');return}});
+/* ---- Técnicas de persuasão com ética (vale para a análise e para as mensagens de cuidado) ---- */
+const RQ_TECNICAS='CAIXA DE FERRAMENTAS (persuasão com ética; diga qual técnica cada mensagem usa):\n'+
+ '- Reciprocidade (Robert Cialdini, "As Armas da Persuasão"): oferecer algo útil antes de pedir qualquer coisa (uma dica prática, a lista do que separar).\n'+
+ '- Compromisso e coerência (Cialdini): pedir um "sim" pequeno e fácil antes do passo maior.\n'+
+ '- Afinidade (Cialdini): usar as palavras e o jeito da própria pessoa; lembrar um detalhe que ela contou.\n'+
+ '- Autoridade discreta: mostrar experiência pela clareza e pelo cuidado, nunca se gabando.\n'+
+ '- Empatia tática e rotulagem (Chris Voss, "Negocie como se sua vida dependesse disso"): nomear a emoção ("Parece que essa decisão está pesando…").\n'+
+ '- Pergunta orientada ao "não" (Voss): "Seria ruim se eu te ligasse 10 minutos amanhã?" (dizer não dá sensação de controle e baixa a defesa).\n'+
+ '- Perguntas calibradas (Voss): começar com "Como" ou "O que" ("O que te deixaria mais tranquila para dar o próximo passo?").\n'+
+ '- Entrevista motivacional (William Miller e Stephen Rollnick): respeitar a dúvida da pessoa e reforçar a autonomia ("a decisão é sua, no seu tempo").\n'+
+ '- Passo minúsculo (BJ Fogg, "Micro-hábitos"): o próximo passo precisa ser tão fácil que a pessoa nem pense duas vezes.\n'+
+ '- Efeito Zeigarnik: deixar um ponto útil "em aberto" para a próxima conversa.\n'+
+ '- O poder do "porque" (experimento de Ellen Langer): dar um motivo simples para o contato.\n'+
+ '- Regra do pico e do fim (Daniel Kahneman): terminar sempre num tom leve e acolhedor.\n'+
+ 'PROIBIDO (OAB, Provimento 205/2021): escassez ou urgência ("últimas vagas", "só hoje"), prova social com clientes ou resultados ("já ganhei vários casos"), preço, desconto, "consulta grátis", promessa de resultado, comparação com colegas, pressão.\n';
+/* ---- Na ficha do contato: análises salvas + mensagens de cuidado ---- */
+const CUID={id:null,tipo:'semana',estado:'',res:null,erro:''};
+const CUID_TIPOS=[['semana','☀️ Boa semana'],['dica','💡 Dica útil'],['leve','🌿 Retomar com leveza'],['data','📅 Data especial']];
+const rqDoLead=l=>(RQ.hist||[]).filter(h=>h.lead_id===l.id);
+const agRQ=l=>{const k=typeof agDe==='function'?agDe(l):'helena';return RQ_AGS.includes(k)?k:'helena'};
+let RQ_PEDIU=false;
+function reconquistaLead(l){
+  if(travado(l)||l.tema==='violencia')return '<div class="rql rql-off"><b>💬 Reconquista e acompanhamento</b><p class="mut">Desligado para este contato (violência doméstica): só responda se a pessoa escrever.</p></div>';
+  if(!RQ.hist&&!RQ_PEDIU){RQ_PEDIU=true;rqCarregarHist().then(()=>{if(UI.tela==='leads'||UI.tela==='equipe')render()})}
+  const H=rqDoLead(l),an=H.filter(h=>(h.analise||{}).tipo!=='cuidado'),cu=H.filter(h=>(h.analise||{}).tipo==='cuidado');
+  const c=CUID.id===l.id?CUID:null,ag=agRQ(l);
+  let h='<div class="rql" style="--c:'+AGENTES[ag].cor+'"><div class="rql-cab"><b>💬 Reconquista e acompanhamento</b><span class="mut">com '+AGENTES[ag].nome+'</span></div>'+
+    '<div class="acoes" style="margin:6px 0 8px"><button class="btn sm pri" data-rql="analisar" data-id="'+l.id+'">💡 Analisar conversa</button></div>'+
+    (an.length?'<div class="rq-cards">'+an.map(rqCard).join('')+'</div>':'<p class="mut" style="font-size:13px;margin:0 0 6px">Nenhuma conversa analisada ainda. Mande os prints ou a conversa exportada.</p>')+
+    '<p class="rql-sub">💌 Mensagem de cuidado <span class="mut">(para manter o contato aquecido, sem insistir)</span></p>'+
+    '<div class="chips">'+CUID_TIPOS.map(t=>'<button data-rql="cuidado" data-id="'+l.id+'" data-tipo2="'+t[0]+'"'+(c&&c.tipo===t[0]&&c.estado?' class="on"':'')+(c&&c.estado==='gerando'?' disabled':'')+'>'+t[1]+'</button>').join('')+'</div>';
+  if(c&&c.estado==='gerando')h+='<p class="rq-prog">✍️ Escrevendo com cuidado…</p>';
+  if(c&&c.erro)h+='<p class="rq-erro">'+esc(c.erro)+'</p>';
+  if(c&&c.res&&c.estado==='pronto')h+=cuidHTML(l,c.res);
+  if(cu.length)h+='<details class="rq-conv"><summary>Mensagens de cuidado já sugeridas ('+cu.length+')</summary>'+cu.map(x=>'<p style="font-size:13px;margin:6px 0"><b>'+new Date(x.criado_em).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' · '+esc((CUID_TIPOS.find(t=>t[0]===x.analise.subtipo)||['',''])[1])+':</b> '+esc(rqDesmascarar2(l,((x.analise.mensagens||[])[0]||{}).texto||''))+'</p>').join('')+'</details>';
+  return h+'</div>'}
+const rqDesmascarar2=(l,t)=>String(t||'').replace(/\[nome\]/g,primeiroNome(l.nome||'')).replace(/\s+([,!?.])/g,'$1');
+function cuidHTML(l,r){const tel=rqNorm(l.tel)?'55'+rqNorm(l.tel):'';CUID._msgs=(r.mensagens||[]).map(m=>rqDesmascarar2(l,m.texto));
+  return (r.alerta?'<p class="rql-alerta">⚠️ '+esc(r.alerta)+'</p>':'')+(r.quando?'<p class="mut" style="font-size:13px;margin:4px 0">Melhor momento: <b>'+esc(r.quando)+'</b></p>':'')+
+    (r.mensagens||[]).map((m,i)=>'<div class="rq-msg"><span>'+(m.gatilho?'🧠 '+esc(m.gatilho):'Opção '+(i+1))+'</span>'+(m.por_que?'<small class="rq-obj">'+esc(m.por_que)+'</small>':'')+'<p>'+esc(CUID._msgs[i])+'</p><div><button class="btn sm" data-rql="copiar" data-i="'+i+'">📋 Copiar</button>'+(tel?'<a class="btn sm" target="_blank" rel="noopener" href="https://wa.me/'+tel+'?text='+encodeURIComponent(CUID._msgs[i])+'">💬 Abrir no WhatsApp</a>':'')+'</div></div>').join('')}
+const CUID_EX={exemplo:true,quando:'segunda de manhã, entre 8h e 10h',alerta:'',mensagens:[
+  {gatilho:'Afinidade + regra do pico e do fim',por_que:'Contato leve, sem pedir nada, que mantém você na memória dela com uma boa sensação.',texto:'Bom dia, [nome]! Passando só para desejar uma semana leve para você. Um abraço!'},
+  {gatilho:'Reciprocidade + autonomia',por_que:'Oferece algo útil e deixa a decisão com ela.',texto:'Oi, [nome], tudo bem? Separei uma listinha simples do que é bom ter em mãos para organizar a vida com tranquilidade. Quer que eu te mande?'},
+  {gatilho:'Pergunta orientada ao "não"',por_que:'Dizer "não" dá controle e baixa a defesa.',texto:'Oi, [nome]! Seria ruim se eu te ligasse 10 minutos esta semana, só para tirar dúvidas?'}]};
+async function rqCuidado(l,tipo){Object.assign(CUID,{id:l.id,tipo,estado:'gerando',res:null,erro:''});render();
+  const H=rqDoLead(l),an=H.find(h=>(h.analise||{}).tipo!=='cuidado'),cu=H.filter(h=>(h.analise||{}).tipo==='cuidado');
+  let r;
+  if(!SAMPLE||typeof SAMPLE.json!=='function')r=CUID_EX;
+  else{const RQn=RQ.nome,RQe=RQ.esconder;RQ.nome=l.nome||'';RQ.esconder=true;
+    const dias=l.criado?Math.max(0,Math.round((Date.now()-new Date(l.criado))/864e5)):null;
+    const ult=cu[0]?Math.round((Date.now()-new Date(cu[0].criado_em))/864e5):null;
+    const p='Você é especialista em relacionamento com clientes de escritório de advocacia de família e em comunicação persuasiva ÉTICA. Escreva mensagens de WhatsApp em nome da advogada '+ESCRITORIO.advogada+' para manter aquecido um possível cliente que ainda não fechou, SEM insistir.\n'+
+      'Hoje é '+new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit'})+'.\n'+
+      'TIPO DE MENSAGEM: '+{semana:'boa semana / bom dia: leve, humana, sem pedir nada',dica:'dica útil e genérica (organização de documentos, cuidados práticos, direitos de forma ampla), que gere valor sem ensinar a estratégia do caso',leve:'retomar a conversa com leveza, oferecendo um próximo passo minúsculo',data:'aproveitar uma data do calendário dos próximos dias (feriado, início do mês, fim de ano, Dia das Mães/Pais, volta às aulas etc.), se houver uma adequada'}[tipo]+'.\n'+
+      'CONTATO: área '+((TEMAS[l.tema]||{}).nome||l.tema)+'; situação '+((STATUS.find(x=>x[0]===l.status)||['',''])[1]||l.status)+'; chegou há '+(dias??'?')+' dia(s); retornos já feitos: '+(l.retornos||0)+'.'+(ult!=null?' Última mensagem de cuidado sugerida há '+ult+' dia(s): "'+rqMascarar(((cu[0].analise.mensagens||[])[0]||{}).texto||'').slice(0,200)+'" (não repita).':'')+'\n'+
+      (an&&an.analise?'Última análise da conversa: temperatura '+an.analise.temperatura+'. '+rqMascarar(String(an.analise.situacao||'')).slice(0,300)+' Objeção: '+rqMascarar(String((an.analise.objecao_principal||{}).qual||'')).slice(0,150)+'\n':'')+
+      RQ_TECNICAS+
+      'REGRAS: 1 a 3 frases curtas, gentis, postura de advogada experiente, no máximo 1 emoji. NUNCA citar o assunto delicado por escrito (divórcio, separação, pensão, guarda, violência): alguém pode ler o celular da pessoa. Nada de estratégia jurídica. Use [nome]. Se a última análise disse "encerrado", ou se houve mensagem de cuidado há menos de 5 dias, preencha "alerta" dizendo para não mandar agora.\n'+
+      'Responda SOMENTE com JSON: {"quando":"melhor dia e horário para mandar","alerta":"vazio ou motivo para não mandar agora","mensagens":[{"texto":"mensagem pronta","gatilho":"técnica usada (nome curto)","por_que":"1 frase: por que funciona com esta pessoa"}]} com 3 mensagens diferentes.';
+    try{r=await SAMPLE.json(p,{max:1500});if(!r||!Array.isArray(r.mensagens)||!r.mensagens.length)throw{code:'invalid_json'}}
+    catch(e){RQ.nome=RQn;RQ.esconder=RQe;Object.assign(CUID,{estado:'',erro:e&&e.code==='limite_dia'?'O limite de leituras de hoje acabou. Amanhã libera de novo.':e&&e.code==='limite_minuto'?'A IA está no limite deste minuto. Espere 1 minuto e tente de novo.':'Não consegui escrever agora. Tente de novo em instantes.'});render();return}
+    RQ.nome=RQn;RQ.esconder=RQe}
+  const rec={lead_id:l.id,agente:agRQ(l),conversa:'(mensagem de cuidado: '+tipo+')',analise:Object.assign({tipo:'cuidado',subtipo:tipo},r)};
+  try{if(REAL){const {data,error}=await SB.from('reconquistas').insert(Object.assign({escritorio_id:ESCRITORIO.id},rec)).select('id,lead_id,agente,analise,criado_em').single();if(error)throw error;Object.assign(rec,data)}
+    else Object.assign(rec,{id:uid(),criado_em:agoraISO()});(RQ.hist=RQ.hist||[]).unshift({id:rec.id,lead_id:rec.lead_id,agente:rec.agente,analise:rec.analise,criado_em:rec.criado_em});if(!REAL)D.reconquistas=RQ.hist}catch(e){console.error(e)}
+  Object.assign(CUID,{estado:'pronto',res:r});render()}
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-rql]');if(!b)return;const a=b.dataset.rql,l=(D.leads||[]).find(x=>x.id===b.dataset.id);
+  if(a==='analisar'&&l){await rqAbrir(agRQ(l),l.id);return}
+  if(a==='cuidado'&&l){rqCuidado(l,b.dataset.tipo2);return}
+  if(a==='copiar'){const m=(CUID._msgs||[])[+b.dataset.i]||'';try{await navigator.clipboard.writeText(m);toast('Mensagem copiada.')}catch(x){toast('Não consegui copiar.')}}});
+
 function carregarLib(){return new Promise((ok,falha)=>{if(window.supabase)return ok();const s=document.createElement('script');s.src=CONFIG.lib;s.onload=ok;s.onerror=()=>falha(new Error('Sem internet para carregar o sistema.'));document.head.appendChild(s)})}
 (async()=>{
   if(!REAL){carregar();render();return}
