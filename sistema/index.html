@@ -958,6 +958,7 @@ body.anim-pausa #app,body.anim-pausa #app *,body.anim-pausa #app *::before,body.
 #rqp-aviso .rqp-av{flex:none;border-radius:50%;box-shadow:0 0 0 3px var(--c)}
 @keyframes rqpEntra{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:none}}
 @media(max-width:640px){#rqp-aviso{right:10px;left:10px;width:auto;bottom:calc(84px + env(safe-area-inset-bottom,0px))}}
+.rq-teste{margin:0 0 10px;padding:8px 10px;border-radius:10px;background:rgba(124,58,237,.12);border:1px dashed rgba(124,58,237,.5);font-size:13px}
 /* Reconquistar contato */
 .modal:has(.rq){max-width:640px;width:calc(100vw - 24px)}
 .rq{position:relative;font-family:var(--sans,system-ui);color:var(--tx,inherit)}
@@ -4379,32 +4380,49 @@ const RQ_AGS=['helena','rafael','clara','marina'],RQ_TEMA={helena:'divorcio',raf
 const rqNorm=x=>String(x||'').replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,'');
 const rqTelFmt=x=>{const d=rqNorm(x);return d.length>=10?'('+d.slice(0,2)+') '+d.slice(2,-4)+'-'+d.slice(-4):x};
 function rqAcharLead(tel){const t=rqNorm(tel);if(!t)return null;return (D.leads||[]).find(l=>{const u=rqNorm(l.tel);return u===t||(u.length>=10&&t.length>=10&&u.slice(0,2)===t.slice(0,2)&&u.slice(-8)===t.slice(-8))})||null}
-const rqLead=()=>(D.leads||[]).find(l=>l.id===RQ.leadId)||null;
+const RQ_LT={id:'teste',nome:'Maria (teste)',tel:'',tema:'divorcio',status:'conversa',origem:'Teste',retornos:0,hist:[],criado:new Date(Date.now()-3*864e5).toISOString()};
+const rqLeadDe=id=>id==='teste'?RQ_LT:(D.leads||[]).find(l=>l.id===id)||null;
+const rqLead=()=>rqLeadDe(RQ.leadId);
+/* Conversas inventadas para treinar e estudar a agente (nada é salvo) */
+const RQ_TESTES=[
+ ['🤔','Disse que vai pensar','Decidida, mas insegura; a advogada mandou várias mensagens seguidas.',
+  'Contato: Oi, boa noite. Vi o anúncio. Quero saber como faço para me separar, mas meu marido não aceita.\nVocê: Olá! Boa noite, seja bem-vinda. Pode me contar um pouco do que está acontecendo?\nContato: A gente não se dá bem faz uns 2 anos. Tenho uma filha de 7 anos e a casa é financiada nos dois nomes.\nVocê: Entendo. Vamos conversar com calma sobre o seu caso.\nVocê: Posso te explicar como funciona e quais são os caminhos.\nVocê: Me diga um dia e horário bom para uma conversa por vídeo.\nContato: Vou pensar e te falo. Obrigada.'],
+ ['💸','Perguntou o preço e sumiu','Pesquisando advogados; quer saber valor antes de qualquer coisa.',
+  'Contato: Quanto custa um divórcio?\nVocê: Olá! Depende de cada caso. Você tem filhos ou bens para dividir?\nContato: Tenho um filho de 4 anos e um carro.\nVocê: Certo. Para te passar uma proposta, preciso entender melhor. Podemos conversar 15 minutos amanhã?\nContato: Só queria ter uma ideia de valor mesmo'],
+ ['🚨','Urgência: ele está vendendo bens','Medo de perder o patrimônio; fatos que indicam risco real.',
+  'Contato: Doutora, preciso de ajuda urgente. Meu marido colocou o carro à venda e está falando em vender o terreno que compramos juntos.\nVocê: Olá! Entendo a sua preocupação. Vocês são casados em qual regime?\nContato: Comunhão parcial. Casamos em 2015.\nContato: Ele ainda mora aqui em casa e fica me ameaçando dizendo que vou sair sem nada.\nVocê: Vamos analisar isso com cuidado. Consegue me mandar os documentos do carro e do terreno?\nContato: Vou procurar'],
+ ['👀','Respostas curtas, sem interesse claro','Pode estar só pesquisando ou com alguém olhando o celular.',
+  'Contato: Oi\nVocê: Olá! Tudo bem? Como posso ajudar?\nContato: Queria tirar uma dúvida\nVocê: Claro, pode perguntar.\nContato: Depois falo'],
+ ['🧒','Guarda: medo de perder os filhos','Mãe preocupada com a guarda; a advogada respondeu com termos difíceis.',
+  'Contato: Boa tarde. Se eu pedir a separação, o pai pode ficar com meus filhos?\nVocê: Boa tarde! A fixação da guarda observa o melhor interesse da criança, nos termos do art. 1.583 e seguintes do Código Civil, sendo a guarda compartilhada a regra.\nContato: Não entendi muito bem\nContato: Tenho medo de perder eles'],
+ ['🤝','Contratou outro advogado','Encerrado com educação; a agente deve recomendar não insistir.',
+  'Contato: Oi doutora, obrigada pela atenção, mas já fechei com outro advogado.\nVocê: Tudo bem! Fico feliz que você encontrou ajuda.']];
+
 function rqCarregar(src,teste){return new Promise((ok,falha)=>{if(teste())return ok();const s=document.createElement('script');s.src=src;s.onload=()=>teste()?ok():falha(new Error('lib'));s.onerror=()=>falha(new Error('lib'));document.head.appendChild(s)})}
 const rqLibOCR=()=>rqCarregar('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',()=>!!window.Tesseract);
 const rqLibZip=()=>rqCarregar('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js',()=>!!window.JSZip);
 async function rqCarregarHist(){if(!REAL){RQ.hist=D.reconquistas=D.reconquistas||[];return}
   try{const {data,error}=await SB.from('reconquistas').select('id,lead_id,agente,analise,criado_em').eq('escritorio_id',ESCRITORIO.id).order('criado_em',{ascending:false}).limit(300);RQ.hist=error?[]:(data||[])}catch(e){RQ.hist=[]}}
-async function rqAbrir(k,leadId){RQ.ag=RQ_AGS.includes(k)?k:'helena';Object.assign(RQ,{nPrints:0,cab:'',res:null,erro:'',estado:'',pede:'',sel:null,apagar:false,modo:leadId?'cliente':'clientes',leadId:leadId||'',busca:'',apagarId:null,txt:'',obs:'',telIn:'',nomeIn:''});
+async function rqAbrir(k,leadId){RQ.ag=RQ_AGS.includes(k)?k:'helena';Object.assign(RQ,{nPrints:0,cab:'',res:null,erro:'',estado:'',pede:'',sel:null,apagar:false,modo:leadId?'cliente':'clientes',leadId:leadId||'',busca:'',apagarId:null,teste:false,txt:'',obs:'',telIn:'',nomeIn:''});
   if(!RQ.hist){RQ.estado='carregando';rqTela();await rqCarregarHist();RQ.estado=''}rqTela()}
 function rqNovo(leadId){Object.assign(RQ,{base:null,nPrints:0,cab:'',modo:'nova',leadId:leadId||'',txt:'',obs:'',res:null,erro:'',pede:'',telIn:'',nomeIn:'',sel:null,apagar:false});rqTela()}
 const RQ_TEMP={quente:['🔥','Quente','#E11D48'],morno:['🌤','Morno','#F59E0B'],frio:['❄️','Frio','#3B82F6'],encerrado:['🤝','Encerrado','#6B7280']};
-function rqCard(h){const l=(D.leads||[]).find(x=>x.id===h.lead_id),t=RQ_TEMP[(h.analise||{}).temperatura]||['•','—','#888'];
+function rqCard(h){const l=rqLeadDe(h.lead_id),t=RQ_TEMP[(h.analise||{}).temperatura]||['•','—','#888'];
   return '<div class="rq-card" role="button" tabindex="0" data-rq="abrir" data-id="'+h.id+'" style="--t:'+t[2]+'"><span class="rq-card-t">'+t[0]+' '+t[1]+(/alta/i.test(((h.analise||{}).urgencia||{}).nivel||'')?' · 🚨 urgente':'')+'</span><b>'+esc(l?l.nome:'Contato apagado')+'</b><small>'+new Date(h.criado_em).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' · '+esc(AGENTES[h.agente]?AGENTES[h.agente].nome:'')+'</small><em>'+esc(String((h.analise||{}).situacao||'').slice(0,110))+'</em>'+
     '<button class="rq-lixo'+(RQ.apagarId===h.id?' conf':'')+'" data-rq="apagar1" data-id="'+h.id+'" title="Apagar esta estratégia" aria-label="Apagar esta estratégia">'+(RQ.apagarId===h.id?'Apagar?':'🗑')+'</button></div>'}
 function rqTela(){const a=AGENTES[RQ.ag];let corpo='';
   if(RQ.estado==='carregando')corpo='<p class="mut">Abrindo o histórico…</p>';
-  else if(RQ.modo==='ver'&&RQ.sel){const s=RQ.sel,l=(D.leads||[]).find(x=>x.id===s.lead_id),outras=(RQ.hist||[]).filter(h=>h.lead_id===s.lead_id&&h.id!==s.id&&(h.analise||{}).tipo!=='cuidado');
+  else if(RQ.modo==='ver'&&RQ.sel){const s=RQ.sel,l=rqLeadDe(s.lead_id),outras=(RQ.hist||[]).filter(h=>h.lead_id===s.lead_id&&h.id!==s.id&&(h.analise||{}).tipo!=='cuidado');
     RQ.nome=l?l.nome:'';RQ.tel=l&&rqNorm(l.tel)?'55'+rqNorm(l.tel):'';RQ.res=s.analise;
     const nAuto=rqNomeAuto(s.conversa||RQ.txt||'');
-    corpo=(l&&!rqNomeOk(l.nome)&&nAuto?'<p class="rq-pede" style="margin:0 0 10px">Este contato está salvo como <b>'+esc(l.nome)+'</b>. Na conversa a pessoa disse que se chama <b>'+esc(nAuto)+'</b>. <button class="btn sm" data-rq="nomear" data-lead="'+l.id+'" data-nome="'+esc(nAuto)+'">Salvar como '+esc(nAuto)+'</button></p>':'')+'<div class="rq-ver-cab"><b>'+esc(l?l.nome:'Contato apagado')+'</b><small>'+(l&&l.tel?esc(rqTelFmt(l.tel))+' · ':'')+'análise de '+new Date(s.criado_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '+esc(AGENTES[s.agente]?AGENTES[s.agente].nome:'')+'</small></div>'+
+    corpo=(s.teste?'<p class="rq-teste">🧪 Resultado de teste: não foi salvo. Troque a conversa e analise de novo para comparar.</p>':'')+(l&&!rqNomeOk(l.nome)&&nAuto&&!s.teste?'<p class="rq-pede" style="margin:0 0 10px">Este contato está salvo como <b>'+esc(l.nome)+'</b>. Na conversa a pessoa disse que se chama <b>'+esc(nAuto)+'</b>. <button class="btn sm" data-rq="nomear" data-lead="'+l.id+'" data-nome="'+esc(nAuto)+'">Salvar como '+esc(nAuto)+'</button></p>':'')+'<div class="rq-ver-cab"><b>'+esc(l?l.nome:'Contato apagado')+'</b><small>'+(l&&l.tel?esc(rqTelFmt(l.tel))+' · ':'')+'análise de '+new Date(s.criado_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '+esc(AGENTES[s.agente]?AGENTES[s.agente].nome:'')+'</small></div>'+
       rqResultado(s.analise)+
       '<details class="rq-conv"'+(s.conversa?'':' data-rq="conv"')+'><summary>💬 Ver a conversa analisada</summary><div class="rq-convwa">'+(s.conversa?rqChatHTML(s.conversa,{nome:l&&rqNomeOk(l.nome)?l.nome:(rqNomeAuto(s.conversa)||'Contato'),tel:l&&l.tel?rqTelFmt(l.tel):''}):'<p class="mut">Carregando…</p>')+'</div></details>'+
       (outras.length?'<h4 class="rq-h">Outras análises deste contato</h4><div class="rq-cards">'+outras.map(rqCard).join('')+'</div>':'')+
       '<div class="rq-acoes">'+(l?'<button class="btn pri" data-rq="revisar">🔄 Revisar conversa (chegou mensagem nova)</button><button class="btn" data-rq="refazer">🔁 Refazer com esta conversa</button><button class="btn" data-rq="nova" data-lead="'+l.id+'">➕ Nova análise deste contato</button>':'')+'<button class="btn" data-rq="cliente">‹ Voltar ao cliente</button>'+
-      '<button class="btn" data-rq="apagar" style="margin-left:auto">'+(RQ.apagar?'Confirmar: apagar':'🗑 Apagar')+'</button></div>'}
+      (s.teste?'<button class="btn" data-rq="testes" style="margin-left:auto">🧪 Outra conversa de teste</button>':'<button class="btn" data-rq="apagar" style="margin-left:auto">'+(RQ.apagar?'Confirmar: apagar':'🗑 Apagar')+'</button>')+'</div>'}
   else if(RQ.modo==='nova'){const L=[...(D.leads||[])].sort((x,y)=>x.nome.localeCompare(y.nome,'pt-BR')),sel=rqLead();
-    corpo='<div class="rq-ent">'+
+    corpo='<div class="rq-ent">'+(RQ.teste?'<p class="rq-teste">🧪 Modo teste: edite a conversa como quiser para ver como a análise muda. Nada fica salvo.</p>':'')+
       (sel?'<div class="rq-clicab"><span class="wa-av wa-ini">'+esc(sel.nome.split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase())+'</span><div><b>'+esc(sel.nome)+'</b><small>'+(sel.tel?esc(rqTelFmt(sel.tel)):'')+'</small></div><button class="btn sm" data-rq="cliente" style="margin-left:auto">‹ Voltar</button></div>':'')+
       (RQ.base?'<div class="rq-pede"><b>🔄 Revisando a conversa analisada em '+new Date(RQ.base.criado_em).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+'.</b><p>Mande só a parte NOVA da conversa (prints ou texto). Eu junto com a anterior, digo o que mudou e atualizo a estratégia. <button class="lnk" data-rq="semrev">Analisar do zero</button></p></div>':'')+
       '<label class="rq-rot">'+(RQ.base?'A parte nova da conversa':'A conversa')+'</label>'+
@@ -4420,6 +4438,10 @@ function rqTela(){const a=AGENTES[RQ.ag];let corpo='';
       (RQ.erro?'<p class="rq-erro">'+esc(RQ.erro)+'</p>':'')+
       '<div class="rq-acoes"><button class="btn pri" data-rq="analisar"'+(RQ.estado==='analisando'||RQ.estado==='lendo'?' disabled':'')+'>'+(RQ.estado==='analisando'?'⏳ Lendo a conversa…':RQ.pede==='nome'&&!sel?'💡 Cadastrar e bolar estratégia':'💡 Bolar estratégia')+'</button><button class="btn" data-rq="cliente">‹ Voltar</button></div>'+
       '<p class="mut rq-priv">Os prints são lidos no seu computador; para a IA vai só o texto, sem nome e telefone. A conversa e a estratégia ficam guardadas no histórico do contato, só para o escritório.</p></div>'}
+  else if(RQ.modo==='testes'){
+    corpo='<div class="rq-clicab"><span class="wa-av wa-ini">🧪</span><div><b>Conversa de teste</b><small>Para treinar e estudar a '+AGENTES[RQ.ag].nome+'. Nada fica salvo e nenhum cliente é cadastrado.</small></div><button class="btn sm" data-rq="clientes" style="margin-left:auto">‹ Voltar</button></div>'+
+      '<h4 class="rq-h">Escolha uma situação</h4><div class="rq-clis">'+RQ_TESTES.map((t,i)=>'<button class="rq-cli" data-rq="teste" data-i="'+i+'"><span class="wa-av wa-ini">'+t[0]+'</span><span class="rq-cli-tx"><b>'+esc(t[1])+'</b><small>'+esc(t[2])+'</small></span></button>').join('')+
+      '<button class="rq-cli" data-rq="teste" data-i="-1"><span class="wa-av wa-ini">✍️</span><span class="rq-cli-tx"><b>Escrever minha própria conversa</b><small>Invente uma situação e veja como a '+AGENTES[RQ.ag].nome+' responde.</small></span></button></div>'}
   else if(RQ.modo==='novocli'){
     corpo='<div class="rq-ent"><h4 class="rq-h" style="margin-top:0">Novo cliente</h4>'+
       '<label class="f">Nome<input class="inp" id="rq-cnome" value="'+esc(RQ.nomeIn)+'" placeholder="Nome do cliente" autocomplete="off"></label>'+
@@ -4433,7 +4455,7 @@ function rqTela(){const a=AGENTES[RQ.ag];let corpo='';
   else{const b=(RQ.busca||'').trim().toLowerCase(),nrm=x=>String(x||'').normalize('NFD').replace(/\p{M}/gu,'').toLowerCase();
     const ult=id=>(RQ.hist||[]).filter(h=>h.lead_id===id&&(h.analise||{}).tipo!=='cuidado');
     const L=[...(D.leads||[])].filter(l=>!b||nrm(l.nome).includes(nrm(b))||rqNorm(l.tel).includes(b.replace(/\D/g,'')||'§')).sort((x,y)=>{const a1=ult(x.id)[0],b1=ult(y.id)[0];if(a1&&b1)return a1.criado_em<b1.criado_em?1:-1;if(a1||b1)return a1?-1:1;return x.nome.localeCompare(y.nome,'pt-BR')});
-    corpo='<div class="rq-acoes" style="margin-top:0"><input class="inp" id="rq-busca" placeholder="Buscar cliente por nome ou telefone" value="'+esc(RQ.busca||'')+'" autocomplete="off" style="flex:1;min-width:200px"><button class="btn pri" data-rq="novocli">➕ Adicionar novo cliente</button></div>'+
+    corpo='<div class="rq-acoes" style="margin-top:0"><input class="inp" id="rq-busca" placeholder="Buscar cliente por nome ou telefone" value="'+esc(RQ.busca||'')+'" autocomplete="off" style="flex:1;min-width:200px"><button class="btn pri" data-rq="novocli">➕ Adicionar novo cliente</button><button class="btn" data-rq="testes">🧪 Conversa de teste</button></div>'+
       '<h4 class="rq-h">Qual cliente?</h4><div class="rq-clis">'+(L.length?L.map(l=>{const H=ult(l.id),t=H[0]?RQ_TEMP[(H[0].analise||{}).temperatura]:null;
         return '<button class="rq-cli" data-rq="cli" data-id="'+l.id+'"><span class="wa-av wa-ini">'+esc(l.nome.split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase())+'</span><span class="rq-cli-tx"><b>'+esc(l.nome)+'</b><small>'+(l.tel?esc(rqTelFmt(l.tel)):'sem telefone')+'</small></span><span class="rq-cli-n">'+(H.length?(t?t[0]+' ':'')+H.length+(H.length>1?' estratégias':' estratégia'):'nenhuma ainda')+'</span></button>'}).join(''):'<p class="mut">Nenhum cliente encontrado.</p>')+'</div>'}
   abrirModal('<div class="rq" style="--c:'+a.cor+'"><button class="pa-x" data-fechar="1" aria-label="Fechar">✕</button>'+
@@ -4632,6 +4654,7 @@ async function rqAnalisar(){RQ.txt=($('#rq-txt')||{}).value||RQ.txt;RQ.obs=($('#
       r=await SAMPLE.json(rqPrompt(conv).replace('\nResponda SOMENTE',hist+'\nResponda SOMENTE'),{max:3500});await rqRevisar(r);if(!r||!r.temperatura)throw{code:'invalid_json'};if(!r.mensagem&&r.plano&&r.plano[0]){r.mensagem=r.plano[0].mensagem;r.quando=r.plano[0].quando}}
     catch(e){RQ.estado='';RQ.erro=e&&e.code==='limite_dia'?'O limite de leituras de hoje acabou. Amanhã libera de novo.':e&&e.code==='limite_minuto'?'A IA está no limite deste minuto. Espere 1 minuto e tente de novo.':'Não consegui analisar agora. Tente de novo em instantes.';rqTela();return}}
   const rec={lead_id:lead.id,agente:RQ.ag,conversa:rqTextoTodo().slice(-30000),analise:r};RQ.base=null;
+  if(RQ.teste||lead.id==='teste'){Object.assign(rec,{id:'teste-'+Date.now(),criado_em:agoraISO(),teste:true});RQ.base=null;RQ.estado='';RQ.sel=rec;RQ.modo='ver';RQ.apagar=false;rqTela();return}
   try{if(REAL){const {data,error}=await SB.from('reconquistas').insert(Object.assign({escritorio_id:ESCRITORIO.id},rec)).select('id,lead_id,agente,analise,criado_em').single();if(error)throw error;Object.assign(rec,data)}
     else Object.assign(rec,{id:uid(),criado_em:agoraISO()});
     (RQ.hist=RQ.hist||[]).unshift({id:rec.id,lead_id:rec.lead_id,agente:rec.agente,analise:rec.analise,criado_em:rec.criado_em});if(!REAL)D.reconquistas=RQ.hist;
@@ -4647,12 +4670,14 @@ document.addEventListener('change',e=>{const ler=()=>{RQ.txt=($('#rq-txt')||{}).
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-rq]');if(!b)return;const a=b.dataset.rq;
   if(a==='analisar'){rqAnalisar();return}
   if(a==='nova'){rqNovo(b.dataset.lead||'');return}
-  if(a==='revisar'&&RQ.sel){const s0=RQ.sel;if(!s0.conversa){toast('Espere a conversa carregar.');return}rqNovo(s0.lead_id);RQ.base={id:s0.id,conversa:s0.conversa,analise:s0.analise,criado_em:s0.criado_em};rqTela();return}
+  if(a==='revisar'&&RQ.sel){const s0=RQ.sel;if(!s0.conversa){toast('Espere a conversa carregar.');return}rqNovo(s0.lead_id);RQ.teste=!!s0.teste;RQ.base={id:s0.id,conversa:s0.conversa,analise:s0.analise,criado_em:s0.criado_em};rqTela();return}
   if(a==='semrev'){RQ.base=null;rqTela();return}
-  if(a==='refazer'&&RQ.sel){const c=RQ.sel.conversa,l=RQ.sel.lead_id;if(!c){toast('Espere a conversa carregar.');return}rqNovo(l);RQ.txt=c;rqTela();rqAnalisar();return}
-  if(a==='lista'||a==='clientes'){RQ.modo='clientes';RQ.sel=null;RQ.res=null;RQ.erro='';rqTela();const x=$('#rq-busca');if(x)x.focus();return}
-  if(a==='cliente'){RQ.modo=rqLead()?'cliente':'clientes';RQ.sel=null;RQ.res=null;RQ.base=null;RQ.erro='';rqTela();return}
-  if(a==='cli'){RQ.leadId=b.dataset.id;RQ.modo='cliente';RQ.erro='';rqTela();return}
+  if(a==='refazer'&&RQ.sel){const c=RQ.sel.conversa,l=RQ.sel.lead_id,tt=!!RQ.sel.teste;if(!c){toast('Espere a conversa carregar.');return}rqNovo(l);RQ.teste=tt;RQ.txt=c;rqTela();rqAnalisar();return}
+  if(a==='lista'||a==='clientes'){RQ.teste=false;RQ.leadId='';RQ.modo='clientes';RQ.sel=null;RQ.res=null;RQ.erro='';rqTela();const x=$('#rq-busca');if(x)x.focus();return}
+  if(a==='cliente'){RQ.modo=RQ.teste||RQ.leadId==='teste'?'testes':rqLead()?'cliente':'clientes';RQ.sel=null;RQ.res=null;RQ.base=null;RQ.erro='';rqTela();return}
+  if(a==='cli'){RQ.teste=false;RQ.leadId=b.dataset.id;RQ.modo='cliente';RQ.erro='';rqTela();return}
+  if(a==='testes'){RQ.teste=true;RQ.leadId='teste';RQ.sel=null;RQ.res=null;RQ.base=null;RQ.modo='testes';RQ.erro='';rqTela();return}
+  if(a==='teste'){const i=+b.dataset.i;rqNovo('teste');RQ.teste=true;RQ.txt=i>=0?RQ_TESTES[i][3]:'';rqTela();const x=$('#rq-txt');if(x)x.focus();return}
   if(a==='novocli'){RQ.modo='novocli';RQ.nomeIn='';RQ.telIn='';RQ.erro='';rqTela();const x=$('#rq-cnome');if(x)x.focus();return}
   if(a==='salvacli'){const nm=(($('#rq-cnome')||{}).value||'').trim(),tl=rqNorm(($('#rq-ctel')||{}).value||'');RQ.nomeIn=nm;RQ.telIn=($('#rq-ctel')||{}).value||'';
     if(!nm){RQ.erro='Escreva o nome do cliente.';rqTela();return}
@@ -4670,6 +4695,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-rq]'
     try{if(REAL&&id!=='tmp'){const {error}=await SB.from('reconquistas').delete().eq('id',id);if(error)throw error}RQ.hist=(RQ.hist||[]).filter(h=>h.id!==id);if(!REAL)D.reconquistas=RQ.hist;toast('Análise apagada.')}catch(x){toast('Não consegui apagar agora.')}
     RQ.modo=rqLead()?'cliente':'clientes';RQ.sel=null;RQ.apagar=false;rqTela();return}
   if(a==='copiar'){const m=b.dataset.i==='mat'?rqDesmascarar(((RQ.sel?RQ.sel.analise:RQ.res)||{}).material.texto||''):(RQ._msgs||[])[+b.dataset.i]||'';try{await navigator.clipboard.writeText(m);toast('Mensagem copiada.')}catch(x){toast('Não consegui copiar. Selecione o texto e copie.')}return}
+  if(a==='lembrar'&&(RQ.teste||(RQ.sel&&RQ.sel.teste))){toast('No teste não anoto lembrete. Com um cliente de verdade, o Pedro anota.');return}
   if(a==='lembrar'){const r=RQ.sel?RQ.sel.analise:RQ.res,q=r&&r.lembrete&&r.lembrete.quando||'amanhã 10h';const nm=primeiroNome(RQ.nome||'')||'o contato';
     await anotarLembrete('Retomar conversa com '+nm+' ('+AGENTES[RQ.ag].nome+') '+q);toast('Anotado. O Pedro te lembra '+q+'.');return}});
 /* ---- Técnicas de persuasão com ética (vale para a análise e para as mensagens de cuidado) ---- */
