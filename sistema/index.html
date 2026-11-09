@@ -13,7 +13,7 @@ window.IDEALI_CONFIG = {
 };
 </script>
 <title>Ideali Advocacia</title>
-<script>(function(){var a={visual:"oficial",modo:"auto"};try{var s=JSON.parse(localStorage.getItem("ideali-aparencia")||"{}");if(s.visual)a.visual=s.visual;if(s.modo)a.modo=s.modo}catch(e){}var r=document.documentElement;r.dataset.visual=a.visual;if(a.modo==="auto")r.removeAttribute("data-theme");else r.dataset.theme=a.modo==="claro"?"light":"dark";window.APARENCIA=a})();</script>
+<script>(function(){try{var lv=localStorage.getItem("ideali-leve");if(lv==="sim"||lv==="auto-sim")document.documentElement.setAttribute("data-leve","1")}catch(e){}})();(function(){var a={visual:"oficial",modo:"auto"};try{var s=JSON.parse(localStorage.getItem("ideali-aparencia")||"{}");if(s.visual)a.visual=s.visual;if(s.modo)a.modo=s.modo}catch(e){}var r=document.documentElement;r.dataset.visual=a.visual;if(a.modo==="auto")r.removeAttribute("data-theme");else r.dataset.theme=a.modo==="claro"?"light":"dark";window.APARENCIA=a})();</script>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@500;600&family=Cinzel:wght@700&family=Manrope:wght@500;600;700;800&display=swap">
@@ -209,7 +209,7 @@ select.inp option{background:var(--bg);color:var(--fg)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media (max-width:560px){.grid2{grid-template-columns:1fr}}
 /* modal */
-.veu{position:fixed;inset:0;background:rgba(5,8,14,.45);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);z-index:20;display:flex;align-items:center;justify-content:center;padding:16px}
+.veu{position:fixed;inset:0;background:rgba(5,8,14,.62);z-index:20;display:flex;align-items:center;justify-content:center;padding:16px}
 .modal{background:var(--bg2);border-radius:22px;padding:22px;width:min(760px,100%);max-height:calc(100% - 32px);overflow:auto;display:flex;flex-direction:column;gap:12px}
 .tbl{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px}
@@ -912,7 +912,7 @@ body.kb-arrastando,body.kb-arrastando *{cursor:grabbing!important;user-select:no
 .rq-ok{margin:8px 0;padding:7px 10px;border-radius:10px;background:rgba(31,157,85,.12);border:1px solid rgba(31,157,85,.35);font-size:13px}
 .rq-solta{outline:2px dashed var(--c);outline-offset:6px;border-radius:12px}
 /* desempenho: com janela/apresentação aberta, ou "reduzir movimento" no computador, o céu fica parado */
-body.anim-pausa .ceu,body.anim-pausa .ceu *,body.anim-pausa .ceu *::before,body.anim-pausa .ceu *::after{animation-play-state:paused!important}
+body.anim-pausa #app,body.anim-pausa #app *,body.anim-pausa #app *::before,body.anim-pausa #app *::after,body.anim-pausa .eq-flut,body.anim-pausa .eq-flut *{animation-play-state:paused!important}
 @media (prefers-reduced-motion: reduce){.ceu,.ceu *,.ceu *::before,.ceu *::after{animation:none!important}}
 .rq-aviso{display:block;margin-top:6px;font-size:12px;color:#B45309;font-weight:600}
 .rq-aj q{display:block;font-style:italic;opacity:.9}.rq-aj span{display:block;margin-top:2px}.rq-aj em{display:block;margin-top:3px;font-style:normal;font-size:12.5px;color:#1F9D55}
@@ -920,6 +920,11 @@ body.anim-pausa .ceu,body.anim-pausa .ceu *,body.anim-pausa .ceu *::before,body.
 .rq-urg ul{margin:6px 0;padding-left:18px}.rq-urg p{margin:4px 0;font-size:13.5px}.rq-urg q{font-style:italic}
 .rq-mat p{white-space:pre-wrap;font-size:13px}
 .rq-mud{margin:10px 0;padding:10px 12px;border-radius:12px;border:1px solid rgba(91,141,239,.45);background:rgba(91,141,239,.1)}.rq-mud ul{margin:6px 0;padding-left:18px}.rq-mud p{margin:4px 0;font-size:13.5px}
+/* MODO LEVE: sem efeito de vidro (backdrop-filter) e sem animações de enfeite. Liga sozinho se o computador engasgar. */
+[data-leve="1"] *,[data-leve="1"] *::before,[data-leve="1"] *::after{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+[data-leve="1"] .ceu *,[data-leve="1"] .ceu *::before,[data-leve="1"] .ceu *::after,[data-leve="1"] .pd-hd,[data-leve="1"] .pd-hd *,[data-leve="1"] .pd-hd::after,[data-leve="1"] .pd-hd::before,[data-leve="1"] .eq-fig,[data-leve="1"] .th-radar span,[data-leve="1"] .estrelas{animation:none!important}
+[data-leve="1"] .chuva,[data-leve="1"] .raio{display:none!important}
+[data-leve="1"] #app::before{display:none!important}
 /* Reconquistar contato */
 .modal:has(.rq){max-width:640px;width:calc(100vw - 24px)}
 .rq{position:relative;font-family:var(--sans,system-ui);color:var(--tx,inherit)}
@@ -3468,7 +3473,9 @@ function cfgAparencia(){const A=APARENCIA;
     '<div class="cfg-op" style="margin-top:10px"><button class="cfg-card'+(A.visual==='oficial'?' on':'')+'" data-cfg="visual" data-v="oficial">'+prev('#14213D','#F6F4EF','#FFFFFF','#BF9440')+'<b>Oficial</b><small>Azul-marinho, dourado, branco e bege, como o site. Padrão.</small></button>'+
     '<button class="cfg-card'+(A.visual==='vidro'?' on':'')+'" data-cfg="visual" data-v="vidro">'+prev('rgba(255,255,255,.6)','linear-gradient(135deg,#7FD6CF,#A9B4FF 55%,#F2C98F)','rgba(255,255,255,.6)','#B98A45')+'<b>Ideali vidro</b><small>O visual anterior: vidro fosco sobre luz colorida.</small></button></div>'+
     '<h4 style="margin-top:16px">Claro ou escuro</h4><div class="seg">'+[['auto','Automático'],['claro','☀️ Claro'],['escuro','🌙 Escuro']].map(m=>'<button data-cfg="modo" data-v="'+m[0]+'" class="'+(A.modo===m[0]?'on':'')+'">'+m[1]+'</button>').join('')+'</div>'+
-    '<p class="nota">Automático segue o celular ou computador: claro de dia, escuro se o aparelho estiver no modo escuro.</p></div>'+cfgAnimacoes()}
+    '<p class="nota">Automático segue o celular ou computador: claro de dia, escuro se o aparelho estiver no modo escuro.</p>'+
+    '<h4 style="margin-top:16px">⚡ Modo leve</h4><div class="seg">'+[['auto','Automático'],['sim','Ligado'],['nao','Desligado']].map(m=>{const v=LEVE.get(),on=m[0]==='auto'?(v==='auto'||v==='auto-sim'):v===m[0];return '<button data-leve="'+m[0]+'" class="'+(on?'on':'')+'">'+m[1]+'</button>'}).join('')+'</div>'+
+    '<p class="nota">Tira o efeito de vidro e as animações de enfeite (céu, chuva, figuras se mexendo) para o sistema ficar rápido em qualquer computador. No automático, ele liga sozinho se perceber que está pesado'+(LEVE.get()==='auto-sim'?' (já ligou neste computador)':'')+'.</p></div>'+cfgAnimacoes()}
 function cfgAnimacoes(){
   return '<div class="lead" id="cfg-anim"><h3 style="margin-top:0">🎆 Testar animações</h3><p class="mut" style="margin:0 0 10px">Veja como o agente aparece. É só a animação: nada é salvo e nenhum dado muda.</p>'+
     '<div class="grid2"><label class="f">Assunto<select class="inp" id="an-tema">'+Object.entries(TEMAS).map(([k,v])=>'<option value="'+k+'">'+esc(v.nome)+' · '+esc((AGENTES[FIG[v.ag]?v.ag:'klaus']||{}).nome||'')+'</option>').join('')+'</select></label>'+
@@ -3498,6 +3505,7 @@ async function salvarCfg(k){const g=id=>($('#'+id)?$('#'+id).value.trim():'');
   }catch(e){toast('Não consegui salvar. '+(e&&e.message?'('+String(e.message).slice(0,80)+')':''))}}
 document.addEventListener('click',e=>{const t=e.target.closest('[data-cfgs]');if(t)salvarCfg(t.dataset.cfgs)});
 document.addEventListener('click',e=>{const t=e.target.closest('[data-cfg]');if(!t)return;setAparencia(t.dataset.cfg,t.dataset.v)});
+document.addEventListener('click',e=>{const t=e.target.closest('[data-leve]');if(!t||t.tagName!=='BUTTON')return;LEVE.set(t.dataset.leve);toast(t.dataset.leve==='sim'?'Modo leve ligado.':t.dataset.leve==='nao'?'Modo leve desligado.':'Modo leve automático.');render()});
 /* =================== Theo: anúncios e tráfego =================== */
 AGENTES.theo={nome:'Theo',area:'Anúncios e tráfego',cor:'#5B8DEF',cab:'#1C1612',pele:'#C9906A',curto:1};
 const REDES={instagram:['Instagram','Anúncio Instagram'],facebook:['Facebook','Anúncio Facebook'],google:['Google','Google']};
@@ -4653,6 +4661,15 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-rql]
 (function(){const ver=()=>document.body.classList.toggle('anim-pausa',!!document.querySelector('#modal .veu,#tour,#novidade,#festa,.vr-fundo'));
   const ob=new MutationObserver(ver);const liga=()=>{ob.observe(document.body,{childList:true});const m=document.getElementById('modal');if(m)ob.observe(m,{childList:true});ver()};
   if(document.body)liga();else document.addEventListener('DOMContentLoaded',liga)})();
+/* MODO LEVE automático: se o navegador travar vários quadros (>=120 ms) em 20 s, desliga os efeitos pesados e avisa uma vez. */
+const LEVE={get:()=>{try{return localStorage.getItem('ideali-leve')||'auto'}catch(e){return 'auto'}},
+  set(v){try{v==='auto'?localStorage.removeItem('ideali-leve'):localStorage.setItem('ideali-leve',v)}catch(e){}LEVE.aplicar()},
+  aplicar(){const v=LEVE.get();document.documentElement.toggleAttribute('data-leve',v==='sim'||v==='auto-sim');if(document.documentElement.hasAttribute('data-leve'))document.documentElement.setAttribute('data-leve','1')}};
+(function(){if(!('PerformanceObserver' in window))return;const T=[];
+  const ver=lista=>{if(LEVE.get()!=='auto')return;const n=performance.now();lista.forEach(e=>{if(e.startTime>10000&&e.duration>=120&&document.visibilityState==='visible'&&!T.some(t=>Math.abs(t-e.startTime)<100))T.push(e.startTime)});
+    T.sort((a,b)=>a-b);while(T.length&&n-T[0]>20000)T.shift();
+    if(T.length>=6){try{localStorage.setItem('ideali-leve','auto-sim')}catch(e){}LEVE.aplicar();try{toast('O sistema estava pesado neste computador. Liguei o modo leve (menos efeitos). Dá para mudar em Aparência.')}catch(e){}}};
+  ['long-animation-frame','longtask'].forEach(t=>{try{new PerformanceObserver(l=>ver(l.getEntries())).observe({type:t,buffered:false})}catch(e){}})})();
 function carregarLib(){return new Promise((ok,falha)=>{if(window.supabase)return ok();const s=document.createElement('script');s.src=CONFIG.lib;s.onload=ok;s.onerror=()=>falha(new Error('Sem internet para carregar o sistema.'));document.head.appendChild(s)})}
 (async()=>{
   if(!REAL){carregar();render();return}
