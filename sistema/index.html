@@ -925,6 +925,26 @@ body.anim-pausa #app,body.anim-pausa #app *,body.anim-pausa #app *::before,body.
 [data-leve="1"] .ceu *,[data-leve="1"] .ceu *::before,[data-leve="1"] .ceu *::after,[data-leve="1"] .pd-hd,[data-leve="1"] .pd-hd *,[data-leve="1"] .pd-hd::after,[data-leve="1"] .pd-hd::before,[data-leve="1"] .eq-fig,[data-leve="1"] .th-radar span,[data-leve="1"] .estrelas{animation:none!important}
 [data-leve="1"] .chuva,[data-leve="1"] .raio{display:none!important}
 [data-leve="1"] #app::before{display:none!important}
+/* conversa estilo WhatsApp */
+.wa-sim{margin-top:10px;border-radius:14px;overflow:hidden;border:1px solid rgba(127,127,127,.25)}
+.wa-topo{display:flex;gap:10px;align-items:center;padding:8px 12px;background:#008069;color:#fff}.wa-topo b{display:block;font-size:14px}.wa-topo small{display:block;font-size:12px;opacity:.85}
+.wa-fundo{background:#EFEAE2;padding:10px 8px;max-height:340px;overflow:auto;display:flex;flex-direction:column;gap:2px}
+.wa-linha{display:flex;gap:6px;align-items:flex-end;max-width:100%}.wa-linha.eu{flex-direction:row-reverse}.wa-linha.novo{margin-top:8px}
+.wa-av{width:28px;height:28px;border-radius:50%;flex:none;object-fit:cover}.wa-av.vazio{visibility:hidden}
+.wa-ini{display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:#B7C4CF;color:#22313F}.wa-ini.eu{background:#C9A36A;color:#fff}
+.wa-topo .wa-ini{background:#DFE5E7;color:#54656F;width:34px;height:34px}
+.wa-bal{max-width:78%;padding:6px 9px;border-radius:8px;font-size:13.5px;line-height:1.38;color:#111B21;background:#fff;box-shadow:0 1px .5px rgba(11,20,26,.13);word-wrap:break-word;white-space:normal}
+.wa-linha.eu .wa-bal{background:#D9FDD3}
+.wa-linha.novo.ele .wa-bal{border-top-left-radius:0}.wa-linha.novo.eu .wa-bal{border-top-right-radius:0}
+.wa-bal[data-rqflip]{cursor:pointer}.wa-bal[data-rqflip]:hover{outline:2px solid rgba(0,128,105,.45)}
+.wa-quem{display:block;font-size:12px;color:#1F7AEC;margin-bottom:2px}
+.wa-dia{align-self:center;margin:8px 0;padding:4px 10px;border-radius:8px;background:#FFF;font-size:12px;color:#54656F;box-shadow:0 1px .5px rgba(11,20,26,.13)}
+.wa-vazio{color:#667781;font-size:13px;text-align:center;margin:12px 0}
+.wa-dica{margin:0;padding:6px 10px;font-size:12px;background:#F0F2F5;color:#54656F}
+.wa-alerta{margin:0;padding:8px 10px;font-size:13px;background:rgba(225,29,72,.12);color:#9F1239;font-weight:600}
+.rq-conv .wa-sim{margin-top:8px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .wa-fundo{background:#0B141A}:root:not([data-theme="light"]) .wa-bal{background:#202C33;color:#E9EDEF}:root:not([data-theme="light"]) .wa-linha.eu .wa-bal{background:#005C4B}:root:not([data-theme="light"]) .wa-topo{background:#202C33}:root:not([data-theme="light"]) .wa-dia{background:#182229;color:#8696A0}:root:not([data-theme="light"]) .wa-dica{background:#111B21;color:#8696A0}}
+:root[data-theme="dark"] .wa-fundo{background:#0B141A}:root[data-theme="dark"] .wa-bal{background:#202C33;color:#E9EDEF}:root[data-theme="dark"] .wa-linha.eu .wa-bal{background:#005C4B}:root[data-theme="dark"] .wa-topo{background:#202C33}:root[data-theme="dark"] .wa-dia{background:#182229;color:#8696A0}:root[data-theme="dark"] .wa-dica{background:#111B21;color:#8696A0}
 /* Reconquistar contato */
 .modal:has(.rq){max-width:640px;width:calc(100vw - 24px)}
 .rq{position:relative;font-family:var(--sans,system-ui);color:var(--tx,inherit)}
@@ -4365,7 +4385,7 @@ function rqTela(){const a=AGENTES[RQ.ag];let corpo='';
     const nAuto=rqNomeAuto(s.conversa||RQ.txt||'');
     corpo=(l&&!rqNomeOk(l.nome)&&nAuto?'<p class="rq-pede" style="margin:0 0 10px">Este contato está salvo como <b>'+esc(l.nome)+'</b>. Na conversa a pessoa disse que se chama <b>'+esc(nAuto)+'</b>. <button class="btn sm" data-rq="nomear" data-lead="'+l.id+'" data-nome="'+esc(nAuto)+'">Salvar como '+esc(nAuto)+'</button></p>':'')+'<div class="rq-ver-cab"><b>'+esc(l?l.nome:'Contato apagado')+'</b><small>'+(l&&l.tel?esc(rqTelFmt(l.tel))+' · ':'')+'análise de '+new Date(s.criado_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '+esc(AGENTES[s.agente]?AGENTES[s.agente].nome:'')+'</small></div>'+
       rqResultado(s.analise)+
-      '<details class="rq-conv"'+(s.conversa?'':' data-rq="conv"')+'><summary>💬 Ver a conversa analisada</summary><pre>'+esc(s.conversa||'Carregando…')+'</pre></details>'+
+      '<details class="rq-conv"'+(s.conversa?'':' data-rq="conv"')+'><summary>💬 Ver a conversa analisada</summary><div class="rq-convwa">'+(s.conversa?rqChatHTML(s.conversa,{nome:l&&rqNomeOk(l.nome)?l.nome:(rqNomeAuto(s.conversa)||'Contato'),tel:l&&l.tel?rqTelFmt(l.tel):''}):'<p class="mut">Carregando…</p>')+'</div></details>'+
       (outras.length?'<h4 class="rq-h">Outras análises deste contato</h4><div class="rq-cards">'+outras.map(rqCard).join('')+'</div>':'')+
       '<div class="rq-acoes">'+(l?'<button class="btn pri" data-rq="revisar">🔄 Revisar conversa (chegou mensagem nova)</button><button class="btn" data-rq="refazer">🔁 Refazer com esta conversa</button><button class="btn" data-rq="nova" data-lead="'+l.id+'">➕ Nova análise deste contato</button>':'')+'<button class="btn" data-rq="lista">‹ Todas as estratégias</button>'+
       '<button class="btn" data-rq="apagar" style="margin-left:auto">'+(RQ.apagar?'Confirmar: apagar':'🗑 Apagar')+'</button></div>'}
@@ -4379,7 +4399,7 @@ function rqTela(){const a=AGENTES[RQ.ag];let corpo='';
       '<label class="btn sm"><input type="file" id="rq-arq" accept=".txt,.zip,text/plain,application/zip" hidden>📎 Conversa exportada (.txt ou .zip)</label></div>'+
       '<p class="mut rq-dica">No WhatsApp: abra a conversa › nome do contato › <b>Exportar conversa</b> › <b>Sem mídia</b>. Ou mande os prints: pode escolher vários de uma vez, adicionar mais depois, colar com Ctrl+V ou arrastar para cá. Prints repetidos são ignorados.</p>'+(RQ.nPrints&&RQ.estado!=='lendo'?'<p class="rq-ok">✓ '+RQ.nPrints+(RQ.nPrints>1?' prints lidos':' print lido')+'. Confira o texto abaixo; se faltou alguma parte da conversa, adicione mais prints.</p>':'')+
       (RQ.estado==='lendo'?'<p class="rq-prog">🔎 '+esc(RQ.prog||'Lendo…')+'</p>':'')+
-      '<textarea class="inp" id="rq-txt" rows="8" placeholder="Cole aqui a conversa. Ex.:\nContato: Obrigada\nVocê: Fico à disposição…">'+esc(RQ.txt)+'</textarea>'+
+      '<textarea class="inp" id="rq-txt" rows="6" placeholder="Cole aqui a conversa. Ex.:\nContato: Obrigada\nVocê: Fico à disposição…">'+esc(RQ.txt)+'</textarea>'+'<div id="rq-previa"></div>'+
       (RQ.pede==='tel'&&!sel?'<div class="rq-pede"><b>📞 Não achei o número do contato na conversa.</b><p>Qual é o WhatsApp da pessoa? Sem o número eu não analiso, para não misturar a estratégia de um cliente com a de outro.</p><input class="inp" id="rq-tel" inputmode="tel" placeholder="(11) 90000-0000" value="'+esc(RQ.telIn)+'" autocomplete="off"></div>':'')+
       (RQ.pede==='nome'&&!sel?'<div class="rq-pede"><b>🆕 O número '+esc(rqTelFmt(RQ.telAchado))+' ainda não está nos seus contatos.</b><p>Qual é o nome? Eu cadastro e guardo esta estratégia no histórico dela.</p><input class="inp" id="rq-nomenovo" placeholder="Nome do contato" value="'+esc(RQ.nomeIn)+'" autocomplete="off"></div>':'')+
       '<input class="inp" id="rq-obs" style="margin-top:8px" placeholder="Algo que eu deva saber? (opcional)" value="'+esc(RQ.obs)+'" autocomplete="off">'+
@@ -4391,10 +4411,41 @@ function rqTela(){const a=AGENTES[RQ.ag];let corpo='';
     corpo='<div class="rq-acoes" style="margin-top:0"><button class="btn pri" data-rq="nova">➕ Nova estratégia</button></div>'+
       '<h4 class="rq-h">Estratégias salvas'+(H.length?' ('+H.length+')':'')+'</h4>'+(H.length?'<div class="rq-cards">'+H.map(rqCard).join('')+'</div>':'<p class="mut">Ainda não há estratégias salvas. Toque em "Nova estratégia" e mande a conversa de um contato que esfriou.</p>')}
   abrirModal('<div class="rq" style="--c:'+a.cor+'"><button class="pa-x" data-fechar="1" aria-label="Fechar">✕</button>'+
-    '<div class="rq-cab">'+av(RQ.ag,48)+'<div><b>'+a.nome+' · Reconquistar contato</b><small>Mande a conversa. Eu leio, digo o que aconteceu e sugiro como retomar, com respeito e sem insistência.</small></div></div>'+corpo+'</div>')}
+    '<div class="rq-cab">'+av(RQ.ag,48)+'<div><b>'+a.nome+' · Reconquistar contato</b><small>Mande a conversa. Eu leio, digo o que aconteceu e sugiro como retomar, com respeito e sem insistência.</small></div></div>'+corpo+'</div>');rqPrevia()}
 function rqUrgHTML(u){if(!u||!u.nivel||/nenhuma/i.test(u.nivel))return '';const alta=/alta/i.test(u.nivel);
   return '<div class="rq-urg'+(alta?' alta':'')+'"><b>'+(alta?'🚨 Urgência real: alta':'⏱ Urgência real: '+esc(u.nivel))+'</b>'+(u.fatos&&u.fatos.length?'<ul>'+u.fatos.map(f=>'<li><q>'+esc(rqDesmascarar(f))+'</q></li>').join('')+'</ul>':'')+
     (u.risco?'<p><b>Se esperar:</b> '+esc(u.risco)+'</p>':'')+(u.medidas_para_avaliar&&u.medidas_para_avaliar.length?'<p><b>Para você avaliar:</b> '+esc(u.medidas_para_avaliar.join(', '))+'</p>':'')+(u.como_mostrar?'<p><b>Como mostrar à pessoa:</b> '+esc(u.como_mostrar)+'</p>':'')+'</div>'}
+/* ---- Conversa no estilo WhatsApp (balões, fotos, nome) ---- */
+const RQ_EU=/^(você|voce|eu|bea|beatriz|dra\.?|dra\.? beatriz|beatriz alves|advogada)$/i;
+/* lê "Você: …", "Contato: …" ou "Nome: …" (exportado do WhatsApp); linhas sem nome continuam o balão anterior */
+function rqParse(txt){const L=String(txt||'').replace(/\r/g,'').split('\n'),out=[];
+  L.forEach((ln,i)=>{const t=ln.trim();if(!t)return;
+    let m=t.match(/^-{2,}\s*(.+?)\s*-{2,}$/);if(m){out.push({sep:m[1]});return}
+    m=t.match(/^([^:]{1,40}):\s*(.*)$/);
+    if(m&&!/^https?$/i.test(m[1])&&!/\d{1,2}$/.test(m[1])){const nm=m[1].trim(),eu=RQ_EU.test(nm)||(ESCRITORIO.advogada&&nm.toLowerCase()===String(ESCRITORIO.advogada).toLowerCase())||(ESCRITORIO.primeiro&&nm.toLowerCase()===String(ESCRITORIO.primeiro).toLowerCase());
+      out.push({eu,nome:/^contato$/i.test(nm)||eu?'':nm,texto:m[2],linha:i});return}
+    const u=out[out.length-1];if(u&&!u.sep)u.texto+=(u.texto?'\n':'')+t;else out.push({eu:false,nome:'',texto:t,linha:i})});
+  return out}
+/* nomes que a advogada usou para cumprimentar: "Olá, Sol" e "Olá, Jacque" na mesma conversa = pessoas diferentes misturadas */
+function rqPessoas(txt){const N=new Set();rqParse(txt).filter(x=>!x.sep&&x.eu).forEach(x=>{const m=x.texto.match(/^\s*(?:oi|olá|ola|bom dia|boa tarde|boa noite)[,!]?\s+([A-ZÀ-Ý][\p{L}]{1,20})/iu);if(m&&!RQ_EU.test(m[1])&&!/^(tudo|seja|como|que|dra|doutora)$/i.test(m[1]))N.add(m[1].normalize('NFD').replace(/\p{M}/gu,'').toLowerCase())});
+  rqParse(txt).filter(x=>!x.sep&&!x.eu).forEach(x=>{const m=x.texto.match(/meu nome (?:é|e)\s+([A-ZÀ-Ý][\p{L}]+)/u);if(m)N.add(m[1].normalize('NFD').replace(/\p{M}/gu,'').toLowerCase())});
+  /* "Sol" e "Solange" são a mesma pessoa */
+  const A=[...N];return A.filter(a=>!A.some(b=>b!==a&&b.startsWith(a))).map(a=>a[0].toUpperCase()+a.slice(1))}
+function rqChatHTML(txt,o){o=o||{};const itens=rqParse(txt),nome=o.nome||'Contato',ini=String(nome).split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('')||'?';
+  const fotoEu=temMono()?'<img class="wa-av" src="'+MONO+'" alt="">':'<span class="wa-av wa-ini eu">'+esc((ESCRITORIO.primeiro||'Eu')[0])+'</span>';
+  const pes=rqPessoas(txt);
+  let h='<div class="wa-sim">'+(pes.length>1?'<p class="wa-alerta">⚠️ Parece que esta conversa mistura pessoas diferentes ('+pes.map(esc).join(', ')+'). Cada contato deve ter só a conversa dele, senão a análise sai errada.</p>':'')+
+    '<div class="wa-topo"><span class="wa-av wa-ini">'+esc(ini)+'</span><div><b>'+esc(nome)+'</b>'+(o.tel?'<small>'+esc(o.tel)+'</small>':'')+'</div></div><div class="wa-fundo">';
+  if(!itens.length)h+='<p class="wa-vazio">A conversa aparece aqui.</p>';
+  let ant=null;itens.forEach((x,k)=>{if(x.sep){h+='<div class="wa-dia">'+esc(x.sep)+'</div>';ant=null;return}
+    const lado=x.eu?'eu':'ele',novo=ant!==lado;ant=lado;
+    h+='<div class="wa-linha '+lado+(novo?' novo':'')+'">'+(novo?(x.eu?fotoEu:'<span class="wa-av wa-ini">'+esc(ini)+'</span>'):'<span class="wa-av vazio"></span>')+
+      '<div class="wa-bal"'+(o.editar&&x.linha!=null?' data-rqflip="'+x.linha+'" title="Toque para trocar de lado (você / contato)"':'')+'>'+(novo&&!x.eu&&x.nome&&x.nome!==nome?'<b class="wa-quem">'+esc(x.nome)+'</b>':'')+esc(o.desmasc?rqDesmascarar(x.texto):x.texto).replace(/\n/g,'<br>')+'</div></div>'});
+  return h+'</div>'+(o.editar&&itens.length?'<p class="wa-dica">Leu errado quem falou? Toque no balão para trocar de lado.</p>':'')+'</div>'}
+function rqPrevia(){const c=document.getElementById('rq-previa');if(!c)return;const t=($('#rq-txt')||{}).value||'';const l=rqLead();c.innerHTML=t.trim()?rqChatHTML(t,{nome:l&&rqNomeOk(l.nome)?l.nome:(rqNomeAuto(t)||'Contato'),tel:l&&l.tel?rqTelFmt(l.tel):'',editar:true}):''}
+document.addEventListener('input',e=>{if(e.target.id==='rq-txt'){clearTimeout(RQ._prev);RQ._prev=setTimeout(rqPrevia,250)}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-rqflip]');if(!b)return;const ta=$('#rq-txt');if(!ta)return;const L=ta.value.split('\n'),i=+b.dataset.rqflip,t=L[i]||'';
+  const m=t.match(/^\s*([^:]{1,40}):\s*(.*)$/);L[i]=m?((RQ_EU.test(m[1].trim())?'Contato: ':'Você: ')+m[2]):'Você: '+t;ta.value=L.join('\n');RQ.txt=ta.value;rqPrevia()});
 function rqResultado(r){const tmp=RQ_TEMP[r.temperatura]||['•','—','#888'];
   const bloco=(t,arr)=>arr&&arr.length?'<h4>'+t+'</h4><ul>'+arr.map(x=>'<li>'+esc(typeof x==='string'?x:JSON.stringify(x))+'</li>').join('')+'</ul>':'';
   const plano=(r.plano||[]).filter(p=>p&&p.mensagem);
@@ -4534,6 +4585,7 @@ const rqTextoTodo=()=>RQ.base?String(RQ.base.conversa||'').trim()+'\n--- continu
 async function rqAnalisar(){RQ.txt=($('#rq-txt')||{}).value||RQ.txt;RQ.obs=($('#rq-obs')||{}).value||'';RQ.esconder=!!($('#rq-esc')||{}).checked;RQ.erro='';
   const ls=$('#rq-lead');if(ls)RQ.leadId=ls.value;const ti=$('#rq-tel');if(ti)RQ.telIn=ti.value;const ni=$('#rq-nomenovo');if(ni)RQ.nomeIn=ni.value;
   if(RQ.txt.trim().length<15){RQ.erro='Mande a conversa primeiro (prints, arquivo ou texto colado).';rqTela();return}
+  {const pes=rqPessoas(rqTextoTodo());if(pes.length>1&&RQ._misturaOk!==RQ.txt){RQ._misturaOk=RQ.txt;RQ.erro='Esta conversa parece ter pessoas diferentes ('+pes.join(', ')+'). Tire a parte que não é deste contato. Se for a mesma pessoa, toque em "Bolar estratégia" de novo.';rqTela();return}}
   let lead=rqLead();
   if(!lead){const tel=rqNorm(RQ.telIn)||rqNorm(rqTelefone(RQ.txt))||rqNorm(rqTelefone(RQ.cab||''));
     if(!tel){RQ.pede='tel';RQ.erro=RQ.telIn?'Esse número não parece um WhatsApp válido. Confira o DDD e o número.':'';rqTela();const x=$('#rq-tel');if(x)x.focus();return}
@@ -4560,7 +4612,7 @@ async function rqAnalisar(){RQ.txt=($('#rq-txt')||{}).value||RQ.txt;RQ.obs=($('#
     rec._conv=rec.conversa}catch(e){console.error(e);toast('A estratégia saiu, mas não consegui guardar no histórico agora.');Object.assign(rec,{id:'tmp',criado_em:agoraISO()})}
   RQ.estado='';RQ.sel=rec;RQ.modo='ver';RQ.apagar=false;rqTela()}
 async function rqAbrirSalva(id){const h=(RQ.hist||[]).find(x=>x.id===id);if(!h)return;RQ.sel=Object.assign({},h);RQ.modo='ver';RQ.apagar=false;rqTela();
-  if(REAL){try{const {data}=await SB.from('reconquistas').select('conversa').eq('id',id).single();if(RQ.sel&&RQ.sel.id===id){RQ.sel.conversa=data?data.conversa:'(não encontrada)';const p=document.querySelector('.rq-conv pre');if(p)p.textContent=RQ.sel.conversa}}catch(e){}}
+  if(REAL){try{const {data}=await SB.from('reconquistas').select('conversa').eq('id',id).single();if(RQ.sel&&RQ.sel.id===id){RQ.sel.conversa=data?data.conversa:'(não encontrada)';const p=document.querySelector('.rq-convwa');const l0=(D.leads||[]).find(x=>x.id===RQ.sel.lead_id);if(p)p.innerHTML=rqChatHTML(RQ.sel.conversa,{nome:l0&&rqNomeOk(l0.nome)?l0.nome:(rqNomeAuto(RQ.sel.conversa)||'Contato'),tel:l0&&l0.tel?rqTelFmt(l0.tel):''});if(0)p.textContent=RQ.sel.conversa}}catch(e){}}
   else{const d=(D.reconquistas||[]).find(x=>x.id===id);RQ.sel.conversa=d&&(d.conversa||d._conv)||''}}
 document.addEventListener('change',e=>{const ler=()=>{RQ.txt=($('#rq-txt')||{}).value||'';RQ.obs=($('#rq-obs')||{}).value||'';const ls=$('#rq-lead');if(ls)RQ.leadId=ls.value};
   if(e.target.id==='rq-prints'&&e.target.files.length){ler();rqLerPrints([...e.target.files])}
