@@ -329,21 +329,21 @@ tr.soma td{font-weight:700;border-top:1px solid var(--rule)}
 .ceu.noite{background:linear-gradient(180deg,#070B1E 0%,#16204A 70%,#2B2D5E 100%)}
 .ceu.t-nublado.manha,.ceu.t-nublado.tarde,.ceu.t-chuva.manha,.ceu.t-chuva.tarde{background:linear-gradient(180deg,#5D6E82 0%,#8A9BAE 70%,#B9C4CF 100%)}
 .ceu.t-tempestade{background:linear-gradient(180deg,#2A3140 0%,#4B5566 70%,#6C7584 100%)}
-.astro{position:absolute;width:86px;height:86px;border-radius:50%;right:12%;top:22px;background:radial-gradient(circle,#FFF6C8 0%,#FFD45A 55%,#FFB830 100%);box-shadow:0 0 60px 20px rgba(255,210,90,.55);animation:pulsa 6s ease-in-out infinite;z-index:0}
+.astro{position:absolute;width:86px;height:86px;border-radius:50%;right:12%;top:22px;background:radial-gradient(circle,#FFF6C8 0%,#FFD45A 55%,#FFB830 100%);box-shadow:0 0 60px 20px rgba(255,210,90,.55);animation:pulsa 6s ease-in-out infinite;z-index:0;will-change:transform}
 .ceu.poente .astro{top:auto;bottom:-30px;background:radial-gradient(circle,#FFE3A1,#FF8A3D);box-shadow:0 0 80px 30px rgba(255,140,60,.6)}
 .ceu.noite .astro{width:62px;height:62px;background:radial-gradient(circle at 35% 35%,#FFFFFF,#E3E6F3 60%,#BFC4DA);box-shadow:0 0 40px 8px rgba(220,225,255,.35)}
 .ceu.t-chuva .astro,.ceu.t-tempestade .astro{opacity:.25}
-@keyframes pulsa{50%{transform:scale(1.06);filter:brightness(1.08)}}
+@keyframes pulsa{50%{transform:scale(1.06)}}
 .estrelas{position:absolute;inset:0;background-image:radial-gradient(1.5px 1.5px at 10% 20%,#fff,transparent),radial-gradient(1px 1px at 25% 60%,#fff,transparent),radial-gradient(1.5px 1.5px at 40% 30%,#fff,transparent),radial-gradient(1px 1px at 55% 75%,#fff,transparent),radial-gradient(1.5px 1.5px at 70% 15%,#fff,transparent),radial-gradient(1px 1px at 85% 55%,#fff,transparent),radial-gradient(1px 1px at 92% 85%,#fff,transparent),radial-gradient(1px 1px at 5% 85%,#fff,transparent);animation:brilha 4s ease-in-out infinite alternate;z-index:0}
 @keyframes brilha{to{opacity:.45}}
-.nuvem{position:absolute;height:38px;border-radius:40px;background:rgba(255,255,255,.85);filter:blur(1px);z-index:1;animation:vento linear infinite}
+.nuvem{position:absolute;left:0;height:38px;border-radius:40px;background:rgba(255,255,255,.85);z-index:1;animation:vento linear infinite;will-change:transform}
 .nuvem::before,.nuvem::after{content:"";position:absolute;background:inherit;border-radius:50%}
 .nuvem::before{width:54px;height:54px;left:18px;top:-26px}.nuvem::after{width:40px;height:40px;right:20px;top:-18px}
 .ceu.noite .nuvem{background:rgba(160,170,210,.35)}
 .ceu.t-chuva .nuvem,.ceu.t-tempestade .nuvem{background:rgba(70,80,95,.85)}
 .n0{width:140px;top:34px;animation-duration:70s;animation-delay:-10s}.n1{width:110px;top:80px;animation-duration:90s;animation-delay:-50s;opacity:.8}.n2{width:160px;top:20px;animation-duration:110s;animation-delay:-80s}.n3{width:120px;top:100px;animation-duration:80s;animation-delay:-30s;opacity:.7}.n4{width:150px;top:55px;animation-duration:100s;animation-delay:-65s}
-@keyframes vento{from{left:-200px}to{left:110%}}
-.chuva{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden;transform:skewX(-7deg);transform-origin:top}.chuva.forte{transform:skewX(-13deg)}.chuva.fraca{transform:skewX(-4deg)}.chuva i{position:absolute;top:-30px;width:var(--pw);border-radius:0 0 999px 999px;background:linear-gradient(180deg,rgba(255,255,255,0),rgba(228,238,250,.95));animation:pingo linear infinite}.chuva b{position:absolute;bottom:3px;width:12px;height:4px;margin-left:-6px;border-radius:50%;border-top:1.5px solid rgba(235,242,250,.75);opacity:0;animation:respingo ease-out infinite}@keyframes pingo{from{top:-30px}to{top:calc(100% + 4px)}}@keyframes respingo{0%{opacity:0;transform:scale(.3)}20%{opacity:.85}100%{opacity:0;transform:scale(1.7,1)}}@media (prefers-reduced-motion: reduce){.chuva i,.chuva b{animation:none}.chuva i{top:auto;bottom:calc(var(--k,0)*1%)}}
+@keyframes vento{from{transform:translateX(-220px)}to{transform:translateX(calc(100vw + 40px))}}
+.chuva{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden;transform:skewX(-7deg);transform-origin:top}.chuva.forte{transform:skewX(-13deg)}.chuva.fraca{transform:skewX(-4deg)}.chuva i{position:absolute;top:-30px;will-change:transform;width:var(--pw);border-radius:0 0 999px 999px;background:linear-gradient(180deg,rgba(255,255,255,0),rgba(228,238,250,.95));animation:pingo linear infinite}.chuva b{position:absolute;bottom:3px;width:12px;height:4px;margin-left:-6px;border-radius:50%;border-top:1.5px solid rgba(235,242,250,.75);opacity:0;animation:respingo ease-out infinite}@keyframes pingo{from{transform:translateY(0)}to{transform:translateY(300px)}}@keyframes respingo{0%{opacity:0;transform:scale(.3)}20%{opacity:.85}100%{opacity:0;transform:scale(1.7,1)}}@media (prefers-reduced-motion: reduce){.chuva i,.chuva b{animation:none}.chuva i{top:auto;bottom:calc(var(--k,0)*1%)}}
 @keyframes cai{to{background-position:0 120px}}
 .raio{position:absolute;inset:0;z-index:2;background:#fff;opacity:0;animation:raio 7s infinite}
 @keyframes raio{0%,92%,96%,100%{opacity:0}93%,95%{opacity:.35}}
@@ -911,6 +911,9 @@ body.kb-arrastando,body.kb-arrastando *{cursor:grabbing!important;user-select:no
 .rql-alerta{padding:8px 10px;border-radius:10px;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.4);font-size:13px}
 .rq-ok{margin:8px 0;padding:7px 10px;border-radius:10px;background:rgba(31,157,85,.12);border:1px solid rgba(31,157,85,.35);font-size:13px}
 .rq-solta{outline:2px dashed var(--c);outline-offset:6px;border-radius:12px}
+/* desempenho: com janela/apresentação aberta, ou "reduzir movimento" no computador, o céu fica parado */
+body.anim-pausa .ceu,body.anim-pausa .ceu *,body.anim-pausa .ceu *::before,body.anim-pausa .ceu *::after{animation-play-state:paused!important}
+@media (prefers-reduced-motion: reduce){.ceu,.ceu *,.ceu *::before,.ceu *::after{animation:none!important}}
 /* Reconquistar contato */
 .modal:has(.rq){max-width:640px;width:calc(100vw - 24px)}
 .rq{position:relative;font-family:var(--sans,system-ui);color:var(--tx,inherit)}
@@ -4603,6 +4606,10 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-rql]
   if(a==='cuidado'&&l){rqCuidado(l,b.dataset.tipo2);return}
   if(a==='copiar'){const m=(CUID._msgs||[])[+b.dataset.i]||'';try{await navigator.clipboard.writeText(m);toast('Mensagem copiada.')}catch(x){toast('Não consegui copiar.')}}});
 
+/* desempenho: pausa o céu animado enquanto há janela, apresentação ou novidades por cima (o desfoque do fundo não precisa ser refeito a cada quadro) */
+(function(){const ver=()=>document.body.classList.toggle('anim-pausa',!!document.querySelector('#modal .veu,#tour,#novidade,#festa,.vr-fundo'));
+  const ob=new MutationObserver(ver);const liga=()=>{ob.observe(document.body,{childList:true});const m=document.getElementById('modal');if(m)ob.observe(m,{childList:true});ver()};
+  if(document.body)liga();else document.addEventListener('DOMContentLoaded',liga)})();
 function carregarLib(){return new Promise((ok,falha)=>{if(window.supabase)return ok();const s=document.createElement('script');s.src=CONFIG.lib;s.onload=ok;s.onerror=()=>falha(new Error('Sem internet para carregar o sistema.'));document.head.appendChild(s)})}
 (async()=>{
   if(!REAL){carregar();render();return}
