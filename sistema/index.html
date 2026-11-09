@@ -909,6 +909,8 @@ body.kb-arrastando,body.kb-arrastando *{cursor:grabbing!important;user-select:no
 .rql-cab{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.rql-cab b{font-size:15px}.rql-cab .mut{font-size:12px}
 .rql-off{opacity:.8}.rql-sub{font-weight:700;font-size:13px;margin:12px 0 6px}
 .rql-alerta{padding:8px 10px;border-radius:10px;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.4);font-size:13px}
+.rq-ok{margin:8px 0;padding:7px 10px;border-radius:10px;background:rgba(31,157,85,.12);border:1px solid rgba(31,157,85,.35);font-size:13px}
+.rq-solta{outline:2px dashed var(--c);outline-offset:6px;border-radius:12px}
 /* Reconquistar contato */
 .modal:has(.rq){max-width:640px;width:calc(100vw - 24px)}
 .rq{position:relative;font-family:var(--sans,system-ui);color:var(--tx,inherit)}
@@ -4333,9 +4335,9 @@ const rqLibOCR=()=>rqCarregar('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/d
 const rqLibZip=()=>rqCarregar('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js',()=>!!window.JSZip);
 async function rqCarregarHist(){if(!REAL){RQ.hist=D.reconquistas=D.reconquistas||[];return}
   try{const {data,error}=await SB.from('reconquistas').select('id,lead_id,agente,analise,criado_em').eq('escritorio_id',ESCRITORIO.id).order('criado_em',{ascending:false}).limit(300);RQ.hist=error?[]:(data||[])}catch(e){RQ.hist=[]}}
-async function rqAbrir(k,leadId){RQ.ag=RQ_AGS.includes(k)?k:'helena';Object.assign(RQ,{res:null,erro:'',estado:'',pede:'',sel:null,apagar:false,modo:leadId?'nova':'lista',leadId:leadId||'',txt:'',obs:'',telIn:'',nomeIn:''});
+async function rqAbrir(k,leadId){RQ.ag=RQ_AGS.includes(k)?k:'helena';Object.assign(RQ,{nPrints:0,cab:'',res:null,erro:'',estado:'',pede:'',sel:null,apagar:false,modo:leadId?'nova':'lista',leadId:leadId||'',txt:'',obs:'',telIn:'',nomeIn:''});
   if(!RQ.hist){RQ.estado='carregando';rqTela();await rqCarregarHist();RQ.estado=''}rqTela()}
-function rqNovo(leadId){Object.assign(RQ,{modo:'nova',leadId:leadId||'',txt:'',obs:'',res:null,erro:'',pede:'',telIn:'',nomeIn:'',sel:null,apagar:false});rqTela()}
+function rqNovo(leadId){Object.assign(RQ,{nPrints:0,cab:'',modo:'nova',leadId:leadId||'',txt:'',obs:'',res:null,erro:'',pede:'',telIn:'',nomeIn:'',sel:null,apagar:false});rqTela()}
 const RQ_TEMP={quente:['🔥','Quente','#E11D48'],morno:['🌤','Morno','#F59E0B'],frio:['❄️','Frio','#3B82F6'],encerrado:['🤝','Encerrado','#6B7280']};
 function rqCard(h){const l=(D.leads||[]).find(x=>x.id===h.lead_id),t=RQ_TEMP[(h.analise||{}).temperatura]||['•','—','#888'];
   return '<button class="rq-card" data-rq="abrir" data-id="'+h.id+'" style="--t:'+t[2]+'"><span class="rq-card-t">'+t[0]+' '+t[1]+'</span><b>'+esc(l?l.nome:'Contato apagado')+'</b><small>'+new Date(h.criado_em).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' · '+esc(AGENTES[h.agente]?AGENTES[h.agente].nome:'')+'</small><em>'+esc(String((h.analise||{}).situacao||'').slice(0,110))+'</em></button>'}
@@ -4354,9 +4356,9 @@ function rqTela(){const a=AGENTES[RQ.ag];let corpo='';
       '<label class="rq-rot" for="rq-lead">1. Qual é o contato?</label>'+
       '<select class="inp" id="rq-lead"><option value="">Ainda não sei: vou mandar a conversa e você procura pelo número</option>'+L.map(l=>'<option value="'+l.id+'"'+(l.id===RQ.leadId?' selected':'')+'>'+esc(l.nome)+(l.tel?' · '+esc(rqTelFmt(l.tel)):'')+'</option>').join('')+'</select>'+
       '<label class="rq-rot">2. A conversa</label>'+
-      '<div class="rq-bts"><label class="btn sm"><input type="file" id="rq-prints" accept="image/*" multiple hidden>🖼️ Prints da conversa</label>'+
+      '<div class="rq-bts"><label class="btn sm"><input type="file" id="rq-prints" accept="image/*" multiple hidden>🖼️ '+(RQ.nPrints?'Adicionar mais prints':'Prints da conversa (pode escolher vários)')+'</label>'+
       '<label class="btn sm"><input type="file" id="rq-arq" accept=".txt,.zip,text/plain,application/zip" hidden>📎 Conversa exportada (.txt ou .zip)</label></div>'+
-      '<p class="mut rq-dica">No WhatsApp: abra a conversa › nome do contato › <b>Exportar conversa</b> › <b>Sem mídia</b>. Ou mande os prints, na ordem (de preferência com o número no topo). Ou cole o texto.</p>'+
+      '<p class="mut rq-dica">No WhatsApp: abra a conversa › nome do contato › <b>Exportar conversa</b> › <b>Sem mídia</b>. Ou mande os prints: pode escolher vários de uma vez, adicionar mais depois, colar com Ctrl+V ou arrastar para cá. Prints repetidos são ignorados.</p>'+(RQ.nPrints&&RQ.estado!=='lendo'?'<p class="rq-ok">✓ '+RQ.nPrints+(RQ.nPrints>1?' prints lidos':' print lido')+'. Confira o texto abaixo; se faltou alguma parte da conversa, adicione mais prints.</p>':'')+
       (RQ.estado==='lendo'?'<p class="rq-prog">🔎 '+esc(RQ.prog||'Lendo…')+'</p>':'')+
       '<textarea class="inp" id="rq-txt" rows="8" placeholder="Cole aqui a conversa. Ex.:\nContato: Obrigada\nVocê: Fico à disposição…">'+esc(RQ.txt)+'</textarea>'+
       (RQ.pede==='tel'&&!sel?'<div class="rq-pede"><b>📞 Não achei o número do contato na conversa.</b><p>Qual é o WhatsApp da pessoa? Sem o número eu não analiso, para não misturar a estratégia de um cliente com a de outro.</p><input class="inp" id="rq-tel" inputmode="tel" placeholder="(11) 90000-0000" value="'+esc(RQ.telIn)+'" autocomplete="off"></div>':'')+
@@ -4410,22 +4412,40 @@ function rqQuem(ctx,bb,W){const y=Math.round((bb.y0+bb.y1)/2),xs=[bb.x0-8,bb.x0-
     if((gg>r+12&&gg>=b)||(r<20&&gg>70&&gg>b+5&&b<110))g++})
   return n&&g/n>=.5?'Você':'Contato'}
 const rqLixo=l=>/^\s*(\d{1,2}:\d{2}|Hoje|Ontem|Bloquear|Adicionar|\+?\d[\d\s()-]{8,})\s*$/i.test(l)||/^\s*[<‹]?\s*\d{1,3}\s*$/.test(l)||l.trim().length<2;
-async function rqLerPrints(files){RQ.estado='lendo';RQ.prog='Preparando a leitura dos prints…';rqTela();
+/* limpa sinais de lido e restos do leitor: "| |", "√√", "PEA" isolado no fim etc. */
+function rqLimpa(t){return String(t||'').replace(/(\s+[|¦\/\\√✓✔•·]{1,3})+\s*$/,'').replace(/\s*\d{1,2}:\d{2}\s*[✓✔√v\/|]*\s*$/,'').replace(/(\s*[|¦])+\s*/g,' ').replace(/\s+([A-Z]{1,3})(\s+[A-Z]{1,3}){0,2}\s*$/,m=>/^(\s+(OK|SIM|NÃO|EU|TE|DE|DA|DO))+\s*$/i.test(m)?m:'').replace(/\s{2,}/g,' ').trim()}
+/* texto da linha só com as palavras que o leitor leu com segurança */
+function rqTextoLinha(l){const W=(l.words||[]).filter(w=>w&&w.text);if(!W.length)return String(l.text||'');
+  return W.filter(w=>w.confidence==null||w.confidence>=55||/^[\p{L}]{3,}[.,!?]?$/u.test(w.text)&&w.confidence>=35).map(w=>w.text).join(' ')}
+const rqChave=t=>t.normalize('NFD').replace(/[^\p{L}\p{N}]/gu,'').toLowerCase();
+async function rqLerPrints(files){files=[...files].filter(f=>/^image\//.test(f.type)||/\.(png|jpe?g|webp|heic)$/i.test(f.name||''));if(!files.length)return;
+  files.sort((a,b)=>(a.lastModified||0)-(b.lastModified||0)||String(a.name).localeCompare(String(b.name),undefined,{numeric:true}));
+  RQ.estado='lendo';RQ.prog='Preparando a leitura de '+files.length+(files.length>1?' prints…':' print…');rqTela();
   try{await rqLibOCR()}catch(e){RQ.estado='';RQ.erro='Não consegui carregar o leitor de prints agora (precisa de internet). Cole o texto ou mande a conversa exportada.';rqTela();return}
   let worker;try{worker=await Tesseract.createWorker('por')}catch(e){RQ.estado='';RQ.erro='O leitor de prints não abriu. Tente de novo ou cole o texto.';rqTela();return}
-  const partes=[];
+  const partes=[],vistas=new Set((RQ.txt||'').split('\n').map(x=>rqChave(x.replace(/^(Você|Contato):\s*/,''))).filter(Boolean));let lidos=0;
   for(let i=0;i<files.length;i++){RQ.prog='Lendo print '+(i+1)+' de '+files.length+'…';const p=document.querySelector('.rq-prog');if(p)p.textContent='🔎 '+RQ.prog;
     try{const img=await createImageBitmap(files[i]);const cv=document.createElement('canvas');cv.width=img.width;cv.height=img.height;const ctx=cv.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0);
       const {data}=await worker.recognize(cv,{},{blocks:true,text:true});
       let linhas=data.lines||[];if(!linhas.length&&data.blocks)data.blocks.forEach(b=>(b.paragraphs||[]).forEach(p=>(p.lines||[]).forEach(l=>linhas.push(l))));
-      let atual=null,buf=[];const fecha=()=>{if(buf.length)partes.push(atual+': '+buf.join(' '));buf=[]};
-      linhas.forEach(l=>{const t=String(l.text||'').trim().replace(/\s*\d{1,2}:\d{2}\s*[✓✔√v/]*\s*$/,'').trim();if(!t||rqLixo(t))return;
-        const q=rqQuem(ctx,l.bbox,cv.width);if(q!==atual){fecha();atual=q}buf.push(t)});
-      fecha()}catch(e){console.error(e)}}
+      const H=cv.height,topo=H*.11,base=H*.915;let atual=null,buf=[];
+      const fecha=()=>{if(buf.length){const t=buf.join(' ').replace(/\s{2,}/g,' ').trim(),k=rqChave(t);if(t&&!vistas.has(k)){vistas.add(k);partes.push(atual+': '+t)}}buf=[]};
+      linhas.forEach(l=>{const bb=l.bbox||{x0:0,y0:0,x1:0,y1:0},bruto=rqTextoLinha(l);
+        if(bb.y1<=topo){RQ.cab=((RQ.cab||'')+' '+bruto).slice(-400);return}   /* barra do celular e cabeçalho do contato: só para achar o número */
+        if(bb.y0>=base)return;                                                /* caixa de digitar */
+        if((l.confidence!=null&&l.confidence<40))return;
+        const t=rqLimpa(bruto);if(!t||rqLixo(t))return;
+        const q=rqQuem(ctx,bb,cv.width);if(q!==atual){fecha();atual=q}buf.push(t)});
+      fecha();lidos++}catch(e){console.error(e)}}
   try{await worker.terminate()}catch(e){}
-  RQ.txt=(RQ.txt?RQ.txt.trim()+'\n':'')+partes.join('\n');RQ.estado='';RQ.prog='';
-  if(!partes.length)RQ.erro='Não consegui ler texto nesses prints. Tente prints mais nítidos ou cole a conversa.';
-  rqTela();const ta=$('#rq-txt');if(ta)ta.focus()}
+  RQ.txt=(RQ.txt?RQ.txt.trim()+'\n':'')+partes.join('\n');RQ.nPrints=(RQ.nPrints||0)+lidos;RQ.estado='';RQ.prog='';
+  if(!partes.length&&lidos)RQ.erro='Não achei texto novo nesses prints (talvez sejam repetidos ou pouco nítidos).';else if(!lidos)RQ.erro='Não consegui ler esses prints. Tente prints mais nítidos ou cole a conversa.';else RQ.erro='';
+  rqTela();const ta=$('#rq-txt');if(ta){ta.focus();ta.scrollTop=ta.scrollHeight}}
+/* colar (Ctrl+V) ou arrastar prints para a janela */
+document.addEventListener('paste',e=>{if(!document.querySelector('.rq #rq-txt')||RQ.estado)return;const f=[...(e.clipboardData&&e.clipboardData.files||[])].filter(x=>/^image\//.test(x.type));if(!f.length)return;e.preventDefault();RQ.txt=($('#rq-txt')||{}).value||'';rqLerPrints(f)});
+document.addEventListener('dragover',e=>{if(e.target.closest&&e.target.closest('.rq-ent')){e.preventDefault();e.target.closest('.rq-ent').classList.add('rq-solta')}});
+document.addEventListener('dragleave',e=>{const z=e.target.closest&&e.target.closest('.rq-ent');if(z)z.classList.remove('rq-solta')});
+document.addEventListener('drop',e=>{const z=e.target.closest&&e.target.closest('.rq-ent');if(!z)return;e.preventDefault();z.classList.remove('rq-solta');RQ.txt=($('#rq-txt')||{}).value||'';rqLerPrints(e.dataTransfer.files)});
 async function rqLerArquivo(f){RQ.erro='';let t='';
   try{if(/\.zip$/i.test(f.name)||f.type==='application/zip'){RQ.estado='lendo';RQ.prog='Abrindo o arquivo…';rqTela();await rqLibZip();const z=await JSZip.loadAsync(f);const e=Object.values(z.files).find(x=>/\.txt$/i.test(x.name));if(!e)throw 0;t=await e.async('string')}
     else t=await f.text()}catch(e){RQ.estado='';RQ.erro='Não consegui abrir esse arquivo. Exporte a conversa "sem mídia" e mande o .txt ou o .zip.';rqTela();return}
@@ -4469,7 +4489,7 @@ async function rqAnalisar(){RQ.txt=($('#rq-txt')||{}).value||RQ.txt;RQ.obs=($('#
   const ls=$('#rq-lead');if(ls)RQ.leadId=ls.value;const ti=$('#rq-tel');if(ti)RQ.telIn=ti.value;const ni=$('#rq-nomenovo');if(ni)RQ.nomeIn=ni.value;
   if(RQ.txt.trim().length<15){RQ.erro='Mande a conversa primeiro (prints, arquivo ou texto colado).';rqTela();return}
   let lead=rqLead();
-  if(!lead){const tel=rqNorm(RQ.telIn)||rqNorm(rqTelefone(RQ.txt));
+  if(!lead){const tel=rqNorm(RQ.telIn)||rqNorm(rqTelefone(RQ.txt))||rqNorm(rqTelefone(RQ.cab||''));
     if(!tel){RQ.pede='tel';RQ.erro=RQ.telIn?'Esse número não parece um WhatsApp válido. Confira o DDD e o número.':'';rqTela();const x=$('#rq-tel');if(x)x.focus();return}
     if(!/^\d{10,11}$/.test(tel)){RQ.pede='tel';RQ.erro='Esse número não parece um WhatsApp válido. Confira o DDD e o número.';rqTela();return}
     lead=rqAcharLead(tel);
