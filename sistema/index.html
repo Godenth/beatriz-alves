@@ -983,6 +983,17 @@ body.anim-pausa #app,body.anim-pausa #app *,body.anim-pausa #app *::before,body.
 .rq-msg{border:1px solid color-mix(in srgb,var(--c) 45%,transparent);border-radius:12px;padding:10px 12px;margin:8px 0;background:color-mix(in srgb,#25D366 7%,transparent)}
 .rq-msg span{font-size:12px;font-weight:700;opacity:.8}.rq-msg p{white-space:pre-wrap}
 .rq-msg div{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.pl-wrap{overflow-x:auto;border-radius:14px;border:1px solid color-mix(in srgb,var(--ouro) 35%,transparent);-webkit-overflow-scrolling:touch}
+.pl-tab{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;min-width:760px}
+.pl-tab th{text-align:left;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:700;padding:9px 8px;background:color-mix(in srgb,var(--ouro) 14%,transparent);border-bottom:2px solid var(--ouro);line-height:1.25;vertical-align:bottom}
+.pl-tab td{padding:11px 8px;vertical-align:top;color:var(--fg)}
+.pl-tab th:first-child,.pl-tab td:first-child{position:sticky;left:0;background:var(--card);z-index:1}
+.pl-tab th:first-child{background:color-mix(in srgb,var(--ouro) 14%,var(--card))}
+.pl-num{font-family:var(--fm,ui-monospace,monospace);font-size:12px;display:flex;align-items:center;gap:6px;line-height:1.6;white-space:nowrap}
+.pl-cp{border:1px solid color-mix(in srgb,var(--ouro) 45%,transparent);background:transparent;color:var(--fg);border-radius:7px;font-size:11px;padding:1px 7px;cursor:pointer}
+.pl-ok,.pl-late,.pl-zero{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:26px;padding:0 8px;border-radius:999px;font-weight:700;font-size:13px}
+.pl-ok{background:#E3F1E8;color:#1A6B3C}.pl-late{background:#FBE4E2;color:#A3241A}.pl-zero{background:color-mix(in srgb,var(--mut) 18%,transparent);color:var(--mut)}
+.pl-dash{color:var(--mut)}
 </style>
 
 <div id="app"></div>
@@ -2504,7 +2515,7 @@ function seletorProcFin(){const P=(D.processos||[]).filter(p=>!p.exemplo).map(p=
   return '<label class="f">Processo (opcional)<select class="inp" id="fl-proc"><option value="">— sem processo —</option>'+P.map(x=>'<option value="'+x.p.id+'"'+(FIN.preProc===x.p.id?' selected':'')+'>'+esc((x.c?x.c.nome+' · ':'')+x.p.titulo+(x.p.fase==='inquerito'?' (inquérito)':''))+'</option>').join('')+'</select></label><div id="fl-procinfo"></div>'}
 function infoProcFin(){const s=$('#fl-proc'),box=$('#fl-procinfo');if(!s||!box)return;const p=(D.processos||[]).find(x=>x.id===s.value);
   if(!p){box.innerHTML='';return}
-  const c=(D.clientes||[]).find(x=>x.id===p.cliente_id)||{},L=lancDoProc(p).concat((D.processos||[]).filter(x=>x.cliente_id===p.cliente_id).length===1&&c.id?lancDe(c).filter(l=>!l.processo_id&&l.tipo==='entrada'):[]),h=hojeISO();
+  const c=(D.clientes||[]).find(x=>x.id===p.cliente_id)||{},L=[...new Map(lancDoProc(p).concat((D.processos||[]).filter(x=>x.cliente_id===p.cliente_id).length===1&&c.id?lancDe(c).filter(l=>!l.processo_id&&l.tipo==='entrada'):[]).map(l=>[l.id,l])).values()],h=hojeISO();
   const tot=L.reduce((a,l)=>a+ +l.valor,0),rec=L.filter(l=>l.pago_em).reduce((a,l)=>a+ +l.valor,0),atr=L.filter(l=>!l.pago_em&&l.vencimento<h).reduce((a,l)=>a+ +l.valor,0);
   const ab=L.filter(l=>!l.pago_em).sort((a,b)=>a.vencimento<b.vencimento?-1:1);
   box.innerHTML='<div class="fl-pinfo">'+(L.length?'<div class="cl-grade" style="grid-template-columns:repeat(4,1fr)"><div class="cl-d"><small>Contratado</small><b>'+brl(tot)+'</b></div><div class="cl-d"><small>Já pago</small><b style="color:var(--ok)">'+brl(rec)+'</b></div><div class="cl-d"><small>Falta</small><b>'+brl(tot-rec)+'</b></div><div class="cl-d"><small>Atrasado</small><b style="color:'+(atr?'var(--perigo)':'inherit')+'">'+brl(atr)+'</b></div></div>'+
@@ -2913,6 +2924,15 @@ function formNovoProcesso(){
     '<label class="f">Cliente<select class="inp" id="mp-cli">'+cl.map(c=>'<option value="'+c.id+'">'+esc(c.nome)+'</option>').join('')+'</select></label>'+
     formProcesso({id:'__mp'}).replace('data-cli="salvaproc" data-id="__mp"','data-mp="salvar"').replace('data-cli="cancproc"','data-mp="cancnovo"')+'</div>'}
 
+function planilhaProcesso(p,c,polo){
+  const L=lancDoProc(p),h=hojeISO(),tot=L.reduce((a,l)=>a+ +l.valor,0),pg=L.filter(l=>l.pago_em).length,vc=L.filter(l=>!l.pago_em&&l.vencimento<h).length;
+  const num=(v,pre)=>v?'<span class="pl-num">'+(pre||'')+esc(v)+' <button class="pl-cp" data-cli="copiarnum" data-num="'+esc(v)+'" title="Copiar">copiar</button></span>':'<span class="pl-dash">—</span>';
+  const tx=v=>v?esc(v):'<span class="pl-dash">—</span>';
+  const fin=podeFinanceiro();
+  const cols=[['Cliente',c?'<b>'+esc(c.nome)+'</b>':'<span class="pl-dash">cliente apagado</span>'],['Ação / título',tx(p.titulo)],['Processo',num(p.numero)],
+    ['Inquérito policial',num(p.inquerito,'IP ')+(p.delegacia?'<small class="mut">'+esc(p.delegacia)+'</small>':'')],['Vara / foro',tx(p.vara)],['Parte contrária',tx(p.parte_contraria)],['Polo',tx(polo)]];
+  if(fin)cols.push(['Honorários',L.length?'<b>'+brl(tot)+'</b>':'<span class="pl-dash">—</span>'],['Parcelas pagas','<span class="'+(pg?'pl-ok':'pl-zero')+'">'+pg+'</span>'],['Parcelas vencidas','<span class="'+(vc?'pl-late':'pl-zero')+'">'+vc+'</span>']);
+  return '<div class="pl-wrap"><table class="pl-tab"><thead><tr>'+cols.map(x=>'<th>'+x[0].replace(' ','<br>')+'</th>').join('')+'</tr></thead><tbody><tr>'+cols.map(x=>'<td>'+x[1]+'</td>').join('')+'</tr></tbody></table></div>'}
 function detalheProcesso(p){
   if(MP.editar===p.id)return '<div class="lead"><h3 style="margin-top:0">Editar processo</h3>'+formProcesso(cliDe(p)||{id:p.cliente_id},p)+'</div>';
   const c=cliDe(p),I=intimDe(p),Dc=docsDe(p),s=SIT_PROC[p.situacao]||SIT_PROC.andamento,sig=c&&c.tema==='violencia';
@@ -2921,8 +2941,14 @@ function detalheProcesso(p){
       '<div class="mut" style="font-size:13px">'+numLinha(p)+'</div></div>'+
       '<select class="inp sm" data-procsit="'+p.id+'" aria-label="Situação" style="width:auto;color:'+s[1]+'">'+Object.entries(SIT_PROC).map(([k,v])=>'<option value="'+k+'"'+(k===p.situacao?' selected':'')+'>'+v[0]+'</option>').join('')+'</select></div>'+
     (sig?'<div class="aviso"><b>⚠ Violência doméstica.</b> O celular pode ser acessado por outra pessoa: só fale por WhatsApp se ela iniciar a conversa.</div>':'')+
-    '<div class="cl-grade">'+linhaDado('Cliente',c?c.nome:'—')+(p.fase==='inquerito'||p.inquerito?linhaDado('Inquérito / BO',p.inquerito||'—')+linhaDado('Delegacia',p.delegacia):'')+linhaDado('Vara / foro',p.vara)+linhaDado('Parte contrária',p.parte_contraria)+linhaDado('Polo',polo)+'</div>'+
+    planilhaProcesso(p,c,polo)+
     '<div class="acoes"><button class="btn" data-mp="editar" data-id="'+p.id+'">✎ Editar</button><button class="btn" data-gerardoc="contrato" data-id="'+p.id+'">📄 Contrato</button><button class="btn" data-gerardoc="procuracao" data-id="'+p.id+'">📄 Procuração</button>'+(c?'<button class="btn" data-mp="ficha" data-id="'+c.id+'">Abrir ficha do cliente</button>':'')+'<button class="btn" data-mp="apagaproc" data-id="'+p.id+'">'+(MP.apagar===p.id?'Confirmar: tirar processo':'Tirar processo')+'</button></div></div>'+
+    linhaDoTempo(p)+
+    // intimações
+    '<div class="lead"><h4>📬 Intimações <small class="mut">'+I.length+'</small></h4>'+
+      (I.length?'<ul class="ilst">'+I.slice(0,8).map(i=>'<li><b>'+dataBR(i.data_disp)+(i.lida?'':' · <span style="color:var(--ok)">nova</span>')+'</b><small>'+esc((i.tipo_comunicacao||(i.classe&&typeof fmtClasse==='function'?fmtClasse(i.classe):i.classe)||'Comunicação')+(i.orgao?' · '+i.orgao:''))+' <button class="lnk" data-cli="verint" data-id="'+i.id+'">abrir</button></small></li>').join('')+'</ul>'
+        :'<p class="mut" style="margin:0">'+(p.numero?'Nenhuma intimação no DJEN para este número ainda.':'Cadastre o número CNJ para as intimações aparecerem aqui sozinhas.')+'</p>')+'</div>'+
+    cartaoAndamentos(p)+cartaoHonorarios(p)+
     // documentos
     '<div class="lead"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><h4 style="margin:0 auto 0 0">📎 Documentos <small class="mut">'+Dc.length+'</small></h4>'+
       '<label class="btn sm pri" style="cursor:pointer">+ Anexar<input type="file" id="mp-arq" multiple accept="'+DOC_ACEITA+'" hidden></label></div>'+
@@ -2931,11 +2957,7 @@ function detalheProcesso(p){
         (/pdf|^image|^text/.test(d.tipo||'')?'<button class="btn sm" data-mp="klaus" data-id="'+d.id+'" title="Klaus lê e resume">Ler com Klaus</button>':'')+
         '<button class="btn sm" data-mp="apagadoc" data-id="'+d.id+'" aria-label="Apagar documento">'+(MP.apagar===d.id?'Confirmar':'×')+'</button></li>').join('')+'</ul>':'<p class="mut" style="margin:8px 0 0">Nenhum documento anexado ainda.</p>')+
       '<p class="nota" style="margin:10px 0 0">🔒 Guardados em pasta privada do escritório. Cada abertura gera um link que expira em 5 minutos.'+(REAL?'':' <b>Demonstração:</b> os arquivos ficam só nesta aba.')+'</p></div>'+
-    cartaoAndamentos(p)+cartaoHonorarios(p)+linhaDoTempo(p)+cartaoMinuta(p)+
-    // intimações
-    '<div class="lead"><h4>📬 Intimações <small class="mut">'+I.length+'</small></h4>'+
-      (I.length?'<ul class="ilst">'+I.slice(0,8).map(i=>'<li><b>'+dataBR(i.data_disp)+(i.lida?'':' · <span style="color:var(--ok)">nova</span>')+'</b><small>'+esc((i.tipo_comunicacao||(i.classe&&typeof fmtClasse==='function'?fmtClasse(i.classe):i.classe)||'Comunicação')+(i.orgao?' · '+i.orgao:''))+' <button class="lnk" data-cli="verint" data-id="'+i.id+'">abrir</button></small></li>').join('')+'</ul>'
-        :'<p class="mut" style="margin:0">'+(p.numero?'Nenhuma intimação no DJEN para este número ainda.':'Cadastre o número CNJ para as intimações aparecerem aqui sozinhas.')+'</p>')+'</div>'}
+    cartaoMinuta(p)}
 
 async function enviarDocs(files){
   const p=(D.processos||[]).find(x=>x.id===MP.sel);if(!p)return;
@@ -3015,7 +3037,9 @@ document.addEventListener('drop',e=>{const z=e.target.closest&&e.target.closest(
 
 
 /* ---- Honorários do contrato, lançados junto com o processo ---- */
-const lancDoProc=p=>(D.fin||[]).filter(l=>l.processo_id===p.id);
+const lancDoProc=p=>{const F=D.fin||[],procs=(D.processos||[]).filter(x=>x.cliente_id===p.cliente_id),t=semAcentoH(p.titulo);
+  return F.filter(l=>l.processo_id===p.id||(!l.processo_id&&p.cliente_id&&l.cliente_id===p.cliente_id&&/honor/i.test(l.categoria||'')&&(procs.length===1||(t&&semAcentoH(l.descricao).includes(t)))))};
+const semAcentoH=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 const brNum=v=>{v=String(v||'').trim();if(!v)return 0;if(v.includes(','))v=v.replace(/\./g,'').replace(',','.');const n=parseFloat(v.replace(/[^\d.]/g,''));return isFinite(n)?Math.round(n*100)/100:0};
 function blocoHonorarios(p){
   if(!podeFinanceiro())return '';
