@@ -983,14 +983,31 @@ body.anim-pausa #app,body.anim-pausa #app *,body.anim-pausa #app *::before,body.
 .rq-msg{border:1px solid color-mix(in srgb,var(--c) 45%,transparent);border-radius:12px;padding:10px 12px;margin:8px 0;background:color-mix(in srgb,#25D366 7%,transparent)}
 .rq-msg span{font-size:12px;font-weight:700;opacity:.8}.rq-msg p{white-space:pre-wrap}
 .rq-msg div{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.pl-wrap,.pl-wrap *,.pv-bar,.pv-bar *{font-family:Calibri,Carlito,'Segoe UI',Arial,sans-serif}
 .pl-wrap{overflow-x:auto;border-radius:14px;border:1px solid color-mix(in srgb,var(--ouro) 35%,transparent);-webkit-overflow-scrolling:touch}
 .pl-tab{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;min-width:760px}
 .pl-tab th{text-align:left;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:700;padding:9px 8px;background:color-mix(in srgb,var(--ouro) 14%,transparent);border-bottom:2px solid var(--ouro);line-height:1.25;vertical-align:bottom}
 .pl-tab td{padding:11px 8px;vertical-align:top;color:var(--fg)}
 .pl-tab th:first-child,.pl-tab td:first-child{position:sticky;left:0;background:var(--card);z-index:1}
 .pl-tab th:first-child{background:color-mix(in srgb,var(--ouro) 14%,var(--card))}
-.pl-num{font-family:var(--fm,ui-monospace,monospace);font-size:12px;display:flex;align-items:center;gap:6px;line-height:1.6;white-space:nowrap}
-.pl-cp{border:1px solid color-mix(in srgb,var(--ouro) 45%,transparent);background:transparent;color:var(--fg);border-radius:7px;font-size:11px;padding:1px 7px;cursor:pointer}
+.pl-num{font-family:inherit;font-size:13px;display:flex;align-items:center;gap:6px;line-height:1.6;white-space:nowrap}
+.pl-cp{border:0;background:transparent;color:inherit;font:inherit;padding:0;cursor:copy;text-decoration:underline dotted color-mix(in srgb,var(--ouro) 70%,transparent);text-underline-offset:3px}
+.pl-cp:hover{color:var(--ouro)}
+.pl-num{font-size:13px !important}
+.pl-ord{color:var(--mut);font-size:11px;margin-right:4px}
+.pl-mais{display:inline-block;margin-top:3px;font-size:11px;font-weight:700;color:var(--ouro);background:color-mix(in srgb,var(--ouro) 15%,transparent);border-radius:999px;padding:1px 8px}
+.pl-sim,.pl-nao{border:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:26px;padding:0 10px;border-radius:999px;font-weight:700;font-size:13px}
+.pl-sim{background:#E3F1E8;color:#1A6B3C}.pl-nao{background:#FCEFD9;color:#9A5B0C}
+.pl-tab th[data-pvord]{cursor:pointer;user-select:none}.pl-tab th[data-pvord]:hover{color:var(--fg)}
+.pl-tab tr.pv-tot td{font-weight:700;border-top:2px solid var(--ouro);background:color-mix(in srgb,var(--ouro) 8%,var(--card))}
+.pl-tab tbody tr+tr td{border-top:1px solid color-mix(in srgb,var(--ouro) 22%,transparent)}
+.pv-ver{border:0;border-radius:10px;background:#13213F;color:#fff;font-weight:700;font-size:13px;height:34px;padding:0 14px;cursor:pointer}
+.pv-ver:hover{background:var(--ouro);color:#13213F}
+.pv-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.pv-modo{display:inline-flex;border:1px solid color-mix(in srgb,var(--ouro) 45%,transparent);border-radius:12px;padding:3px;background:var(--card)}
+.pv-modo button{border:0;background:transparent;color:var(--mut);font-weight:700;font-size:14px;height:34px;padding:0 14px;border-radius:9px;cursor:pointer}
+.pv-modo button.on{background:#13213F;color:#fff}
+.pv-dica{font-size:12.5px;color:var(--mut);margin:0 0 8px}
 .pl-ok,.pl-late,.pl-zero{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:26px;padding:0 8px;border-radius:999px;font-weight:700;font-size:13px}
 .pl-ok{background:#E3F1E8;color:#1A6B3C}.pl-late{background:#FBE4E2;color:#A3241A}.pl-zero{background:color-mix(in srgb,var(--mut) 18%,transparent);color:var(--mut)}
 .pl-dash{color:var(--mut)}
@@ -2875,7 +2892,7 @@ function samplerIdeali(){
 /* =================== Meus processos: todos os processos do escritório + documentos anexados =================== */
 /* Arquivos ficam no bucket PRIVADO "documentos" (pasta <escritório>/<processo>/); só abrem por link assinado de 5 minutos.
    No modo demonstração os arquivos ficam só na memória desta aba (somem ao recarregar). */
-const MP={sel:null,busca:'',filtro:'ativos',novo:false,enviando:0,docs:null,apagar:null,arrasta:false};
+const MP={sel:null,busca:'',filtro:'ativos',novo:false,enviando:0,docs:null,apagar:null,arrasta:false,vista:(()=>{try{return localStorage.getItem('ideali-proc-vista')||'cartoes'}catch(e){return 'cartoes'}})(),ord:'cliente',ordDesc:false};
 const DOC_MAX=25*1024*1024;
 const DOC_TIPOS=/^(application\/pdf|image\/(jpeg|png|webp|heic)|text\/plain|application\/msword|application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document)$/;
 const DOC_ACEITA='.pdf,.jpg,.jpeg,.png,.webp,.heic,.txt,.doc,.docx';
@@ -2904,13 +2921,15 @@ function telaMeusProcessos(){
   const L=todos.filter(p=>MP.filtro==='todos'||(MP.filtro==='ativos'?ativo(p):!ativo(p)))
     .filter(p=>{if(!q)return true;const c=cliDe(p);return (p.titulo||'').toLowerCase().includes(q)||(c&&c.nome.toLowerCase().includes(q))||(p.vara||'').toLowerCase().includes(q)||(p.parte_contraria||'').toLowerCase().includes(q)||(qd.length>=3&&(numCNJ(p.numero).includes(qd)||soDig(p.inquerito).includes(qd)))||(p.delegacia||'').toLowerCase().includes(q)||(q.includes('inq')&&p.fase==='inquerito')})
     .sort((a,b)=>{const na=intimDe(a).filter(i=>!i.lida).length,nb=intimDe(b).filter(i=>!i.lida).length;if(na!==nb)return nb-na;return ((cliDe(a)||{}).nome||'').localeCompare((cliDe(b)||{}).nome||'','pt-BR')});
+  const modo='<div class="pv-modo" role="group" aria-label="Modo de visualização">'+[['cartoes','Cartões'],['planilha','Planilha']].map(v=>'<button data-pvista="'+v[0]+'" class="'+(MP.vista===v[0]?'on':'')+'" aria-pressed="'+(MP.vista===v[0])+'">'+v[1]+'</button>').join('')+'</div>';
+  if(MP.vista==='planilha'&&!MP.novo)return planilhaProcessos(L,todos,ativo,modo);
   if(!MP.novo&&(!MP.sel||!todos.find(p=>p.id===MP.sel)))MP.sel=(L[0]||{}).id||null;
   const cont={ativos:todos.filter(ativo).length,fim:todos.filter(p=>!ativo(p)).length,todos:todos.length};
   const itens=L.map(p=>{const c=cliDe(p),nl=intimDe(p).filter(i=>!i.lida).length,nd=docsDe(p).length,s=SIT_PROC[p.situacao]||SIT_PROC.andamento;
     return '<button class="it '+(p.id===MP.sel&&!MP.novo?'on':'')+'" data-mpsel="'+p.id+'"><span class="wa-av" style="--c:'+((TEMAS[c&&c.tema]||{}).cor||'var(--ouro)')+'">📁</span><div style="min-width:0;flex:1"><b>'+esc(p.titulo)+'</b><small>'+esc(c?c.nome:'cliente apagado')+' · <span style="color:'+s[1]+'">'+s[0].toLowerCase()+'</span></small><small class="mp-num">'+(p.fase==='inquerito'?'🚔 IP '+esc(p.inquerito||'sem nº')+(p.numero?' · '+esc(p.numero):''):(p.numero?esc(p.numero):'sem número ainda'))+'</small></div><span class="bd">'+(nl?'<span class="wa-bd" title="intimações novas">'+nl+'</span>':'')+(nd?'<small class="mut" title="documentos">📎'+nd+'</small>':'')+'</span></button>'}).join('')||
     '<p class="mut" style="margin:8px 4px">'+(todos.length?'Nada encontrado.':'Nenhum processo ainda.')+'</p>';
   const p=todos.find(x=>x.id===MP.sel);
-  return '<div class="lay"><aside class="lado"><div style="display:flex;gap:8px;align-items:center"><h3 style="margin:0;margin-right:auto">Processos</h3><button class="btn sm pri" data-mp="novo">+ Processo</button></div>'+
+  return '<div class="pv-bar">'+modo+'</div><div class="lay"><aside class="lado"><div style="display:flex;gap:8px;align-items:center"><h3 style="margin:0;margin-right:auto">Processos</h3><button class="btn sm pri" data-mp="novo">+ Processo</button></div>'+
     '<input class="inp" id="mp-busca" placeholder="Buscar cliente, ação, vara ou número" value="'+esc(MP.busca)+'">'+
     '<div class="seg" style="align-self:flex-start">'+[['ativos','Ativos'],['fim','Encerrados'],['todos','Todos']].map(f=>'<button data-mpfil="'+f[0]+'" class="'+(MP.filtro===f[0]?'on':'')+'">'+f[1]+' <small class="mut">'+cont[f[0]]+'</small></button>').join('')+'</div>'+
     '<div style="display:flex;flex-direction:column;gap:2px">'+itens+'</div></aside><section class="conv">'+
@@ -2924,9 +2943,37 @@ function formNovoProcesso(){
     '<label class="f">Cliente<select class="inp" id="mp-cli">'+cl.map(c=>'<option value="'+c.id+'">'+esc(c.nome)+'</option>').join('')+'</select></label>'+
     formProcesso({id:'__mp'}).replace('data-cli="salvaproc" data-id="__mp"','data-mp="salvar"').replace('data-cli="cancproc"','data-mp="cancnovo"')+'</div>'}
 
+function peticionadoDe(p){return p.peticionado==null?!!p.numero:!!p.peticionado}
+function planilhaProcessos(L,todos,ativo,modo){
+  const fin=podeFinanceiro(),h=hojeISO();
+  const info=p=>{const c=cliDe(p),Lc=fin?lancDoProc(p):[];return {p,c,nome:(c&&c.nome)||'',tit:p.titulo||'',pet:peticionadoDe(p),num:p.numero||'',ip:p.inquerito||'',
+    hon:Lc.reduce((a,l)=>a+ +l.valor,0),temHon:Lc.length>0,pg:Lc.filter(l=>l.pago_em).length,vc:Lc.filter(l=>!l.pago_em&&l.vencimento<h).length}};
+  const R=L.map(info),k=MP.ord,dir=MP.ordDesc?-1:1;
+  const val={cliente:x=>x.nome,titulo:x=>x.tit,pet:x=>x.pet?1:0,proc:x=>x.num,ip:x=>x.ip,hon:x=>x.hon,pg:x=>x.pg,vc:x=>x.vc}[k]||(x=>x.nome);
+  R.sort((a,b)=>{const va=val(a),vb=val(b);const r=typeof va==='number'?va-vb:String(va).localeCompare(String(vb),'pt-BR');return (r||a.nome.localeCompare(b.nome,'pt-BR'))*dir});
+  const n=v=>v?'<button class="pl-cp pl-num" data-cli="copiarnum" data-num="'+esc(v)+'" title="Clique para copiar">'+esc(v)+'</button>':'';
+  const outros=x=>todos.filter(o=>o.cliente_id===x.p.cliente_id&&o.id!==x.p.id).length;
+  const th=(id,t)=>'<th data-pvord="'+id+'">'+t+(MP.ord===id?(MP.ordDesc?' ▾':' ▴'):'')+'</th>';
+  const cab='<tr>'+th('cliente','Cliente')+th('titulo','Ação /<br>título')+th('pet','Peticionado')+th('proc','Processo')+th('ip','Inquérito<br>policial')+(fin?th('hon','Honorários')+th('pg','Parcelas<br>pagas')+th('vc','Parcelas<br>vencidas'):'')+'<th></th></tr>';
+  const desde=c=>c&&c.criado_em?'<small class="mut" style="display:block;font-weight:400">desde '+dataBR(c.criado_em.slice(0,10)).slice(0,5)+'</small>':'';
+  const linhas=R.map(x=>{const o=outros(x);
+    return '<tr><td>'+(x.c?'<button class="lnk" data-mp="ficha" data-id="'+x.c.id+'" style="font-weight:700;text-align:left">'+esc(x.c.nome)+'</button>'+desde(x.c):'<span class="pl-dash">cliente apagado</span>')+(o?'<span class="pl-mais">+'+o+' processo'+(o>1?'s':'')+'</span>':'')+'</td>'+
+      '<td>'+(esc(x.tit)||'<span class="pl-dash">—</span>')+'</td>'+
+      '<td><button class="'+(x.pet?'pl-sim':'pl-nao')+'" data-pvpet="'+x.p.id+'" title="Clique para trocar">'+(x.pet?'Sim':'Não')+'</button></td>'+
+      '<td>'+(n(x.num)||'<span class="pl-dash">'+(x.p.fase==='inquerito'?'ainda no inquérito':'sem número')+'</span>')+'</td>'+
+      '<td>'+(x.ip?n('IP '+x.ip).replace('data-num="IP ','data-num="'):'<span class="pl-dash">Nenhum</span>')+(x.p.delegacia&&x.ip?'<small class="mut" style="display:block">'+esc(x.p.delegacia)+'</small>':'')+'</td>'+
+      (fin?'<td>'+(x.temHon?'<b>'+brl(x.hon)+'</b><small class="mut" style="display:block">valor total</small>':'<span class="pl-dash">—</span>')+'</td><td><span class="'+(x.pg?'pl-ok':'pl-zero')+'">'+x.pg+'</span></td><td><span class="'+(x.vc?'pl-late':'pl-zero')+'">'+x.vc+'</span></td>':'')+
+      '<td><button class="pv-ver" data-pvver="'+x.p.id+'">Ver</button></td></tr>'}).join('');
+  const tot=R.length?'<tr class="pv-tot"><td colspan="5">Total · '+R.length+' processo'+(R.length>1?'s':'')+'</td>'+(fin?'<td>'+brl(R.reduce((a,x)=>a+x.hon,0))+'</td><td><span class="pl-ok">'+R.reduce((a,x)=>a+x.pg,0)+'</span></td><td><span class="'+(R.some(x=>x.vc)?'pl-late':'pl-zero')+'">'+R.reduce((a,x)=>a+x.vc,0)+'</span></td>':'')+'<td></td></tr>':'';
+  const cont={ativos:todos.filter(ativo).length,fim:todos.filter(p=>!ativo(p)).length,todos:todos.length};
+  return '<div class="pv-bar">'+modo+'<input class="inp" id="mp-busca" style="flex:1 1 260px;min-width:200px" placeholder="Buscar cliente, ação, vara ou número" value="'+esc(MP.busca)+'">'+
+    '<div class="seg">'+[['ativos','Ativos'],['fim','Encerrados'],['todos','Todos']].map(f=>'<button data-mpfil="'+f[0]+'" class="'+(MP.filtro===f[0]?'on':'')+'">'+f[1]+' <small class="mut">'+cont[f[0]]+'</small></button>').join('')+'</div>'+
+    '<button class="btn sm pri" data-pvnovo="1">+ Processo</button></div>'+
+    '<div class="lead"><p class="pv-dica">Cada coluna é um dado. Clique no título da coluna para ordenar e no número para copiar.</p>'+
+    (R.length?'<div class="pl-wrap"><table class="pl-tab" style="min-width:'+(fin?980:700)+'px"><thead>'+cab+'</thead><tbody>'+linhas+tot+'</tbody></table></div>':'<p class="mut" style="margin:6px 0">'+(todos.length?'Nada encontrado.':'Nenhum processo ainda.')+'</p>')+'</div>'}
 function planilhaProcesso(p,c,polo){
   const L=lancDoProc(p),h=hojeISO(),tot=L.reduce((a,l)=>a+ +l.valor,0),pg=L.filter(l=>l.pago_em).length,vc=L.filter(l=>!l.pago_em&&l.vencimento<h).length;
-  const num=(v,pre)=>v?'<span class="pl-num">'+(pre||'')+esc(v)+' <button class="pl-cp" data-cli="copiarnum" data-num="'+esc(v)+'" title="Copiar">copiar</button></span>':'<span class="pl-dash">—</span>';
+  const num=(v,pre)=>v?'<span class="pl-num"><button class="pl-cp" data-cli="copiarnum" data-num="'+esc(v)+'" title="Clique para copiar">'+(pre||'')+esc(v)+'</button></span>':'<span class="pl-dash">—</span>';
   const tx=v=>v?esc(v):'<span class="pl-dash">—</span>';
   const fin=podeFinanceiro();
   const cols=[['Cliente',c?'<b>'+esc(c.nome)+'</b>':'<span class="pl-dash">cliente apagado</span>'],['Ação / título',tx(p.titulo)],['Processo',num(p.numero)],
@@ -3004,6 +3051,12 @@ async function lerComKlaus(d){
   catch(e){toast(REAL?'Não consegui buscar o documento.':'Na demonstração o arquivo some ao recarregar a página.')}}
 
 document.addEventListener('click',async e=>{
+  const pv=e.target.closest('[data-pvista]');if(pv){MP.vista=pv.dataset.pvista;try{localStorage.setItem('ideali-proc-vista',MP.vista)}catch(_){}render();return}
+  const po=e.target.closest('[data-pvord]');if(po){const k=po.dataset.pvord;if(MP.ord===k)MP.ordDesc=!MP.ordDesc;else{MP.ord=k;MP.ordDesc=['hon','pg','vc','pet'].includes(k)}render();return}
+  const pver=e.target.closest('[data-pvver]');if(pver){MP.sel=pver.dataset.pvver;MP.vista='cartoes';try{localStorage.setItem('ideali-proc-vista','cartoes')}catch(_){}MP.novo=false;MP.editar=null;render();scrollTo(0,0);return}
+  const pn=e.target.closest('[data-pvnovo]');if(pn){MP.vista='cartoes';MP.novo=true;MP.pend=[];MP.editar=null;render();scrollTo(0,0);return}
+  const pp=e.target.closest('[data-pvpet]');if(pp){const p=(D.processos||[]).find(x=>x.id===pp.dataset.pvpet);if(!p)return;const novo=!peticionadoDe(p);
+    try{await STORE.upd('processos',p.id,{peticionado:novo});p.peticionado=novo;render()}catch(err){toast('Não consegui salvar o "Peticionado". Tente de novo.')}return}
   const s=e.target.closest('[data-mpsel]');if(s){MP.sel=s.dataset.mpsel;MP.novo=false;MP.editar=null;MP.apagar=null;render();if(innerWidth<760){const c=document.querySelector('.conv');if(c)c.scrollIntoView({behavior:'smooth'})}return}
   const f=e.target.closest('[data-mpfil]');if(f){MP.filtro=f.dataset.mpfil;render();return}
   const t=e.target.closest('[data-mp]');if(!t)return;const a=t.dataset.mp,id=t.dataset.id;
@@ -3263,8 +3316,6 @@ function linhaDoTempo(p){const E=[],c=cliDe(p);
   if(p.criado_em)E.push({d:p.criado_em.slice(0,10),ic:'📁',t:'Processo cadastrado no sistema'});
   intimDe(p).forEach(i=>E.push({d:i.data_disp,ic:'📬',t:'Intimação · '+fmtClasse(i.classe)+(i.prazo_fim?' · prazo até '+dataBR(i.prazo_fim):''),id:i.id,k:'int'}));
   docsDe(p).forEach(d=>E.push({d:(d.criado_em||'').slice(0,10),ic:'📎',t:'Documento anexado · '+d.nome,id:d.id,k:'doc'}));
-  if(podeFinanceiro())lancDoProc(p).forEach(l=>{if(l.pago_em)E.push({d:l.pago_em,ic:'💰',t:'Pagamento recebido · '+brl(+l.valor)+(l.parcelas>1?' ('+l.parcela+'/'+l.parcelas+')':''),id:l.id,k:'rec'});
-    else E.push({d:l.vencimento,ic:'🗓️',t:'Parcela a receber · '+brl(+l.valor)+(l.parcelas>1?' ('+l.parcela+'/'+l.parcelas+')':''),fut:l.vencimento>=hojeISO()})});
   (AND.dados[p.id]||[]).slice(0,40).forEach(a=>E.push({d:a.data.slice(0,10),ic:'⚖️',t:a.nome+(a.compl?' · '+a.compl:'')}));
   if(c)(D.agenda||[]).filter(a=>a.cliente_id===c.id).forEach(a=>E.push({d:a.data,ic:a.tipo==='audiencia'?'⚖️':'📅',t:(TIPOS_AG[a.tipo]||['Compromisso'])[0]+' · '+a.titulo+(a.hora?' às '+a.hora:''),fut:a.data>=hojeISO()}));
   const L=E.filter(x=>x.d).sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:0);if(!L.length)return '';
