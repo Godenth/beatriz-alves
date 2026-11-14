@@ -1048,6 +1048,10 @@ const TEMAS = {
   violencia:{nome:'Violência doméstica',ag:'sofia',palavra:'',chaves:['violência','violencia','maria da penha','medida protetiva','agress']},
   criminal:{nome:'Defesa criminal',ag:'bento',palavra:'defesa criminal',chaves:['criminal','delegacia','intimação','intimacao','preso','inquérito']},
   acusacao:{nome:'Acusação Maria da Penha',ag:'bento',palavra:'a acusação que você recebeu',chaves:['acusad','acusação','fui acusado']},
+  inquerito:{nome:'Inquérito policial',ag:'bento',palavra:'o inquérito policial',chaves:[]},
+  penal:{nome:'Ação penal',ag:'bento',palavra:'a ação penal',chaves:[]},
+  previdenciario:{nome:'Previdenciário',ag:'livia',palavra:'o seu benefício',chaves:[]},
+  trabalhista:{nome:'Trabalhista',ag:'livia',palavra:'a sua questão trabalhista',chaves:[]},
   outro:{nome:'Outro',ag:'livia',palavra:'o seu assunto',chaves:[]},
 };
 const ORIGENS = ['Anúncio Instagram','Anúncio Facebook','Site','WhatsApp direto','Indicação','Google','Anúncio Meta'];
@@ -3216,6 +3220,7 @@ function abrirDoc_(titulo,corpo,arquivo){
 document.addEventListener('click',e=>{const b=e.target.closest('[data-doc]');if(!b)return;const el=document.getElementById('docprev');if(!el)return;const a=b.dataset.doc;
   if(a==='fechar'){el.remove();return}
   if(a==='pdf'){const f=el.querySelector('iframe');try{f.contentWindow.focus();f.contentWindow.print()}catch(x){toast('Não consegui abrir a impressão.')}return}
+  if(a==='word'&&el._proc){const p=(D.processos||[]).find(x=>x.id===el._proc);if(p)baixarProcuracaoWord(p);return}
   if(a==='word'){const blob=new Blob(['﻿'+el._html.replace('<html lang="pt-BR">','<html lang="pt-BR" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">')],{type:'application/msword'});
     const u=URL.createObjectURL(blob),l=document.createElement('a');l.href=u;l.download=el._arq+'.doc';document.body.appendChild(l);l.click();setTimeout(()=>{URL.revokeObjectURL(u);l.remove()},600)}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){const el=document.getElementById('docprev');if(el)el.remove()}});
@@ -3254,6 +3259,55 @@ function procuracaoHTML(p){const c=cliDe(p)||{nome:'____________'};
   '<p><b>FINALIDADE:</b> '+objetoProc(p).replace(/^atuação no processo de /,'atuar no processo de ')+'.</p>'+
   '<p class="c" style="margin-top:20pt">'+esc(cidadeEsc())+', '+dataExtenso()+'.</p>'+
   '<div class="ass"><span>'+esc((c.nome||'').toUpperCase())+'<br>OUTORGANTE</span></div>'}
+
+
+/* ---------- procuração no modelo oficial do escritório (Word com cabeçalho e rodapé do timbre) ---------- */
+const PROC_MODELO='modelo-timbre.docx';
+const xe=t=>String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const semTag=t=>String(t||'').replace(/<[^>]+>/g,'').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&');
+function generoCli(c){const n=semAcentoH(c.nacionalidade);return /o$/.test(n)?'m':/a$/.test(n)?'f':''}
+function qualifProc(c){const g=generoCli(c),o=g==='m'?'o':g==='f'?'a':'o(a)';const p=[];
+  if(c.nacionalidade)p.push(c.nacionalidade);if(c.estado_civil)p.push(c.estado_civil);if(c.profissao)p.push(c.profissao);
+  if(c.rg)p.push('portador'+(g==='f'?'a':g==='m'?'':'(a)')+' do RG nº '+c.rg);if(c.cpf)p.push('inscrit'+o+' no CPF sob o nº '+fmtCPF(c.cpf));
+  const end=[c.endereco,c.numero_end?'nº '+c.numero_end:'',c.complemento,c.bairro].filter(Boolean).join(', ');
+  p.push((end?'residente e domiciliad'+o+' na '+end+(c.cidade?', '+c.cidade+(c.uf?'/'+c.uf:''):'')+(c.cep?', CEP '+fmtCEP(c.cep):'')+', ':'')+'que não possui endereço eletrônico');
+  return p.join(', ')}
+function outorgadaTxt(){if(String(ESCRITORIO.oab_numero||'').replace(/\D/g,'')==='555397')return ['BEATRIZ ALVES ARAUJO',', brasileira, advogada, inscrita na OAB/SP sob o nº 555.397, com escritório profissional na Rua Malmequer do Campo, nº 876, Parque do Carmo, São Paulo/SP, CEP 08265-380, telefone (11) 95163-5738, e-mail dra.beatrizalves@adv.oabsp.org.br, onde recebe intimações e notificações'];
+  return [advNome().toUpperCase(),', advogada, inscrita na '+oabTxt()+(enderecoEsc()?', com escritório profissional na '+enderecoEsc():'')+(ESCRITORIO.email?', e-mail '+ESCRITORIO.email:'')+', onde recebe intimações e notificações']}
+function finalidadeProc(p){const t=semTag(objetoProc(p));return p.fase==='inquerito'?t:t.replace(/^atuação no processo de /,'atuar no processo de ')}
+function blocosProcuracao(p){const c=cliDe(p)||{nome:'____________'},a=outorgadaTxt(),g=generoCli(c),o=g==='m'?'o':g==='f'?'a':'o(a)',O=g==='m'?'O':g==='f'?'A':'O(A)';
+  return [
+    {t:'**PROCURAÇÃO //AD JUDICIA ET EXTRA//**',jc:'center',ind:false,after:240},
+    {t:'**OUTORGANTE: '+(c.nome||'').toUpperCase()+'**, '+qualifProc(c)+'.'},
+    {t:'**OUTORGADA: '+a[0]+'**'+a[1]+'.'},
+    {t:'**PODERES:** Pelo presente instrumento, '+o+' outorgante nomeia e constitui sua bastante procuradora a outorgada, a quem confere amplos poderes da cláusula //ad judicia et extra// para o foro em geral, em qualquer juízo, instância ou tribunal, nas esferas cível, de família, criminal, trabalhista, previdenciária e administrativa, bem como perante autoridades policiais, Ministério Público, Defensoria Pública, repartições públicas federais, estaduais e municipais, autarquias e cartórios, podendo propor ações, contestar, reconvir, apresentar defesas, manifestações, requerimentos e recursos, **inclusive em processos e procedimentos que tramitem em segredo de justiça**, com acesso integral aos autos, e praticar todos os atos necessários ao bom e fiel cumprimento deste mandato.'},
+    {t:'Confere ainda os **poderes especiais** do art. 105 do Código de Processo Civil para receber citação, confessar, reconhecer a procedência do pedido, transigir, desistir, renunciar ao direito sobre o qual se funda a ação, receber, dar quitação, firmar compromisso e assinar declaração de hipossuficiência econômica, bem como para participar de audiências de conciliação e mediação e celebrar acordos.'},
+    {t:'Na esfera criminal, confere poderes para acompanhar inquéritos policiais e procedimentos investigatórios, **inclusive os sujeitos a sigilo** (art. 7º, XIV e § 10, da Lei nº 8.906/1994), examinar autos, extrair cópias e tomar apontamentos, assistir '+o+' outorgante em depoimentos e interrogatórios (art. 7º, XXI, da Lei nº 8.906/1994), requerer diligências e medidas protetivas e acompanhar a ação penal em todos os seus termos.'},
+    {t:'**FINALIDADE ESPECÍFICA:** '+finalidadeProc(p)+', sem prejuízo dos demais poderes acima, podendo substabelecer esta a outrem, com ou sem reserva de iguais poderes.'},
+    {t:cidadeEsc()+', '+dataExtenso()+'.',jc:'right',ind:false,before:60,after:900,keep:true},
+    {t:'_______________________________________________',jc:'center',ind:false,after:0,keep:true},
+    {t:'**'+(c.nome||'').toUpperCase()+'**',jc:'center',ind:false,after:0,keep:true},
+    {t:'Outorgante'+(c.cpf?' · CPF '+fmtCPF(c.cpf):''),jc:'center',ind:false,after:0}]}
+function runsWord(t){return String(t).split(/(\*\*[^*]+\*\*)/).filter(Boolean).map(seg=>{const b=seg.startsWith('**');const inner=b?seg.slice(2,-2):seg;
+  return inner.split(/(\/\/[^/]+\/\/)/).filter(Boolean).map(x=>{const i=x.startsWith('//');const txt=i?x.slice(2,-2):x;return '<w:r><w:rPr>'+(b?'<w:b/>':'')+(i?'<w:i/>':'')+'</w:rPr><w:t xml:space="preserve">'+xe(txt)+'</w:t></w:r>'}).join('')}).join('')}
+function runsHTML(t){return String(t).split(/(\*\*[^*]+\*\*)/).filter(Boolean).map(seg=>{const b=seg.startsWith('**');const inner=(b?seg.slice(2,-2):seg).split(/(\/\/[^/]+\/\/)/).filter(Boolean).map(x=>x.startsWith('//')?'<i>'+esc(x.slice(2,-2))+'</i>':esc(x)).join('');return b?'<b>'+inner+'</b>':inner}).join('')}
+function procuracaoXML(p){return blocosProcuracao(p).map(k=>'<w:p><w:pPr>'+(k.keep?'<w:keepNext/>':'')+'<w:spacing'+(k.before?' w:before="'+k.before+'"':'')+' w:after="'+(k.after==null?120:k.after)+'" w:line="276" w:lineRule="auto"/>'+(k.ind===false?'':'<w:ind w:firstLine="709"/>')+'<w:jc w:val="'+(k.jc||'both')+'"/></w:pPr>'+runsWord(k.t)+'</w:p>').join('')}
+let MODELO_TIMBRE=null;
+async function modeloTimbre(){if(MODELO_TIMBRE)return MODELO_TIMBRE;await rqLibZip();const r=await fetch(PROC_MODELO,{cache:'no-cache'});if(!r.ok)throw new Error('modelo');const buf=await r.arrayBuffer();
+  const z=await JSZip.loadAsync(buf);const img=async n=>{const f=z.file('word/media/'+n);return f?'data:image/jpeg;base64,'+(await f.async('base64')):''};
+  MODELO_TIMBRE={buf,cab:await img('image1.jpeg'),rod:await img('image2.jpeg')};return MODELO_TIMBRE}
+async function baixarProcuracaoWord(p){const c=cliDe(p)||{};
+  try{const m=await modeloTimbre();const z=await JSZip.loadAsync(m.buf);let d=await z.file('word/document.xml').async('string');
+    const ini=d.indexOf('<w:body>')+8,sect=d.slice(d.lastIndexOf('<w:sectPr'));d=d.slice(0,ini)+procuracaoXML(p)+sect;
+    z.file('word/document.xml',d);const blob=await z.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+    const u=URL.createObjectURL(blob),l=document.createElement('a');l.href=u;l.download='Procuracao - '+nomeArq(c.nome)+'.docx';document.body.appendChild(l);l.click();setTimeout(()=>{URL.revokeObjectURL(u);l.remove()},800)}
+  catch(e){console.warn(e);toast('Não consegui abrir o modelo com o timbre. Confira a internet e tente de novo.')}}
+async function abrirProcuracao(p){const c=cliDe(p)||{};let cab='',rod='';try{const m=await modeloTimbre();cab=m.cab;rod=m.rod}catch(e){}
+  const corpo='<style>body{font-family:Calibri,Carlito,Arial,sans-serif;font-size:12pt;line-height:1.5;max-width:17.5cm;margin:.6cm auto}p{margin:0 0 9pt;text-align:justify;text-indent:1.25cm}p.ni{text-indent:0}.tim{width:100%;display:block}@media print{@page{size:A4;margin:.6cm 1.2cm}}</style>'+
+    (cab?'<img class="tim" src="'+cab+'" alt="">':'')+
+    blocosProcuracao(p).map(k=>'<p class="'+(k.ind===false?'ni':'')+'" style="text-align:'+({center:'center',right:'right'}[k.jc]||'justify')+(k.after>600?';margin-bottom:60pt':'')+(k.before?';margin-top:12pt':'')+'">'+runsHTML(k.t)+'</p>').join('')+
+    (rod?'<img class="tim" src="'+rod+'" alt="" style="margin-top:24pt">':'');
+  abrirDoc_('Procuração',corpo,'procuracao-'+nomeArq(c.nome));const el=document.getElementById('docprev');if(el)el._proc=p.id}
 
 /* ---------- 3 · recibo ---------- */
 function reciboHTML(l){const c=cliDe(l)||cliDoLanc(l)||{},p=procDoLanc(l),nome=c.nome||l.cliente||'________________';
@@ -3375,7 +3429,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-recibo]');
 document.addEventListener('click',e=>{const b=e.target.closest('[data-gerardoc]');if(!b)return;const p=(D.processos||[]).find(x=>x.id===b.dataset.id);if(!p)return;const c=cliDe(p)||{};
   if(!c.cpf||!c.endereco)toast('Dica: complete CPF e endereço na ficha do cliente para a qualificação sair completa.');
   if(b.dataset.gerardoc==='contrato')abrirDoc_('Contrato de honorários',contratoHTML(p),'contrato-'+nomeArq(c.nome)+'-'+nomeArq(p.titulo));
-  else abrirDoc_('Procuração',procuracaoHTML(p),'procuracao-'+nomeArq(c.nome))});
+  else abrirProcuracao(p)});
 
 /* =================== Andamentos (Datajud / CNJ) e certidões =================== */
 const AND={dados:{},cnj:{},carregando:{},consultando:{},tudo:{},novos:null};
@@ -3602,7 +3656,7 @@ function cfgAnimacoes(){
     '<div class="grid2"><label class="f">Assunto<select class="inp" id="an-tema">'+Object.entries(TEMAS).map(([k,v])=>'<option value="'+k+'">'+esc(v.nome)+' · '+esc((AGENTES[FIG[v.ag]?v.ag:'klaus']||{}).nome||'')+'</option>').join('')+'</select></label>'+
     '<label class="f">De onde veio (clique no WhatsApp)<select class="inp" id="an-orig"><option value="instagram">Instagram</option><option value="facebook">Facebook</option><option value="google">Google</option><option value="direto">Direto pelo site</option></select></label></div>'+
     '<div class="acoes"><button class="btn pri" data-anim="clique">📲 Clique no WhatsApp</button><button class="btn" data-anim="cliente">👤 Cliente novo</button><button class="btn" data-anim="processo">📁 Processo novo</button></div></div>'}
-const TIT_TESTE={divorcio:'Divórcio litigioso',partilha:'Partilha de bens',casamento:'Reconhecimento de união estável',pensao:'Alimentos',guarda:'Guarda compartilhada',violencia:'Medida protetiva',criminal:'Defesa em inquérito policial',acusacao:'Defesa em inquérito policial',outro:'Ação de exemplo'};
+const TIT_TESTE={divorcio:'Divórcio litigioso',partilha:'Partilha de bens',casamento:'Reconhecimento de união estável',pensao:'Alimentos',guarda:'Guarda compartilhada',violencia:'Medida protetiva',criminal:'Defesa em inquérito policial',acusacao:'Defesa em inquérito policial',inquerito:'Defesa em inquérito policial',penal:'Defesa em ação penal',previdenciario:'Concessão de benefício',trabalhista:'Reclamação trabalhista',outro:'Ação de exemplo'};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-anim]');if(!b)return;const tema=($('#an-tema')||{}).value||'divorcio',origem=($('#an-orig')||{}).value||'instagram';
   FESTA.fila=[];if(FESTA.ativa){const el=document.getElementById('festa');if(el)el.remove();FESTA.ativa=false}
   if(b.dataset.anim==='clique')comemorar({tema,origem,pagina:'teste',n:1});
