@@ -2926,7 +2926,7 @@ function telaMeusProcessos(){
   if(!MP.novo&&(!MP.sel||!todos.find(p=>p.id===MP.sel)))MP.sel=(L[0]||{}).id||null;
   const cont={ativos:todos.filter(ativo).length,fim:todos.filter(p=>!ativo(p)).length,todos:todos.length};
   const itens=L.map(p=>{const c=cliDe(p),nl=intimDe(p).filter(i=>!i.lida).length,nd=docsDe(p).length,s=SIT_PROC[p.situacao]||SIT_PROC.andamento;
-    return '<button class="it '+(p.id===MP.sel&&!MP.novo?'on':'')+'" data-mpsel="'+p.id+'"><span class="wa-av" style="--c:'+((TEMAS[c&&c.tema]||{}).cor||'var(--ouro)')+'">📁</span><div style="min-width:0;flex:1"><b>'+esc(p.titulo)+'</b><small>'+esc(c?c.nome:'cliente apagado')+' · <span style="color:'+s[1]+'">'+s[0].toLowerCase()+'</span></small><small class="mp-num">'+(p.fase==='inquerito'?'🚔 IP '+esc(p.inquerito||'sem nº')+(p.numero?' · '+esc(p.numero):''):(p.numero?esc(p.numero):'sem número ainda'))+'</small></div><span class="bd">'+(nl?'<span class="wa-bd" title="intimações novas">'+nl+'</span>':'')+(nd?'<small class="mut" title="documentos">📎'+nd+'</small>':'')+'</span></button>'}).join('')||
+    return '<button class="it '+(p.id===MP.sel&&!MP.novo?'on':'')+'" data-mpsel="'+p.id+'"><span class="wa-av" style="--c:'+((TEMAS[c&&c.tema]||{}).cor||'var(--ouro)')+'">📁</span><div style="min-width:0;flex:1"><b>'+esc(c?c.nome:'cliente apagado')+'</b><small>'+esc(p.titulo)+' · <span style="color:'+s[1]+'">'+s[0].toLowerCase()+'</span></small><small class="mp-num">'+(p.fase==='inquerito'?'🚔 IP '+esc(p.inquerito||'sem nº')+(p.numero?' · '+esc(p.numero):''):(p.numero?esc(p.numero):'sem número ainda'))+'</small></div><span class="bd">'+(nl?'<span class="wa-bd" title="intimações novas">'+nl+'</span>':'')+(nd?'<small class="mut" title="documentos">📎'+nd+'</small>':'')+'</span></button>'}).join('')||
     '<p class="mut" style="margin:8px 4px">'+(todos.length?'Nada encontrado.':'Nenhum processo ainda.')+'</p>';
   const p=todos.find(x=>x.id===MP.sel);
   return '<div class="pv-bar">'+modo+'</div><div class="lay"><aside class="lado"><div style="display:flex;gap:8px;align-items:center"><h3 style="margin:0;margin-right:auto">Processos</h3><button class="btn sm pri" data-mp="novo">+ Processo</button></div>'+
@@ -2984,8 +2984,8 @@ function detalheProcesso(p){
   if(MP.editar===p.id)return '<div class="lead"><h3 style="margin-top:0">Editar processo</h3>'+formProcesso(cliDe(p)||{id:p.cliente_id},p)+'</div>';
   const c=cliDe(p),I=intimDe(p),Dc=docsDe(p),s=SIT_PROC[p.situacao]||SIT_PROC.andamento,sig=c&&c.tema==='violencia';
   const polo=(p.fase==='inquerito'?{autor:'cliente é vítima',reu:'cliente é investigada(o)',outro:''}:{autor:'cliente é autor(a)',reu:'cliente é réu/ré',outro:''})[p.polo]||'';
-  return '<div class="lead"><div class="l1"><span class="wa-av" style="--c:'+s[1]+';width:44px;height:44px;font-size:20px">📁</span><div style="flex:1;min-width:0"><b style="font-size:19px">'+esc(p.titulo)+'</b>'+(p.exemplo?' <span class="mut" style="font-size:12px">exemplo</span>':'')+
-      '<div class="mut" style="font-size:13px">'+numLinha(p)+'</div></div>'+
+  return '<div class="lead"><div class="l1"><span class="wa-av" style="--c:'+s[1]+';width:44px;height:44px;font-size:20px">📁</span><div style="flex:1;min-width:0"><b style="font-size:19px">'+esc(c?c.nome:'cliente apagado')+'</b>'+(p.exemplo?' <span class="mut" style="font-size:12px">exemplo</span>':'')+
+      '<div class="mut" style="font-size:14px;margin-top:1px">'+esc(p.titulo)+'</div><div class="mut" style="font-size:13px">'+numLinha(p)+'</div></div>'+
       '<select class="inp sm" data-procsit="'+p.id+'" aria-label="Situação" style="width:auto;color:'+s[1]+'">'+Object.entries(SIT_PROC).map(([k,v])=>'<option value="'+k+'"'+(k===p.situacao?' selected':'')+'>'+v[0]+'</option>').join('')+'</select></div>'+
     (sig?'<div class="aviso"><b>⚠ Violência doméstica.</b> O celular pode ser acessado por outra pessoa: só fale por WhatsApp se ela iniciar a conversa.</div>':'')+
     planilhaProcesso(p,c,polo)+
