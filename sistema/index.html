@@ -3547,7 +3547,7 @@ function atIdade(iso){if(!iso)return '';const n=new Date(iso+'T12:00'),h=new Dat
 function atDados(c){c=c||{};const P=c.id?procsDoCli(c.id):[],pf=P.find(p=>p.parte_contraria)||P[0]||{};
   const end=[c.endereco,c.numero_end?'nº '+c.numero_end:'',c.complemento,c.bairro,c.cidade?c.cidade+(c.uf?'/'+c.uf:''):'',c.cep?'CEP '+fmtCEP(c.cep):''].filter(Boolean).join(', ');
   const Lc=c.id?lancDe(c).filter(l=>l.tipo==='entrada'&&!l.exemplo):[],ex=Lc.filter(pendExito),fx=Lc.filter(l=>!pendExito(l)),ent=fx.filter(ehEnt),parc=fx.filter(l=>!ehEnt(l)).sort(porVenc);
-  return {nome:c.nome||'',nasc:c.nascimento?dataBRano(c.nascimento):'',idade:atIdade(c.nascimento),cpf:c.cpf?fmtCPF(c.cpf):'',rg:c.rg||'',civil:c.estado_civil||'',nac:c.nacionalidade||'',prof:c.profissao||'',
+  return {nome:c.nome||'',nasc:c.nascimento?dataBRano(c.nascimento):'',idade:atIdade(c.nascimento),cpf:c.cpf?fmtCPF(c.cpf):'',rg:c.rg||'',civil:(()=>{const e=c.estado_civil||'',g=c.nome?generoCli(c):'';return g?e.replace(/o\(a\)/g,g==='f'?'a':'o').replace(/\(a\)/g,g==='f'?'a':''):e})(),nac:c.nacionalidade||'',prof:c.profissao||'',
     tel:c.telefone?fmtTel(c.telefone):'',end,contraria:pf.parte_contraria||'',proc:pf.numero?numCNJ(pf.numero):'',
     honTot:fx.length?brl(somaV(fx)):'',honEnt:ent.length?brl(somaV(ent)):'',honParc:parc.length?parc.length+(parc.length===1?' parcela de ':' parcelas de ')+(parc.every(x=>Math.abs(+x.valor-+parc[0].valor)<0.005)?brl(+parc[0].valor):'valores variados')+', com 1º vencimento em '+dataBRano(parc[0].vencimento):'',
     honEx:ex.length?ex.map(x=>String(x.descricao).replace(/^no êxito da ação · /i,'')).join('; '):''}}
