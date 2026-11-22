@@ -3538,7 +3538,7 @@ const AT={cli:null,edit:null,carregado:false,sujo:false};
 const AT_COR={azul:'14213D',ouro:'B98A45',bege:'F5EFE4',linha:'D9CBB0',cinza:'6B6B6B'};
 const AT_LARG=9752; // largura útil da folha do modelo (dxa)
 const atB={
-  tit:(t,sub)=>({k:'tit',t,sub}),sec:t=>({k:'sec',t}),sub:t=>({k:'subsec',t}),p:t=>({k:'p',t}),nota:t=>({k:'nota',t}),
+  tit:(t,sub)=>({k:'tit',t,sub}),sec:t=>({k:'sec',t}),sub:t=>({k:'subsec',t}),p:t=>({k:'p',t}),nota:(t,fica)=>({k:'nota',t,fica}),
   tab:(rows,w)=>({k:'tab',rows,w}),chk:(t,o,m)=>({k:'chk',t,o,m:m||[]}),lin:n=>({k:'lin',n:n||3}),lista:(itens,marca)=>({k:'lista',itens,marca:marca||'☐'}),
   ass:pares=>({k:'ass',pares}),esp:()=>({k:'esp'})};
 const L_=t=>({l:t}),V_=t=>({v:t==null?'':String(t)}),H_=t=>({h:t});
@@ -3640,7 +3640,7 @@ function docDevolutiva(d){const a=atAdv(),w4=[22,28,22,28],lin=(t)=>[L_(t),V_(''
   atB.sec('6. Patrimônio informado'),
   atB.tab([[H_('Bem'),H_('Valor aproximado'),H_('Em nome de'),H_('Situação')],[V_('Imóvel: '),V_(''),V_(''),V_('')],[V_('Imóvel: '),V_(''),V_(''),V_('')],[V_('Veículo: '),V_(''),V_(''),V_('')],[V_('Veículo: '),V_(''),V_(''),V_('')],
     [V_('Empresa: '),V_(''),V_(''),V_('')],[V_('Contas e investimentos'),V_(''),V_(''),V_('')],[V_('FGTS'),V_(''),V_(''),V_('')],[V_('Previdência privada'),V_(''),V_(''),V_('')],[V_('Consórcio'),V_(''),V_(''),V_('')],[V_('Móveis e outros bens'),V_(''),V_(''),V_('')]],[36,20,20,24]),
-  atB.nota('Valores aproximados, informados por você. Serão conferidos com os documentos.'),
+  atB.nota('Valores aproximados, informados por você. Serão conferidos com os documentos.',1),
   atB.sec('7. Dívidas informadas'),
   atB.tab([[H_('Dívida'),H_('Valor aproximado'),H_('Em nome de')],[V_(''),V_(''),V_('')],[V_(''),V_(''),V_('')],[V_(''),V_(''),V_('')]],[46,27,27]),
   atB.sec('8. Filhos'),
@@ -3657,7 +3657,7 @@ function docDevolutiva(d){const a=atAdv(),w4=[22,28,22,28],lin=(t)=>[L_(t),V_(''
   atB.lista(['Não assine documentos nem feche acordos sem falar comigo antes.','Não exponha o caso nas redes sociais.','Mantenha a rotina dos filhos e não os envolva nas discussões do casal.','Guarde recibos e comprovantes de pagamentos e despesas da família.','Me avise se mudar de endereço, telefone ou emprego.'],'▪'),
   atB.sec('13. Honorários advocatícios'),
   atB.tab([[L_('Modalidade'),V_('☐ Consensual   ☐ Litigioso')],[L_('Valor total'),V_(d.honTot)],[L_('Entrada'),V_(d.honEnt)],[L_('Forma de pagamento'),V_(d.honParc)],[L_('Honorários de êxito'),V_(d.honEx)],[L_('O que está incluído'),V_('')],[L_('Validade da proposta'),V_('')]],[30,70]),
-  atB.nota('Custas do processo, taxas de cartório, certidões e perícias não estão incluídas nos honorários, salvo se combinado de outra forma.'),
+  atB.nota('Custas do processo, taxas de cartório, certidões e perícias não estão incluídas nos honorários, salvo se combinado de outra forma.',1),
   atB.sec('14. Quem sou eu'),
   atB.p('Sou **'+a.nome+'**, advogada inscrita na '+a.oab.replace('OAB/SP nº','OAB/SP sob o nº')+', com escritório na Rua Malmequer do Campo, nº 876, Parque do Carmo, São Paulo/SP, e atendimento online para todo o Brasil. [[apresentação profissional: formação, experiência e propósito]]'),
   atB.sec('Ciência'),
@@ -3693,16 +3693,16 @@ function docRol(d,lit){const it=(t,itens)=>[atB.sub(t),atB.lista(itens)];
     atB.lista(['Recibos e comprovantes de pagamento das despesas da casa e dos filhos','Comprovantes de pensão paga ou recebida','Documentos que mostrem a renda da outra parte (holerite, declaração, contrato)','Boletim de ocorrência e decisão de medida protetiva (se houver)','Relatórios escolares, médicos ou psicológicos dos filhos (se houver)']),
     atB.sec('8. Provas em fotos e prints'),
     atB.lista(['Prints de conversas importantes, mostrando a data e o número de quem enviou','Fotos que ajudem a mostrar a situação relatada','Prints de redes sociais da outra parte que mostrem bens, viagens ou gastos']),
-    atB.nota('Não apague as conversas originais do celular, mesmo depois de mandar os prints.'),
+    atB.nota('Não apague as conversas originais do celular, mesmo depois de mandar os prints.',1),
     atB.sec('9. Testemunhas'),
     atB.p('Pessoas que conhecem a situação do casal e podem confirmar o que aconteceu. De preferência, que não sejam parentes próximos. Para cada uma:'),
     atB.tab([[H_('Nome completo'),H_('Telefone'),H_('Endereço'),H_('O que a pessoa sabe')],[V_(''),V_(''),V_(''),V_('')],[V_(''),V_(''),V_(''),V_('')],[V_(''),V_(''),V_(''),V_('')]],[28,18,26,28])]:[]),
-  atB.p('Qualquer dúvida, estou à disposição.'),
+  {k:'fim'},atB.p('Qualquer dúvida, estou à disposição.'),
   atB.p('**'+atAdv().nome+'**  ·  '+atAdv().oab)]}
 /* texto do rol para mandar no WhatsApp */
-function rolTexto(d,lit){const B=docRol(d,lit);let t='';
+function rolTexto(B){let t='';
   B.forEach(b=>{if(b.k==='tit')t+='*'+b.t.toUpperCase()+' · '+b.sub.toUpperCase()+'*\n';else if(b.k==='sec')t+='\n*'+b.t+'*\n';else if(b.k==='subsec')t+='_'+b.t+'_\n';
-    else if(b.k==='lista')t+=b.itens.map(x=>'▫️ '+x).join('\n')+'\n';else if(b.k==='p'&&!/^\*\*/.test(b.t))t+='\n'+b.t.replace(/\*\*/g,'*')+'\n';else if(b.k==='nota')t+='_'+b.t+'_\n'});
+    else if(b.k==='lista')t+=b.itens.map(x=>'▫️ '+(typeof x==='object'?x.t:x)).join('\n')+'\n';else if(b.k==='p'&&!/^\*\*/.test(b.t))t+='\n'+b.t.replace(/\*\*/g,'*')+'\n';else if(b.k==='nota')t+='_'+b.t+'_\n'});
   return t.trim()+'\n\n'+(ESCRITORIO.primeiro||'')}
 
 /* ---- motor: HTML ---- */
@@ -3713,7 +3713,7 @@ function atHTML(B){return B.map(b=>{switch(b.k){
   case 'sec':return '<h2>'+esc(b.t)+'</h2>';case 'subsec':return '<h3>'+esc(b.t)+'</h3>';
   case 'p':return '<p>'+atRunsH(b.t)+'</p>';case 'nota':return '<p class="nota">'+atRunsH(b.t)+'</p>';
   case 'tab':return '<table><colgroup>'+b.w.map(x=>'<col style="width:'+x+'%">').join('')+'</colgroup>'+b.rows.map(r=>'<tr>'+r.map(atCelH).join('')+'</tr>').join('')+'</table>';
-  case 'chk':return '<p class="chk"><b>'+esc(b.t)+':</b> '+b.o.map(o=>'<span>'+(b.m.includes(o)?'☒':'☐')+' '+esc(o)+'</span>').join('')+'</p>';
+  case 'chk':return b.so?'<p class="chk"><b>'+esc(b.t)+':</b> '+esc(b.m.join(', '))+'</p>':'<p class="chk"><b>'+esc(b.t)+':</b> '+b.o.map(o=>'<span>'+(b.m.includes(o)?'☒':'☐')+' '+esc(o)+'</span>').join('')+'</p>';
   case 'lin':return '<div class="lin"></div>'.repeat(b.n);
   case 'lista':return '<ul class="at-l">'+b.itens.map(x=>{const o=typeof x==='object'?x:{t:x};return '<li><span class="mk">'+(o.ok?'☒':b.marca)+'</span>'+atRunsH(o.t)+'</li>'}).join('')+'</ul>';
   case 'txt':return '<div class="at-txt">'+esc(b.t).replace(/\n/g,'<br>')+'</div>';
@@ -3749,7 +3749,7 @@ function atWord(B){return B.map(b=>{switch(b.k){
   case 'p':return atPW(atRunsW(b.t),{after:100});
   case 'nota':return atPW(atRunsW(b.t,atRp({i:1,cor:AT_COR.cinza,sz:19})),{after:100});
   case 'tab':return atTabW(b);
-  case 'chk':return atPW(atRunsW(b.t+': ',atRp({b:1}))+b.o.map(o=>atRunsW((b.m.includes(o)?'☒\u00a0':'☐\u00a0')+String(o).replace(/ /g,'\u00a0')+'    ')).join(''),{after:100,jc:'left'});
+  case 'chk':if(b.so)return atPW(atRunsW(b.t+': ',atRp({b:1}))+atRunsW(b.m.join(', ')),{after:100,jc:'left'});return atPW(atRunsW(b.t+': ',atRp({b:1}))+b.o.map(o=>atRunsW((b.m.includes(o)?'☒\u00a0':'☐\u00a0')+String(o).replace(/ /g,'\u00a0')+'    ')).join(''),{after:100,jc:'left'});
   case 'lin':return '<w:tbl><w:tblPr><w:tblW w:w="'+AT_LARG+'" w:type="dxa"/><w:tblBorders><w:bottom w:val="single" w:sz="4" w:space="0" w:color="'+AT_COR.linha+'"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="'+AT_COR.linha+'"/></w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="'+AT_LARG+'"/></w:tblGrid>'+
     Array.from({length:b.n},()=>'<w:tr><w:trPr><w:cantSplit/><w:trHeight w:val="420" w:hRule="exact"/></w:trPr><w:tc><w:tcPr><w:tcW w:w="'+AT_LARG+'" w:type="dxa"/></w:tcPr>'+atPW('',{after:0,line:240})+'</w:tc></w:tr>').join('')+'</w:tbl>'+atPW('',{after:60,line:240});
   case 'lista':return b.itens.map(x=>{const o=typeof x==='object'?x:{t:x};return atPW(atRunsW((o.ok?'☒':b.marca)+'\t',atRp({cor:AT_COR.ouro}))+atRunsW(o.t),{after:60,ind:360,jc:'left'})}).join('');
@@ -3774,14 +3774,38 @@ function atChaves(B){let sec='',sub='',ultP='';const usadas={};const k=s=>{s=s.s
     return b})}
 const atVal=(vals,key,padrao)=>vals&&Object.prototype.hasOwnProperty.call(vals,key)?vals[key]:padrao;
 /* aplica o que foi preenchido no modelo (para imprimir e para o Word) */
-function atResolver(B,vals){return atChaves(B).flatMap(b=>{
-  if(b.k==='tab')return [Object.assign({},b,{rows:b.rows.map(r=>r.map(c=>{if(!c.key)return c;const op=atOpcoes(c.v);
-    if(op){const m=atVal(vals,c.key,[])||[];return {v:op.map(o=>(m.includes(o)?'☒ ':'☐ ')+o).join('   ')}}return {v:atVal(vals,c.key,c.v)||''}}))})];
-  if(b.k==='chk')return [Object.assign({},b,{m:atVal(vals,b.key,b.m)||[]})];
-  if(b.k==='lista'&&b.keys)return [Object.assign({},b,{itens:b.itens.map((x,i)=>{const v=atVal(vals,b.keys[i],false);return {t:x,ok:!!v}})})];
-  if(b.k==='lin'){const t=String(atVal(vals,b.key,'')||'').trim();return t?[{k:'txt',t}]:[b]}
-  if(b.k==='p'&&b.campos){let t=b.t;b.campos.forEach(c=>{const v=String(atVal(vals,c.key,'')||'').trim();if(v)t=t.replace(c.m,v.replace(/\[|\]/g,''))});return [Object.assign({},b,{t})]}
-  return [b]})}
+/* aplica o que foi preenchido no modelo (para imprimir e para o Word).
+   cmp = compacto: só sai o que foi preenchido (seções vazias, linhas vazias e opções não marcadas somem). */
+function atResolver(B,vals,cmp){const K=atChaves(B),out=[],tem=s=>!!String(s==null?'':s).trim();K.forEach((b,i)=>{if(b.k==='p'&&K[i+1]&&K[i+1].k==='lin')b.lbl=1});
+  const listaMarcada=K.some(b=>b.keys&&b.keys.some(k=>atVal(vals,k,false)));
+  for(const b of K){
+    if(b.k==='tab'){const rows=b.rows.map(r=>r.map(c=>{if(!c.key)return c;const op=atOpcoes(c.v);
+        if(op){const m=atVal(vals,c.key,[])||[];return cmp?{v:m.join(', '),f:m.length>0}:{v:op.map(o=>(m.includes(o)?'☒ ':'☐ ')+o).join('   ')}}
+        const v=atVal(vals,c.key,c.v)||'';return {v,d:c.v,f:tem(v)&&!/:\s*$/.test(String(v).trim())}}));
+      if(!cmp){out.push(Object.assign({},b,{rows}));continue}
+      const temChave=b.rows.some(r=>r.some(c=>c.key));if(!temChave){out.push(Object.assign({},b,{rows,conteudo:1}));continue}
+      if(rows[0].some(c=>c.h!=null)){const dados=rows.slice(1).filter(r=>r.some(c=>c.f&&String(c.v).trim()!==String(c.d||'').trim()));if(dados.length)out.push(Object.assign({},b,{rows:[rows[0]].concat(dados),conteudo:1}));continue}
+      const pares=[];rows.forEach(r=>{for(let j=0;j<r.length-1;j++)if(r[j].l!=null&&r[j+1].f)pares.push([r[j],r[j+1]])});if(!pares.length)continue;
+      const dois=b.rows[0].length>=4,nr=[];let sobra=null;for(let j=0;j<pares.length;j+=dois?2:1){const p2=pares[j+1];if(dois&&!p2)sobra=pares[j];else nr.push(dois?pares[j].concat(p2):pares[j])}
+      if(nr.length)out.push(Object.assign({},b,{rows:nr,conteudo:1}));if(sobra)out.push(Object.assign({},b,{rows:[sobra],w:[b.w[0],100-b.w[0]],conteudo:1}));continue}
+    if(b.k==='chk'){const m=atVal(vals,b.key,b.m)||[];if(!cmp){out.push(Object.assign({},b,{m}));continue}if(m.length)out.push(Object.assign({},b,{o:m,m,conteudo:1,so:1}));continue}
+    if(b.k==='lista'&&b.keys){const it=b.itens.map((x,i)=>({t:x,ok:!!atVal(vals,b.keys[i],false)}));
+      if(!cmp){out.push(Object.assign({},b,{itens:it}));continue}
+      const ok=listaMarcada?it.filter(x=>x.ok):it;if(ok.length)out.push(Object.assign({},b,{itens:ok.map(x=>({t:x.t.replace(/\s*\[\[[^\]]+\]\]/g,''),ok:false})),marca:'▪',conteudo:1}));continue}
+    if(b.k==='lin'){const t=String(atVal(vals,b.key,'')||'').trim();if(t){out.push({k:'txt',t,conteudo:1});continue}
+      if(cmp){const u=out[out.length-1];if(u&&u.lbl)out.pop();continue}
+      out.push(b);continue}
+    if(b.k==='p'&&b.campos){let t=b.t;b.campos.forEach(c=>{const v=String(atVal(vals,c.key,'')||'').trim();t=t.replace(c.m,v?v.replace(/\[|\]/g,''):cmp?(/data/i.test(c.m)?'____ de ______________ de ______':''):c.m)});
+      out.push(Object.assign({},b,{t:t.replace(/\s+([.,])/g,'$1').trim(),conteudo:1}));continue}
+    if(cmp&&b.k==='nota'&&!b.fica)continue;
+    if(cmp&&(b.k==='p'||b.k==='lista'||b.k==='ass'||b.k==='txt')){out.push(Object.assign({},b,b.lbl?{}:{conteudo:1}));continue}
+    out.push(b)}
+  if(!cmp)return out;
+  /* tira subtítulos e seções que ficaram sem nada */
+  const poda=(arr,nivel)=>{const r=[];for(let i=0;i<arr.length;i++){const b=arr[i];
+    if(nivel.includes(b.k)){let j=i+1;while(j<arr.length&&!nivel.includes(arr[j].k)&&arr[j].k!=='fim'&&!(b.k==='subsec'&&arr[j].k==='sec'))j++;
+      if(arr.slice(i+1,j).some(x=>x.conteudo)){r.push(b);for(let q=i+1;q<j;q++)r.push(arr[q])}i=j-1;continue}r.push(b)}return r};
+  return poda(poda(out,['subsec']),['sec'])}
 
 /* ---- formulário na tela ---- */
 function atInput(key,val,ph,larg){return '<input class="inp at-in" data-atk="'+esc(key)+'" value="'+esc(val||'')+'"'+(ph?' placeholder="'+esc(ph)+'"':'')+(larg?' style="min-width:'+larg+'"':'')+' autocomplete="off">'}
@@ -3820,10 +3844,10 @@ document.addEventListener('change',e=>{if(!e.target.closest||!e.target.closest('
 const AT_DOCS=[
   {id:'ficha',nome:'Ficha de Atendimento · Divórcio',quem:'Uso interno',desc:'Roteiro completo para a reunião: dados das partes, relacionamento, patrimônio, dívidas, filhos, riscos, plano de ação e honorários.',fn:d=>docFichaAtendimento(d),arq:'Ficha de Atendimento - Divorcio'},
   {id:'devolutiva',nome:'Ficha Devolutiva · Divórcio e Partilha',quem:'Para o cliente',desc:'Resumo do atendimento para entregar ao cliente: o que ele contou, bens, filhos, próximos passos, honorários e ciência com assinatura.',fn:d=>docDevolutiva(d),arq:'Ficha Devolutiva - Divorcio e Partilha'},
-  {id:'rolc',nome:'Rol de Documentos · Divórcio Consensual',quem:'Para o cliente',desc:'Lista separada por blocos: documentos pessoais, procuração, outro cônjuge, filhos, patrimônio e dívidas. Marque o que o cliente já entregou.',fn:d=>docRol(d,false),arq:'Rol de Documentos - Divorcio Consensual',wpp:false},
-  {id:'roll',nome:'Rol de Documentos · Divórcio Litigioso',quem:'Para o cliente',desc:'Tudo do consensual, mais dados da outra parte, provas em papel, provas em fotos e prints, e testemunhas. Marque o que já chegou.',fn:d=>docRol(d,true),arq:'Rol de Documentos - Divorcio Litigioso',wpp:true}];
+  {id:'rolc',nome:'Rol de Documentos · Divórcio Consensual',quem:'Para o cliente',desc:'Lista separada por blocos: documentos pessoais, procuração, outro cônjuge, filhos, patrimônio e dívidas. Marque só o que este cliente precisa mandar.',fn:d=>docRol(d,false),arq:'Rol de Documentos - Divorcio Consensual',wpp:false},
+  {id:'roll',nome:'Rol de Documentos · Divórcio Litigioso',quem:'Para o cliente',desc:'Tudo do consensual, mais dados da outra parte, provas em papel, provas em fotos e prints, e testemunhas. Marque só o que este cliente precisa mandar.',fn:d=>docRol(d,true),arq:'Rol de Documentos - Divorcio Litigioso',wpp:true}];
 const atCli=()=>(D.clientes||[]).find(y=>y.id===AT.cli)||null;
-const atBlocos=x=>{const c=atCli(),f=c?atSalva(c.id,x.id):null;const B=x.fn(atDados(c));return f?atResolver(B,f.dados||{}):atResolver(B,{})};
+const atBlocos=(x,completo)=>{const c=atCli(),f=c?atSalva(c.id,x.id):null;const B=x.fn(atDados(c));return f?atResolver(B,f.dados||{},!completo):atResolver(B,{})};
 function telaAtendimento(){
   if(!CLI.carregado||!AT.carregado){Promise.all([CLI.carregado?null:carregarClientes(),podeFinanceiro()&&!FIN.carregado?carregarFin():null,AT.carregado?null:atCarregarFichas()]).then(render);return '<div class="lead"><div class="carregando"><span></span><span></span><span></span></div></div>'}
   const cl=(D.clientes||[]).filter(c=>!c.exemplo||!REAL).slice().sort((a,b)=>String(a.nome).localeCompare(String(b.nome),'pt-BR')),c=atCli();
@@ -3840,12 +3864,12 @@ function telaAtendimento(){
 function telaAtEditor(c){const x=AT_DOCS.find(y=>y.id===AT.edit),f=atSalva(c.id,x.id),vivo=AT.sujo&&document.getElementById('at-ed')?atLerForm():null;
   return '<div class="lead at-edtopo"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn sm" data-at="voltar" data-id="'+x.id+'">‹ Voltar</button><div style="margin-right:auto;min-width:0"><b style="font-size:17px">'+esc(x.nome)+'</b><div class="mut" style="font-size:13px">'+esc(c.nome)+' · <span id="at-st">'+(f?'Salvo em '+esc(new Date(f.atualizado_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})):'Ainda não salva')+'</span></div></div>'+
     '<button class="btn sm" data-at="salvar" data-id="'+x.id+'">Salvar</button><button class="btn sm pri" data-at="salvarver" data-id="'+x.id+'">Salvar e imprimir</button><button class="btn sm" data-at="salvarword" data-id="'+x.id+'">Salvar e baixar Word</button></div>'+
-    '<p class="nota" style="margin:6px 0 0">Salva sozinho enquanto você preenche. Os campos que vieram do cadastro do cliente podem ser alterados aqui sem mudar o cadastro.</p></div>'+
+    '<p class="nota" style="margin:6px 0 0">Salva sozinho enquanto você preenche. Na impressão sai <b>só o que foi preenchido</b>: partes em branco e opções não marcadas não aparecem. '+(x.id==='rolc'||x.id==='roll'?'<b>Marque os documentos que este cliente precisa mandar</b>: só eles saem na impressão e no WhatsApp (sem nenhum marcado, sai a lista completa). ':'')+'<button class="lnk" data-at="vercompleta" data-id="'+x.id+'">Imprimir a ficha completa</button></p></div>'+
     '<div class="lead at-ed" id="at-ed">'+atForm(x.fn(atDados(c)),vivo||(f?f.dados:{}))+'</div>'+
     '<div class="acoes" style="justify-content:flex-end"><button class="btn" data-at="salvar" data-id="'+x.id+'">Salvar</button><button class="btn pri" data-at="salvarver" data-id="'+x.id+'">Salvar e imprimir</button></div>'}
 document.addEventListener('change',e=>{if(e.target.id==='at-cli'){AT.cli=e.target.value||null;AT.edit=null;render()}});
-async function atAbrir(x){const c=atCli();let cab='',rod='';try{const m=await modeloTimbre();cab=m.cab;rod=m.rod}catch(e){}
-  const corpo='<style>'+AT_CSS+'</style>'+(cab?'<img class="tim" src="'+cab+'" alt="">':'')+atHTML(atBlocos(x))+(rod?'<img class="tim" src="'+rod+'" alt="" style="margin-top:20pt">':'');
+async function atAbrir(x,completo){const c=atCli();let cab='',rod='';try{const m=await modeloTimbre();cab=m.cab;rod=m.rod}catch(e){}
+  const corpo='<style>'+AT_CSS+'</style>'+(cab?'<img class="tim" src="'+cab+'" alt="">':'')+atHTML(atBlocos(x,completo))+(rod?'<img class="tim" src="'+rod+'" alt="" style="margin-top:20pt">':'');
   abrirDoc_(x.nome,corpo,x.arq+(c?' - '+nomeArq(c.nome):''));const el=document.getElementById('docprev');if(el)el._at=x.id}
 async function atBaixarWord(x){const c=atCli();
   try{const m=await modeloTimbre();const z=await JSZip.loadAsync(m.buf);let doc=await z.file('word/document.xml').async('string');
@@ -3857,8 +3881,9 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-at]'
   if(a==='preencher'){AT.edit=x.id;render();scrollTo(0,0);return}
   if(a==='voltar'){clearTimeout(atTimer);if(AT.sujo)await atGravar(true);AT.edit=null;render();return}
   if(a==='salvar'||a==='salvarver'||a==='salvarword'){clearTimeout(atTimer);await atGravar(a!=='salvar');if(a==='salvarver')atAbrir(x);if(a==='salvarword')atBaixarWord(x);return}
+  if(a==='vercompleta'){clearTimeout(atTimer);await atGravar(true);atAbrir(x,true);return}
   if(a==='ver')atAbrir(x);else if(a==='word')atBaixarWord(x);
-  else if(a==='copiar')copiar(rolTexto(atDados(atCli()),x.id==='roll'))},true);
+  else if(a==='copiar')copiar(rolTexto(atBlocos(x)))},true);
 /* no visualizador, "Baixar Word" dos documentos do Atendimento usa o modelo com o timbre */
 document.addEventListener('click',e=>{const b=e.target.closest('[data-doc="word"]');if(!b)return;const el=document.getElementById('docprev');if(!el||!el._at)return;
   e.stopImmediatePropagation();const x=AT_DOCS.find(y=>y.id===el._at);if(x)atBaixarWord(x)},true);
