@@ -3724,7 +3724,7 @@ function atHTML(B){return B.map(b=>{switch(b.k){
   case 'p':return '<p>'+atRunsH(b.t)+'</p>';case 'nota':return '<p class="nota">'+atRunsH(b.t)+'</p>';
   case 'tab':return '<table><colgroup>'+b.w.map(x=>'<col style="width:'+x+'%">').join('')+'</colgroup>'+b.rows.map(r=>'<tr>'+r.map(atCelH).join('')+'</tr>').join('')+'</table>';
   case 'chk':return b.so?'<p class="chk"><b>'+esc(b.t)+':</b> '+esc(b.m.join(', '))+'</p>':'<p class="chk"><b>'+esc(b.t)+':</b> '+b.o.map(o=>'<span>'+(b.m.includes(o)?'☒':'☐')+' '+esc(o)+'</span>').join('')+'</p>';
-  case 'lin':return '<div class="lin"></div>'.repeat(b.n);
+  case 'lin':return '<div class="lins">'+'<div class="lin"></div>'.repeat(b.n)+'</div>';
   case 'lista':return '<ul class="at-l">'+b.itens.map(x=>{const o=typeof x==='object'?x:{t:x};return '<li><span class="mk">'+(o.ok?'☒':b.marca)+'</span>'+atRunsH(o.t)+'</li>'}).join('')+'</ul>';
   case 'txt':return '<div class="at-txt">'+esc(b.t).replace(/\n/g,'<br>')+'</div>';
   case 'ass':return '<table class="ass"><tr>'+b.pares.map(p=>'<td><div class="ln"></div><b>'+atRunsH(String(p[0]).toUpperCase())+'</b><br><small>'+esc(p[1])+'</small></td>').join('')+'</tr></table>';
@@ -3734,8 +3734,8 @@ const AT_CSS='body{font-family:Calibri,Carlito,Arial,sans-serif;font-size:11pt;l
   'h2{font-size:11.5pt;text-transform:uppercase;letter-spacing:.06em;color:#14213D;border-bottom:1.5px solid #B98A45;padding-bottom:2pt;margin:16pt 0 6pt;page-break-after:avoid}h3{font-size:10.5pt;color:#B98A45;margin:8pt 0 3pt;text-transform:uppercase;letter-spacing:.05em}'+
   'p{margin:0 0 6pt;text-align:justify}p.nota{font-size:9.5pt;color:#6B6B6B;font-style:italic}p.chk{text-align:left}p.chk span{display:inline-block;margin-right:12pt;white-space:nowrap}'+
   'table{width:100%;border-collapse:collapse;margin:3pt 0 8pt;table-layout:fixed;page-break-inside:avoid}td,th{border:1px solid #D9CBB0;padding:4pt 6pt;font-size:10pt;vertical-align:top;text-align:left;height:15pt}td.l{background:#F5EFE4;color:#14213D;font-weight:bold}th{background:#14213D;color:#fff;font-weight:bold}'+
-  '.lin{border-bottom:1px solid #D9CBB0;height:20pt}ul.at-l{list-style:none;padding:0;margin:0 0 6pt}ul.at-l li{margin:0 0 3pt;padding-left:18pt;text-indent:-18pt}.mk{display:inline-block;width:18pt;text-indent:0;color:#B98A45}'+
-  '.at-txt{border-left:2px solid #B98A45;padding:2pt 0 2pt 8pt;margin:2pt 0 8pt;white-space:normal}mark{background:#FFF200;color:inherit}table.ass{margin-top:46pt}table.ass td{border:0;text-align:center;font-size:10.5pt;height:auto}table.ass .ln{border-top:1px solid #1d1d1d;margin:0 14pt 4pt}'+
+  '.lins{border:1px solid #D9CBB0;margin:3pt 0 8pt;page-break-inside:avoid}.lin{border-bottom:1px solid #EFE6D4;height:20pt}.lin:last-child{border-bottom:0}ul.at-l{list-style:none;padding:0;margin:0 0 6pt}ul.at-l li{margin:0 0 3pt;padding-left:18pt;text-indent:-18pt}.mk{display:inline-block;width:18pt;text-indent:0;color:#B98A45}'+
+  '.at-txt{border:1px solid #D9CBB0;padding:6pt 8pt;margin:3pt 0 8pt;white-space:normal;text-align:justify;font-size:10.5pt;page-break-inside:avoid}mark{background:#FFF200;color:inherit}table.ass{margin-top:46pt}table.ass td{border:0;text-align:center;font-size:10.5pt;height:auto}table.ass .ln{border-top:1px solid #1d1d1d;margin:0 14pt 4pt}'+
   '@media print{@page{size:A4;margin:.6cm 1.2cm}}';
 
 /* ---- motor: Word (no modelo com o timbre) ---- */
@@ -3760,10 +3760,11 @@ function atWord(B){return B.map(b=>{switch(b.k){
   case 'nota':return atPW(atRunsW(b.t,atRp({i:1,cor:AT_COR.cinza,sz:19})),{after:100});
   case 'tab':return atTabW(b);
   case 'chk':if(b.so)return atPW(atRunsW(b.t+': ',atRp({b:1}))+atRunsW(b.m.join(', ')),{after:100,jc:'left'});return atPW(atRunsW(b.t+': ',atRp({b:1}))+b.o.map(o=>atRunsW((b.m.includes(o)?'☒\u00a0':'☐\u00a0')+String(o).replace(/ /g,'\u00a0')+'    ')).join(''),{after:100,jc:'left'});
-  case 'lin':return '<w:tbl><w:tblPr><w:tblW w:w="'+AT_LARG+'" w:type="dxa"/><w:tblBorders><w:bottom w:val="single" w:sz="4" w:space="0" w:color="'+AT_COR.linha+'"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="'+AT_COR.linha+'"/></w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="'+AT_LARG+'"/></w:tblGrid>'+
+  case 'lin':return '<w:tbl><w:tblPr><w:tblW w:w="'+AT_LARG+'" w:type="dxa"/><w:tblBorders>'+['top','left','bottom','right'].map(k=>'<w:'+k+' w:val="single" w:sz="4" w:space="0" w:color="'+AT_COR.linha+'"/>').join('')+'<w:insideH w:val="single" w:sz="2" w:space="0" w:color="EFE6D4"/></w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="'+AT_LARG+'"/></w:tblGrid>'+
     Array.from({length:b.n},()=>'<w:tr><w:trPr><w:cantSplit/><w:trHeight w:val="420" w:hRule="exact"/></w:trPr><w:tc><w:tcPr><w:tcW w:w="'+AT_LARG+'" w:type="dxa"/></w:tcPr>'+atPW('',{after:0,line:240})+'</w:tc></w:tr>').join('')+'</w:tbl>'+atPW('',{after:60,line:240});
   case 'lista':return b.itens.map(x=>{const o=typeof x==='object'?x:{t:x};return atPW(atRunsW((o.ok?'☒':b.marca)+'\t',atRp({cor:AT_COR.ouro}))+atRunsW(o.t),{after:60,ind:360,jc:'left'})}).join('');
-  case 'txt':return String(b.t).split(/\n/).map(l=>atPW(atRunsW(l.replace(/\*\*|\/\/|\[\[|\]\]/g,'')),{after:60})).join('')+atPW('',{after:40,line:240});
+  case 'txt':{const bd=k=>'<w:'+k+' w:val="single" w:sz="4" w:space="0" w:color="'+AT_COR.linha+'"/>';return '<w:tbl><w:tblPr><w:tblW w:w="'+AT_LARG+'" w:type="dxa"/><w:tblBorders>'+['top','left','bottom','right'].map(bd).join('')+'</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="90" w:type="dxa"/><w:left w:w="120" w:type="dxa"/><w:bottom w:w="90" w:type="dxa"/><w:right w:w="120" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid><w:gridCol w:w="'+AT_LARG+'"/></w:tblGrid><w:tr><w:trPr><w:cantSplit/></w:trPr><w:tc><w:tcPr><w:tcW w:w="'+AT_LARG+'" w:type="dxa"/></w:tcPr>'+
+    String(b.t).split(/\n/).map(l=>atPW(atRunsW(l.replace(/\*\*|\/\/|\[\[|\]\]/g,''),atRp({sz:21})),{after:60})).join('')+'</w:tc></w:tr></w:tbl>'+atPW('',{after:60,line:240})}
   case 'ass':{const w=Math.round(AT_LARG/b.pares.length);return atPW('',{before:900,after:0})+'<w:tbl><w:tblPr><w:tblW w:w="'+AT_LARG+'" w:type="dxa"/><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+b.pares.map(()=>'<w:gridCol w:w="'+w+'"/>').join('')+'</w:tblGrid><w:tr><w:trPr><w:cantSplit/></w:trPr>'+
     b.pares.map(p=>'<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/></w:tcPr>'+atPW(atRunsW('______________________________'),{jc:'center',after:0})+atPW(atRunsW(String(p[0]).toUpperCase(),atRp({b:1})),{jc:'center',after:0})+atPW(atRunsW(p[1],atRp({sz:19,cor:AT_COR.cinza})),{jc:'center',after:0})+'</w:tc>').join('')+'</w:tr></w:tbl>'}
   default:return ''}}).join('')}
