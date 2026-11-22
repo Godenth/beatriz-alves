@@ -761,6 +761,10 @@ html,body{overflow-x:clip}
 .ct-parcs{display:flex;flex-direction:column;gap:6px;margin-top:8px}.ct-l{display:grid;grid-template-columns:90px minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:center;font-size:13px;color:var(--mut)}.ct-l .inp{min-width:0;width:100%}
 .ct-sec{display:block;margin:12px 0 4px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ouro);font-weight:700}.hon-proc{font-size:12px;color:var(--mut)}.btn.perigo{color:var(--perigo)}
 .fin-vinc{font-size:12px}.fin-vinc .lnk{font-size:12px;padding:0}
+.at-ed .inp{min-height:34px;padding:6px 9px;font-size:14px}.at-ftit{text-align:center;margin:4px 0 10px}.at-ftit b{display:block;font-size:19px;letter-spacing:.08em;text-transform:uppercase;color:var(--marinho,#14213D)}[data-theme=dark] .at-ftit b{color:var(--fg)}.at-ftit small{color:var(--ouro);letter-spacing:.1em;text-transform:uppercase;font-size:12px}
+.at-fsec{margin:18px 0 8px;padding-bottom:4px;border-bottom:1.5px solid var(--ouro);text-transform:uppercase;letter-spacing:.05em;font-size:14px}.at-fsub{margin:10px 0 4px;color:var(--ouro);text-transform:uppercase;font-size:12px;letter-spacing:.05em}.at-fp{margin:6px 0}
+.at-ftab{overflow-x:auto;margin:4px 0 10px}.at-ftab table{width:100%;border-collapse:collapse;min-width:520px}.at-ftab td,.at-ftab th{border:1px solid var(--rule);padding:4px;vertical-align:middle;font-size:13px}.at-ftab td.l{background:color-mix(in srgb,var(--ouro) 12%,transparent);font-weight:600;width:1%;white-space:nowrap;padding:4px 8px}.at-ftab th{background:var(--marinho,#14213D);color:#fff;text-align:left;padding:6px 8px}.at-ftab .inp{width:100%;border-radius:8px}
+.at-fchk{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin:8px 0}.at-ops{display:inline-flex;flex-wrap:wrap;gap:4px 12px}.at-op{display:inline-flex;gap:6px;align-items:center;cursor:pointer;font-size:14px}.at-op input{width:17px;height:17px;accent-color:var(--ouro)}.at-flista{list-style:none;padding:0;margin:4px 0 10px;display:flex;flex-direction:column;gap:5px}.at-ed textarea.inp{width:100%;margin:4px 0 10px;resize:vertical}.at-edtopo{position:sticky;top:76px;z-index:5}
 .at-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-top:14px}.at-card{display:flex;flex-direction:column}.at-card .acoes{margin-top:auto!important}.at-cab{display:flex;gap:10px;align-items:flex-start}.at-cab b{display:block;margin-bottom:4px}.at-ic{font-size:24px;line-height:1}
 .hon-prev{display:block;min-height:16px;margin-top:6px;font-size:13px;font-weight:600;color:var(--fg)}.hon-ptit{display:block}.hon-verpg{margin-top:8px}
 #novidade .nv-balao{background:#FFFDF8;color:#14213D;max-width:min(580px,94vw);padding:22px 24px}
@@ -3530,7 +3534,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-certcopia]
 /* =================== Atendimento: fichas e rol de documentos (timbre oficial, Word e PDF) =================== */
 /* Blocos simples que viram HTML (prévia e impressão) e Word (no modelo com o timbre).
    Texto: **negrito**, //itálico//, [[campo]] = campo a preencher (amarelo, entre parênteses). */
-const AT={cli:null};
+const AT={cli:null,edit:null,carregado:false,sujo:false};
 const AT_COR={azul:'14213D',ouro:'B98A45',bege:'F5EFE4',linha:'D9CBB0',cinza:'6B6B6B'};
 const AT_LARG=9752; // largura útil da folha do modelo (dxa)
 const atB={
@@ -3594,7 +3598,7 @@ function docFichaAtendimento(d){const lin2=(a,b)=>[L_(a),V_(''),L_(b),V_('')],w4
   atB.nota('Feita para: despesas da família ou despesa pessoal de um dos dois.'),
   atB.sec('8. Filhos'),
   atB.tab([[H_('Nome'),H_('Nascimento / idade'),H_('Escola e turno'),H_('Atividades'),H_('Saúde / necessidades')],...[1,2,3].map(()=>[V_(''),V_(''),V_(''),V_(''),V_('')])],[24,16,20,20,20]),
-  atB.tab([[L_('Com quem moram hoje'),V_('')],[L_('Guarda pretendida'),V_('☐ Compartilhada   ☐ Unilateral   ☐ A definir')],[L_('O outro genitor ajuda'),V_('☐ Sim, R$ ________ por mês   ☐ Não   ☐ Às vezes')],[L_('Filhos maiores estudando'),V_('')]],[30,70]),
+  atB.tab([[L_('Com quem moram hoje'),V_('')],[L_('Guarda pretendida'),V_('☐ Compartilhada   ☐ Unilateral   ☐ A definir')],[L_('O outro genitor ajuda'),V_('☐ Sim ☐ Não ☐ Às vezes')],[L_('Valor da ajuda por mês'),V_('')],[L_('Filhos maiores estudando'),V_('')]],[30,70]),
   atB.p('**Como a convivência vem acontecendo:**'),atB.lin(3),
   atB.p('**Convivência pretendida** (dias da semana, fins de semana, férias, datas comemorativas, aniversários):'),atB.lin(3),
   atB.sub('Despesas mensais dos filhos'),
@@ -3608,7 +3612,7 @@ function docFichaAtendimento(d){const lin2=(a,b)=>[L_(a),V_(''),L_(b),V_('')],w4
   atB.sec('11. O que é mais importante para o(a) cliente'),
   atB.tab([[L_('Principal preocupação'),V_('')],[L_('Prioridade'),V_('')],[L_('Ponto que não aceita negociar'),V_('')],[L_('Aceita acordo'),V_('☐ Sim   ☐ Não   ☐ Depende')]],[30,70]),
   atB.sec('12. Análise do escritório (interno)'),
-  atB.tab([[L_('Valor da causa (estimativa)'),V_('')],[L_('Custas judiciais'),V_('☐ Justiça gratuita   ☐ Pagas pelo cliente   Valor: R$ ________')]],[30,70]),
+  atB.tab([[L_('Valor da causa (estimativa)'),V_('')],[L_('Custas judiciais'),V_('☐ Justiça gratuita ☐ Pagas pelo cliente')],[L_('Valor das custas'),V_('')]],[30,70]),
   atB.p('**Plano de ação:**'),atB.lin(4),
   atB.p('**Riscos identificados:**'),atB.lin(3),
   atB.p('**Documentos pendentes:**'),atB.lin(2),
@@ -3711,16 +3715,17 @@ function atHTML(B){return B.map(b=>{switch(b.k){
   case 'tab':return '<table><colgroup>'+b.w.map(x=>'<col style="width:'+x+'%">').join('')+'</colgroup>'+b.rows.map(r=>'<tr>'+r.map(atCelH).join('')+'</tr>').join('')+'</table>';
   case 'chk':return '<p class="chk"><b>'+esc(b.t)+':</b> '+b.o.map(o=>'<span>'+(b.m.includes(o)?'☒':'☐')+' '+esc(o)+'</span>').join('')+'</p>';
   case 'lin':return '<div class="lin"></div>'.repeat(b.n);
-  case 'lista':return '<ul class="at-l">'+b.itens.map(x=>'<li><span class="mk">'+b.marca+'</span>'+atRunsH(x)+'</li>').join('')+'</ul>';
+  case 'lista':return '<ul class="at-l">'+b.itens.map(x=>{const o=typeof x==='object'?x:{t:x};return '<li><span class="mk">'+(o.ok?'☒':b.marca)+'</span>'+atRunsH(o.t)+'</li>'}).join('')+'</ul>';
+  case 'txt':return '<div class="at-txt">'+esc(b.t).replace(/\n/g,'<br>')+'</div>';
   case 'ass':return '<table class="ass"><tr>'+b.pares.map(p=>'<td><div class="ln"></div><b>'+atRunsH(String(p[0]).toUpperCase())+'</b><br><small>'+esc(p[1])+'</small></td>').join('')+'</tr></table>';
   default:return ''}}).join('')}
 const AT_CSS='body{font-family:Calibri,Carlito,Arial,sans-serif;font-size:11pt;line-height:1.4;color:#1d1d1d;max-width:17.5cm;margin:.6cm auto}.tim{width:100%;display:block}'+
   '.at-tit{text-align:center;margin:14pt 0 12pt}.at-tit h1{font-size:17pt;letter-spacing:.12em;text-transform:uppercase;color:#14213D;margin:0}.at-subt{color:#B98A45;font-size:10.5pt;letter-spacing:.14em;text-transform:uppercase;margin-top:3pt}'+
   'h2{font-size:11.5pt;text-transform:uppercase;letter-spacing:.06em;color:#14213D;border-bottom:1.5px solid #B98A45;padding-bottom:2pt;margin:16pt 0 6pt;page-break-after:avoid}h3{font-size:10.5pt;color:#B98A45;margin:8pt 0 3pt;text-transform:uppercase;letter-spacing:.05em}'+
-  'p{margin:0 0 6pt;text-align:justify}p.nota{font-size:9.5pt;color:#6B6B6B;font-style:italic}p.chk span{display:inline-block;margin-right:12pt;white-space:nowrap}'+
+  'p{margin:0 0 6pt;text-align:justify}p.nota{font-size:9.5pt;color:#6B6B6B;font-style:italic}p.chk{text-align:left}p.chk span{display:inline-block;margin-right:12pt;white-space:nowrap}'+
   'table{width:100%;border-collapse:collapse;margin:3pt 0 8pt;table-layout:fixed;page-break-inside:avoid}td,th{border:1px solid #D9CBB0;padding:4pt 6pt;font-size:10pt;vertical-align:top;text-align:left;height:15pt}td.l{background:#F5EFE4;color:#14213D;font-weight:bold}th{background:#14213D;color:#fff;font-weight:bold}'+
   '.lin{border-bottom:1px solid #D9CBB0;height:20pt}ul.at-l{list-style:none;padding:0;margin:0 0 6pt}ul.at-l li{margin:0 0 3pt;padding-left:18pt;text-indent:-18pt}.mk{display:inline-block;width:18pt;text-indent:0;color:#B98A45}'+
-  'mark{background:#FFF200;color:inherit}table.ass{margin-top:46pt}table.ass td{border:0;text-align:center;font-size:10.5pt;height:auto}table.ass .ln{border-top:1px solid #1d1d1d;margin:0 14pt 4pt}'+
+  '.at-txt{border-left:2px solid #B98A45;padding:2pt 0 2pt 8pt;margin:2pt 0 8pt;white-space:normal}mark{background:#FFF200;color:inherit}table.ass{margin-top:46pt}table.ass td{border:0;text-align:center;font-size:10.5pt;height:auto}table.ass .ln{border-top:1px solid #1d1d1d;margin:0 14pt 4pt}'+
   '@media print{@page{size:A4;margin:.6cm 1.2cm}}';
 
 /* ---- motor: Word (no modelo com o timbre) ---- */
@@ -3747,39 +3752,113 @@ function atWord(B){return B.map(b=>{switch(b.k){
   case 'chk':return atPW(atRunsW(b.t+': ',atRp({b:1}))+b.o.map(o=>atRunsW((b.m.includes(o)?'☒\u00a0':'☐\u00a0')+String(o).replace(/ /g,'\u00a0')+'    ')).join(''),{after:100,jc:'left'});
   case 'lin':return '<w:tbl><w:tblPr><w:tblW w:w="'+AT_LARG+'" w:type="dxa"/><w:tblBorders><w:bottom w:val="single" w:sz="4" w:space="0" w:color="'+AT_COR.linha+'"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="'+AT_COR.linha+'"/></w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="'+AT_LARG+'"/></w:tblGrid>'+
     Array.from({length:b.n},()=>'<w:tr><w:trPr><w:cantSplit/><w:trHeight w:val="420" w:hRule="exact"/></w:trPr><w:tc><w:tcPr><w:tcW w:w="'+AT_LARG+'" w:type="dxa"/></w:tcPr>'+atPW('',{after:0,line:240})+'</w:tc></w:tr>').join('')+'</w:tbl>'+atPW('',{after:60,line:240});
-  case 'lista':return b.itens.map(x=>atPW(atRunsW(b.marca+'\t',atRp({cor:AT_COR.ouro}))+atRunsW(x),{after:60,ind:360,jc:'left'})).join('');
+  case 'lista':return b.itens.map(x=>{const o=typeof x==='object'?x:{t:x};return atPW(atRunsW((o.ok?'☒':b.marca)+'\t',atRp({cor:AT_COR.ouro}))+atRunsW(o.t),{after:60,ind:360,jc:'left'})}).join('');
+  case 'txt':return String(b.t).split(/\n/).map(l=>atPW(atRunsW(l.replace(/\*\*|\/\/|\[\[|\]\]/g,'')),{after:60})).join('')+atPW('',{after:40,line:240});
   case 'ass':{const w=Math.round(AT_LARG/b.pares.length);return atPW('',{before:900,after:0})+'<w:tbl><w:tblPr><w:tblW w:w="'+AT_LARG+'" w:type="dxa"/><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+b.pares.map(()=>'<w:gridCol w:w="'+w+'"/>').join('')+'</w:tblGrid><w:tr><w:trPr><w:cantSplit/></w:trPr>'+
     b.pares.map(p=>'<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/></w:tcPr>'+atPW(atRunsW('______________________________'),{jc:'center',after:0})+atPW(atRunsW(String(p[0]).toUpperCase(),atRp({b:1})),{jc:'center',after:0})+atPW(atRunsW(p[1],atRp({sz:19,cor:AT_COR.cinza})),{jc:'center',after:0})+'</w:tc>').join('')+'</w:tr></w:tbl>'}
   default:return ''}}).join('')}
+
+/* ---- preenchimento: cada campo ganha uma chave estável (seção + rótulo) ---- */
+TAB_LOCAL.fichas='fichas';
+const atLimpa=t=>String(t||'').replace(/\*\*|\/\//g,'').replace(/\(.*?\)/g,'').replace(/[:\s]+$/,'').trim();
+const atOpcoes=v=>String(v||'').trim().startsWith('☐')?String(v).split('☐').map(x=>x.trim()).filter(Boolean):null;
+function atChaves(B){let sec='',sub='',ultP='';const usadas={};const k=s=>{s=s.slice(0,90);if(usadas[s]){usadas[s]++;s+='#'+usadas[s]}else usadas[s]=1;return s};
+  return B.map(b=>{b=Object.assign({},b);
+    if(b.k==='sec'){sec=b.t;sub='';ultP=''}else if(b.k==='subsec'){sub=b.t}
+    else if(b.k==='tab'){const hd=b.rows[0]&&b.rows[0].some(c=>c.h!=null)?b.rows[0]:null;
+      b.rows=b.rows.map((r,ri)=>r.map((c,ci)=>{if(c.v==null)return c;const lab=ci>0&&r[ci-1].l!=null?r[ci-1].l:hd?(hd[ci].h||'col'+ci)+'|'+ri:'c'+ri+'.'+ci;return Object.assign({},c,{key:k(sec+'|'+sub+'|'+lab)})}))}
+    else if(b.k==='chk')b.key=k(sec+'|'+b.t);
+    else if(b.k==='lista'&&b.marca==='☐'){b.keys=b.itens.map(x=>k(sec+'|'+sub+'|'+atLimpa(x)))}
+    else if(b.k==='lin')b.key=k(sec+'|'+(ultP||'texto'));
+    else if(b.k==='p'){if(/\[\[/.test(b.t))b.campos=(b.t.match(/\[\[[^\]]+\]\]/g)||[]).map(m=>({m,key:k(sec+'|'+m.slice(2,-2))}));ultP=atLimpa(b.t)}
+    return b})}
+const atVal=(vals,key,padrao)=>vals&&Object.prototype.hasOwnProperty.call(vals,key)?vals[key]:padrao;
+/* aplica o que foi preenchido no modelo (para imprimir e para o Word) */
+function atResolver(B,vals){return atChaves(B).flatMap(b=>{
+  if(b.k==='tab')return [Object.assign({},b,{rows:b.rows.map(r=>r.map(c=>{if(!c.key)return c;const op=atOpcoes(c.v);
+    if(op){const m=atVal(vals,c.key,[])||[];return {v:op.map(o=>(m.includes(o)?'☒ ':'☐ ')+o).join('   ')}}return {v:atVal(vals,c.key,c.v)||''}}))})];
+  if(b.k==='chk')return [Object.assign({},b,{m:atVal(vals,b.key,b.m)||[]})];
+  if(b.k==='lista'&&b.keys)return [Object.assign({},b,{itens:b.itens.map((x,i)=>{const v=atVal(vals,b.keys[i],false);return {t:x,ok:!!v}})})];
+  if(b.k==='lin'){const t=String(atVal(vals,b.key,'')||'').trim();return t?[{k:'txt',t}]:[b]}
+  if(b.k==='p'&&b.campos){let t=b.t;b.campos.forEach(c=>{const v=String(atVal(vals,c.key,'')||'').trim();if(v)t=t.replace(c.m,v.replace(/\[|\]/g,''))});return [Object.assign({},b,{t})]}
+  return [b]})}
+
+/* ---- formulário na tela ---- */
+function atInput(key,val,ph,larg){return '<input class="inp at-in" data-atk="'+esc(key)+'" value="'+esc(val||'')+'"'+(ph?' placeholder="'+esc(ph)+'"':'')+(larg?' style="min-width:'+larg+'"':'')+' autocomplete="off">'}
+function atCaixas(key,ops,marcados){return '<span class="at-ops">'+ops.map(o=>'<label class="at-op"><input type="checkbox" data-atk="'+esc(key)+'" data-op="'+esc(o)+'"'+((marcados||[]).includes(o)?' checked':'')+'><span>'+esc(o)+'</span></label>').join('')+'</span>'}
+function atCampoCel(c,vals){if(c.h!=null)return '<th>'+esc(c.h)+'</th>';if(c.l!=null)return '<td class="l">'+esc(c.l)+'</td>';
+  const op=atOpcoes(c.v);if(op)return '<td>'+atCaixas(c.key,op,atVal(vals,c.key,[]))+'</td>';
+  return '<td>'+atInput(c.key,atVal(vals,c.key,c.v),'')+'</td>'}
+function atForm(B,vals){return atChaves(B).map(b=>{switch(b.k){
+  case 'tit':return '<div class="at-ftit"><b>'+esc(b.t)+'</b>'+(b.sub?'<small>'+esc(b.sub)+'</small>':'')+'</div>';
+  case 'sec':return '<h4 class="at-fsec">'+esc(b.t)+'</h4>';case 'subsec':return '<h5 class="at-fsub">'+esc(b.t)+'</h5>';
+  case 'p':{let h=runsHTML(b.t.replace(/\[\[[^\]]+\]\]/g,'\u0001'));if(b.campos){let i=0;h=h.replace(/\u0001/g,()=>{const c=b.campos[i++];return atInput(c.key,atVal(vals,c.key,''),c.m.slice(2,-2),'260px')})}return '<p class="at-fp">'+h+'</p>'}
+  case 'nota':return '<p class="nota" style="margin:2px 0 8px">'+runsHTML(b.t.replace(/\[\[|\]\]/g,''))+'</p>';
+  case 'tab':return '<div class="at-ftab"><table>'+b.rows.map(r=>'<tr>'+r.map(c=>atCampoCel(c,vals)).join('')+'</tr>').join('')+'</table></div>';
+  case 'chk':return '<div class="at-fchk"><b>'+esc(b.t)+'</b>'+atCaixas(b.key,b.o,atVal(vals,b.key,b.m))+'</div>';
+  case 'lin':return '<textarea class="inp at-in" data-atk="'+esc(b.key)+'" rows="'+Math.max(2,b.n)+'" placeholder="Escreva aqui">'+esc(atVal(vals,b.key,'')||'')+'</textarea>';
+  case 'lista':return '<ul class="at-flista">'+b.itens.map((x,i)=>b.keys?'<li><label class="at-op"><input type="checkbox" data-atk="'+esc(b.keys[i])+'" data-bool="1"'+(atVal(vals,b.keys[i],false)?' checked':'')+'><span>'+runsHTML(x.replace(/\[\[|\]\]/g,''))+'</span></label></li>':'<li>▪ '+runsHTML(x)+'</li>').join('')+'</ul>';
+  case 'ass':return '<p class="nota" style="margin-top:14px">Espaço para as assinaturas: '+b.pares.map(p=>esc(String(p[0]).replace(/\[\[|\]\]/g,''))).join(' e ')+'.</p>';
+  default:return ''}}).join('')}
+function atLerForm(){const v={};document.querySelectorAll('#at-ed [data-atk]').forEach(el=>{const k=el.dataset.atk;
+  if(el.type==='checkbox'){if(el.dataset.bool)v[k]=el.checked;else{if(!Array.isArray(v[k]))v[k]=[];if(el.checked)v[k].push(el.dataset.op)}}else v[k]=el.value});return v}
+
+/* ---- fichas salvas ---- */
+const atSalva=(cid,mod)=>(D.fichas||[]).find(f=>f.cliente_id===cid&&f.modelo===mod);
+async function atCarregarFichas(){try{if(REAL)await STORE.load('fichas','atualizado_em');else if(!D.fichas)D.fichas=[]}catch(e){console.warn(e);D.fichas=D.fichas||[]}AT.carregado=true}
+async function atGravar(silencioso){if(!AT.edit||!AT.cli)return;const x=AT_DOCS.find(y=>y.id===AT.edit);const dados=atLerForm(),agora=new Date().toISOString(),f=atSalva(AT.cli,AT.edit);
+  AT.salvando=true;atStatus('Salvando…');
+  try{if(f)await STORE.upd('fichas',f.id,{dados,atualizado_em:agora});else await STORE.ins('fichas',[{cliente_id:AT.cli,modelo:AT.edit,titulo:x.nome.slice(0,120),dados,atualizado_em:agora}]);
+    AT.sujo=false;atStatus('Salvo às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));if(!silencioso)toast('Ficha salva.')}
+  catch(e){console.error(e);atStatus('Não salvou. Tente de novo.');toast('Não consegui salvar a ficha agora.')}AT.salvando=false}
+function atStatus(t){const s=$('#at-st');if(s)s.textContent=t}
+let atTimer=null;
+document.addEventListener('input',e=>{if(!e.target.closest||!e.target.closest('#at-ed'))return;AT.sujo=true;atStatus('Alterações não salvas');clearTimeout(atTimer);atTimer=setTimeout(()=>atGravar(true),2500)});
+document.addEventListener('change',e=>{if(!e.target.closest||!e.target.closest('#at-ed'))return;AT.sujo=true;atStatus('Alterações não salvas');clearTimeout(atTimer);atTimer=setTimeout(()=>atGravar(true),1200)});
 
 /* ---- catálogo e tela ---- */
 const AT_DOCS=[
   {id:'ficha',nome:'Ficha de Atendimento · Divórcio',quem:'Uso interno',desc:'Roteiro completo para a reunião: dados das partes, relacionamento, patrimônio, dívidas, filhos, riscos, plano de ação e honorários.',fn:d=>docFichaAtendimento(d),arq:'Ficha de Atendimento - Divorcio'},
   {id:'devolutiva',nome:'Ficha Devolutiva · Divórcio e Partilha',quem:'Para o cliente',desc:'Resumo do atendimento para entregar ao cliente: o que ele contou, bens, filhos, próximos passos, honorários e ciência com assinatura.',fn:d=>docDevolutiva(d),arq:'Ficha Devolutiva - Divorcio e Partilha'},
-  {id:'rolc',nome:'Rol de Documentos · Divórcio Consensual',quem:'Para o cliente',desc:'Lista separada por blocos: documentos pessoais, procuração, outro cônjuge, filhos, patrimônio e dívidas.',fn:d=>docRol(d,false),arq:'Rol de Documentos - Divorcio Consensual',wpp:false},
-  {id:'roll',nome:'Rol de Documentos · Divórcio Litigioso',quem:'Para o cliente',desc:'Tudo do consensual, mais dados da outra parte, provas em papel, provas em fotos e prints, e testemunhas.',fn:d=>docRol(d,true),arq:'Rol de Documentos - Divorcio Litigioso',wpp:true}];
+  {id:'rolc',nome:'Rol de Documentos · Divórcio Consensual',quem:'Para o cliente',desc:'Lista separada por blocos: documentos pessoais, procuração, outro cônjuge, filhos, patrimônio e dívidas. Marque o que o cliente já entregou.',fn:d=>docRol(d,false),arq:'Rol de Documentos - Divorcio Consensual',wpp:false},
+  {id:'roll',nome:'Rol de Documentos · Divórcio Litigioso',quem:'Para o cliente',desc:'Tudo do consensual, mais dados da outra parte, provas em papel, provas em fotos e prints, e testemunhas. Marque o que já chegou.',fn:d=>docRol(d,true),arq:'Rol de Documentos - Divorcio Litigioso',wpp:true}];
+const atCli=()=>(D.clientes||[]).find(y=>y.id===AT.cli)||null;
+const atBlocos=x=>{const c=atCli(),f=c?atSalva(c.id,x.id):null;const B=x.fn(atDados(c));return f?atResolver(B,f.dados||{}):atResolver(B,{})};
 function telaAtendimento(){
-  if(!CLI.carregado){Promise.all([carregarClientes(),podeFinanceiro()&&!FIN.carregado?carregarFin():null]).then(render);return '<div class="lead"><div class="carregando"><span></span><span></span><span></span></div></div>'}
-  const cl=(D.clientes||[]).filter(c=>!c.exemplo||!REAL).slice().sort((a,b)=>String(a.nome).localeCompare(String(b.nome),'pt-BR')),c=cl.find(x=>x.id===AT.cli)||null;
-  return '<div class="lead"><h3 style="margin:0">Atendimento</h3><p class="mut" style="margin:2px 0 8px">Modelos com o seu timbre. Escolha o cliente para os dados já virem preenchidos, ou deixe em branco para imprimir a ficha vazia.</p>'+
-    '<label class="f" style="max-width:520px">Cliente (opcional)<select class="inp" id="at-cli"><option value="">Ficha em branco</option>'+cl.map(x=>'<option value="'+x.id+'"'+(c&&x.id===c.id?' selected':'')+'>'+esc(x.nome)+'</option>').join('')+'</select></label></div>'+
-    '<div class="at-grade">'+AT_DOCS.map(x=>'<div class="lead at-card"><div class="at-cab"><span class="at-ic">'+(x.id==='ficha'?'📝':x.id==='devolutiva'?'📄':'📋')+'</span><div><b>'+esc(x.nome)+'</b><small class="pill" style="--c:'+(x.quem==='Uso interno'?'var(--ret)':'var(--ok)')+'">'+x.quem+'</small></div></div>'+
-      '<p class="mut" style="margin:6px 0 10px;font-size:13.5px">'+esc(x.desc)+'</p><div class="acoes" style="margin:0"><button class="btn sm pri" data-at="ver" data-id="'+x.id+'">Ver e imprimir</button><button class="btn sm" data-at="word" data-id="'+x.id+'">Baixar Word</button>'+
-      (x.wpp!=null?'<button class="btn sm" data-at="copiar" data-id="'+x.id+'">Copiar para WhatsApp</button>':'')+'</div></div>').join('')+'</div>'+
+  if(!CLI.carregado||!AT.carregado){Promise.all([CLI.carregado?null:carregarClientes(),podeFinanceiro()&&!FIN.carregado?carregarFin():null,AT.carregado?null:atCarregarFichas()]).then(render);return '<div class="lead"><div class="carregando"><span></span><span></span><span></span></div></div>'}
+  const cl=(D.clientes||[]).filter(c=>!c.exemplo||!REAL).slice().sort((a,b)=>String(a.nome).localeCompare(String(b.nome),'pt-BR')),c=atCli();
+  if(AT.edit&&c)return telaAtEditor(c);
+  return '<div class="lead"><h3 style="margin:0">Atendimento</h3><p class="mut" style="margin:2px 0 8px">Escolha o cliente para preencher e salvar as fichas aqui no sistema. Depois é só imprimir em PDF ou baixar em Word, já com o seu timbre. Sem cliente, sai a ficha em branco.</p>'+
+    '<label class="f" style="max-width:520px">Cliente<select class="inp" id="at-cli"><option value="">Ficha em branco</option>'+cl.map(x=>'<option value="'+x.id+'"'+(c&&x.id===c.id?' selected':'')+'>'+esc(x.nome)+'</option>').join('')+'</select></label></div>'+
+    '<div class="at-grade">'+AT_DOCS.map(x=>{const f=c?atSalva(c.id,x.id):null;
+      return '<div class="lead at-card"><div class="at-cab"><span class="at-ic">'+(x.id==='ficha'?'📝':x.id==='devolutiva'?'📄':'📋')+'</span><div><b>'+esc(x.nome)+'</b><small class="pill" style="--c:'+(x.quem==='Uso interno'?'var(--ret)':'var(--ok)')+'">'+x.quem+'</small>'+(f?' <small class="pill" style="--c:var(--ouro)">✓ preenchida '+esc(new Date(f.atualizado_em).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}))+'</small>':'')+'</div></div>'+
+      '<p class="mut" style="margin:6px 0 10px;font-size:13.5px">'+esc(x.desc)+'</p><div class="acoes" style="margin:0">'+
+      (c?'<button class="btn sm pri" data-at="preencher" data-id="'+x.id+'">'+(f?'✎ Continuar preenchendo':'✎ Preencher')+'</button>':'')+
+      '<button class="btn sm'+(c?'':' pri')+'" data-at="ver" data-id="'+x.id+'">Imprimir / PDF</button><button class="btn sm" data-at="word" data-id="'+x.id+'">Baixar Word</button>'+
+      (x.wpp!=null?'<button class="btn sm" data-at="copiar" data-id="'+x.id+'">Copiar para WhatsApp</button>':'')+'</div></div>'}).join('')+'</div>'+
     '<p class="nota">A ficha de atendimento é interna e traz plano de ação e riscos: não entregue ao cliente. A devolutiva e o rol podem ser entregues. Revise sempre antes de usar.</p>'}
-document.addEventListener('change',e=>{if(e.target.id==='at-cli'){AT.cli=e.target.value||null;render()}});
-async function atAbrir(x){const c=(D.clientes||[]).find(y=>y.id===AT.cli),d=atDados(c);let cab='',rod='';try{const m=await modeloTimbre();cab=m.cab;rod=m.rod}catch(e){}
-  const corpo='<style>'+AT_CSS+'</style>'+(cab?'<img class="tim" src="'+cab+'" alt="">':'')+atHTML(x.fn(d))+(rod?'<img class="tim" src="'+rod+'" alt="" style="margin-top:20pt">':'');
+function telaAtEditor(c){const x=AT_DOCS.find(y=>y.id===AT.edit),f=atSalva(c.id,x.id),vivo=AT.sujo&&document.getElementById('at-ed')?atLerForm():null;
+  return '<div class="lead at-edtopo"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn sm" data-at="voltar" data-id="'+x.id+'">‹ Voltar</button><div style="margin-right:auto;min-width:0"><b style="font-size:17px">'+esc(x.nome)+'</b><div class="mut" style="font-size:13px">'+esc(c.nome)+' · <span id="at-st">'+(f?'Salvo em '+esc(new Date(f.atualizado_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})):'Ainda não salva')+'</span></div></div>'+
+    '<button class="btn sm" data-at="salvar" data-id="'+x.id+'">Salvar</button><button class="btn sm pri" data-at="salvarver" data-id="'+x.id+'">Salvar e imprimir</button><button class="btn sm" data-at="salvarword" data-id="'+x.id+'">Salvar e baixar Word</button></div>'+
+    '<p class="nota" style="margin:6px 0 0">Salva sozinho enquanto você preenche. Os campos que vieram do cadastro do cliente podem ser alterados aqui sem mudar o cadastro.</p></div>'+
+    '<div class="lead at-ed" id="at-ed">'+atForm(x.fn(atDados(c)),vivo||(f?f.dados:{}))+'</div>'+
+    '<div class="acoes" style="justify-content:flex-end"><button class="btn" data-at="salvar" data-id="'+x.id+'">Salvar</button><button class="btn pri" data-at="salvarver" data-id="'+x.id+'">Salvar e imprimir</button></div>'}
+document.addEventListener('change',e=>{if(e.target.id==='at-cli'){AT.cli=e.target.value||null;AT.edit=null;render()}});
+async function atAbrir(x){const c=atCli();let cab='',rod='';try{const m=await modeloTimbre();cab=m.cab;rod=m.rod}catch(e){}
+  const corpo='<style>'+AT_CSS+'</style>'+(cab?'<img class="tim" src="'+cab+'" alt="">':'')+atHTML(atBlocos(x))+(rod?'<img class="tim" src="'+rod+'" alt="" style="margin-top:20pt">':'');
   abrirDoc_(x.nome,corpo,x.arq+(c?' - '+nomeArq(c.nome):''));const el=document.getElementById('docprev');if(el)el._at=x.id}
-async function atBaixarWord(x){const c=(D.clientes||[]).find(y=>y.id===AT.cli),d=atDados(c);
+async function atBaixarWord(x){const c=atCli();
   try{const m=await modeloTimbre();const z=await JSZip.loadAsync(m.buf);let doc=await z.file('word/document.xml').async('string');
-    const ini=doc.indexOf('<w:body>')+8,sect=doc.slice(doc.lastIndexOf('<w:sectPr'));doc=doc.slice(0,ini)+atWord(x.fn(d))+sect;z.file('word/document.xml',doc);
+    const ini=doc.indexOf('<w:body>')+8,sect=doc.slice(doc.lastIndexOf('<w:sectPr'));doc=doc.slice(0,ini)+atWord(atBlocos(x))+sect;z.file('word/document.xml',doc);
     const blob=await z.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
     const u=URL.createObjectURL(blob),l=document.createElement('a');l.href=u;l.download=x.arq+(c?' - '+c.nome:'')+'.docx';document.body.appendChild(l);l.click();setTimeout(()=>{URL.revokeObjectURL(u);l.remove()},800)}
   catch(e){console.warn(e);toast('Não consegui abrir o modelo com o timbre. Confira a internet e tente de novo.')}}
-document.addEventListener('click',e=>{const b=e.target.closest('[data-at]');if(!b)return;const x=AT_DOCS.find(y=>y.id===b.dataset.id);if(!x)return;
-  if(b.dataset.at==='ver')atAbrir(x);else if(b.dataset.at==='word')atBaixarWord(x);
-  else if(b.dataset.at==='copiar'){const c=(D.clientes||[]).find(y=>y.id===AT.cli);copiar(rolTexto(atDados(c),x.id==='roll'))}},true);
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-at]');if(!b)return;const x=AT_DOCS.find(y=>y.id===b.dataset.id);if(!x)return;const a=b.dataset.at;
+  if(a==='preencher'){AT.edit=x.id;render();scrollTo(0,0);return}
+  if(a==='voltar'){clearTimeout(atTimer);if(AT.sujo)await atGravar(true);AT.edit=null;render();return}
+  if(a==='salvar'||a==='salvarver'||a==='salvarword'){clearTimeout(atTimer);await atGravar(a!=='salvar');if(a==='salvarver')atAbrir(x);if(a==='salvarword')atBaixarWord(x);return}
+  if(a==='ver')atAbrir(x);else if(a==='word')atBaixarWord(x);
+  else if(a==='copiar')copiar(rolTexto(atDados(atCli()),x.id==='roll'))},true);
 /* no visualizador, "Baixar Word" dos documentos do Atendimento usa o modelo com o timbre */
 document.addEventListener('click',e=>{const b=e.target.closest('[data-doc="word"]');if(!b)return;const el=document.getElementById('docprev');if(!el||!el._at)return;
   e.stopImmediatePropagation();const x=AT_DOCS.find(y=>y.id===el._at);if(x)atBaixarWord(x)},true);
