@@ -3845,6 +3845,8 @@ function atHerda(id,c){if(id!=='devolutiva'||!c)return {};const F=atValoresFicha
   p('8. Filhos||Guarda',[a(S8+'Guarda pretendida').join(', '),t(S8+'Com quem moram hoje')?'hoje moram com '+t(S8+'Com quem moram hoje'):''].filter(Boolean).join('; '));
   p('8. Filhos||Convivência',String(F['8. Filhos|Convivência pretendida']||F['8. Filhos|Como a convivência vem acontecendo']||'').trim().replace(/\s*\n\s*/g,'; '));
   const aj=a(S8+'O outro genitor ajuda');p('8. Filhos||Pensão alimentícia',aj.length?'O outro genitor ajuda: '+aj.join(', ')+(t(S8+'Valor da ajuda por mês')?' ('+t(S8+'Valor da ajuda por mês')+' por mês)':''):'');
+  {const est=String(F['10. Como o(a) cliente está|texto']||'').trim(),pre=t(S11+'Principal preocupação');
+    p('5. O que você nos contou|texto',[est,pre&&!est.toLowerCase().includes(pre.toLowerCase())?'Sua principal preocupação: '+pre+(/[.!?]$/.test(pre)?'':'.'):''].filter(Boolean).join('\n'))}
   p('9. O que é mais importante para você||Principal preocupação',t(S11+'Principal preocupação'));p('9. O que é mais importante para você||Prioridade',t(S11+'Prioridade'));
   p('9. O que é mais importante para você||Ponto que não abre mão',t(S11+'Ponto que não aceita negociar'));p('9. O que é mais importante para você||Aceita acordo',a(S11+'Aceita acordo'));
   p('13. Honorários advocatícios||Modalidade',a('5. Objeto e modalidade|Modalidade').filter(o=>o!=='A definir'));
