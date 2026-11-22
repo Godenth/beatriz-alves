@@ -3622,7 +3622,16 @@ function docFichaAtendimento(d){const lin2=(a,b)=>[L_(a),V_(''),L_(b),V_('')],w4
   atB.tab([[L_('Próximo contato'),V_('')],[L_('Observações'),V_('')]],[22,78])]}
 
 /* ---- 2 · Ficha devolutiva (entregue ao cliente) ---- */
-function docDevolutiva(d){const a=atAdv(),w4=[22,28,22,28],lin=(t)=>[L_(t),V_('')];
+/* "Quem sou eu": texto fixo que muda conforme o que foi marcado no item 1 da devolutiva */
+const AT_QUEM=[['Divórcio','No **divórcio**, meu papel é conduzir o fim do casamento com segurança e respeito, cuidando para que tudo fique formalizado do jeito certo e para que você entenda cada passo antes de decidir.'],
+  ['Dissolução de união estável','Na **dissolução da união estável**, vou organizar a formalização do fim da relação, reunindo os documentos necessários para que os seus direitos fiquem bem registrados.'],
+  ['Partilha de bens','Na **partilha de bens**, vou olhar com atenção tudo o que foi construído durante a relação, para que a divisão seja feita com base em documentos e você só aceite uma proposta sabendo exatamente o que está em jogo.'],
+  ['Guarda dos filhos','Na **guarda dos filhos**, o foco é o bem-estar das crianças e a estabilidade da rotina delas, buscando uma solução que proteja os filhos e a sua relação com eles.'],
+  ['Convivência com os filhos','Na **convivência**, vou ajudar a definir dias, férias e datas especiais de forma clara, para evitar desentendimentos e trazer previsibilidade para a rotina de todos.'],
+  ['Pensão alimentícia dos filhos','Na **pensão alimentícia**, vou levantar as despesas reais dos filhos para buscar um valor justo, que atenda ao que eles precisam e seja compatível com a realidade de quem paga.']];
+function atQuemSou(vals){vals=vals||{};const m=AT_QUEM.filter(q=>vals['1. O que você precisa resolver||'+q[0]]);
+  return m.map(q=>atB.p(q[1])).concat([atB.p('Você terá acompanhamento próximo, informação clara e um atendimento humano em todas as fases do seu caso.')])}
+function docDevolutiva(d,vals){const a=atAdv(),w4=[22,28,22,28],lin=(t)=>[L_(t),V_('')];
   return [atB.tit('Ficha Devolutiva','Divórcio e partilha de bens'),
   atB.tab([[L_('Cliente'),V_(d.nome),L_('Atendimento em'),V_(dataBRano(hojeISO()))]],w4),
   atB.p('Este documento resume o que conversamos no nosso atendimento. Confira com calma: se alguma informação estiver diferente, me avise para que tudo fique certo antes de darmos andamento.'),
@@ -3660,6 +3669,7 @@ function docDevolutiva(d){const a=atAdv(),w4=[22,28,22,28],lin=(t)=>[L_(t),V_(''
   atB.nota('Custas do processo, taxas de cartório, certidões e perícias não estão incluídas nos honorários, salvo se combinado de outra forma.',1),
   atB.sec('14. Quem sou eu'),
   atB.p('Sou **'+a.nome+'**, advogada inscrita na '+a.oab.replace('OAB/SP nº','OAB/SP sob o nº')+', com escritório na Rua Malmequer do Campo, nº 876, Parque do Carmo, São Paulo/SP, e atendimento online para todo o Brasil. [[apresentação profissional: formação, experiência e propósito]]'),
+  ...atQuemSou(vals),
   atB.sec('Ciência'),
   atB.p('Declaro que recebi esta ficha e que as informações acima correspondem ao que relatei no atendimento.'),
   atB.p(cidadeEsc()+', [[data]].'),
@@ -3853,7 +3863,7 @@ function atHerda(id,c){if(id!=='devolutiva'||!c)return {};const F=atValoresFicha
   p('13. Honorários advocatícios||Valor total',t(S13+'Valor fechado'));p('13. Honorários advocatícios||Entrada',t(S13+'Entrada'));p('13. Honorários advocatícios||Forma de pagamento',t(S13+'Parcelas'));p('13. Honorários advocatícios||Honorários de êxito',t(S13+'Êxito'));
   return h}
 /* valores efetivos de um documento: padrões (cadastro + herança) por baixo do que foi salvo */
-function atEfetivos(x,c){const B=x.fn(atDados(c)),f=c?atSalva(c.id,x.id):null;const defs=atPadroes(B,atHerda(x.id,c));return {B,defs,vals:Object.assign({},defs,f?f.dados:{}),f}}
+function atEfetivos(x,c){const d=atDados(c);let B=x.fn(d);const f=c?atSalva(c.id,x.id):null;const defs=atPadroes(B,atHerda(x.id,c)),vals=Object.assign({},defs,f?f.dados:{});if(x.id==='devolutiva')B=x.fn(d,vals);return {B,defs,vals,f}}
 const atIgual=(a,b)=>JSON.stringify(Array.isArray(a)?a.slice().sort():a)===JSON.stringify(Array.isArray(b)?b.slice().sort():b);
 
 /* ---- formulário na tela ---- */
@@ -3887,12 +3897,13 @@ async function atGravar(silencioso){if(!AT.edit||!AT.cli)return;const x=AT_DOCS.
 function atStatus(t){const s=$('#at-st');if(s)s.textContent=t}
 let atTimer=null;
 document.addEventListener('input',e=>{if(!e.target.closest||!e.target.closest('#at-ed'))return;AT.sujo=true;atStatus('Alterações não salvas');clearTimeout(atTimer);atTimer=setTimeout(()=>atGravar(true),2500)});
-document.addEventListener('change',e=>{if(!e.target.closest||!e.target.closest('#at-ed'))return;AT.sujo=true;atStatus('Alterações não salvas');clearTimeout(atTimer);atTimer=setTimeout(()=>atGravar(true),1200)});
+document.addEventListener('change',e=>{if(e.target.closest&&e.target.closest('#at-ed')&&AT.edit==='devolutiva'&&String(e.target.dataset.atk||'').startsWith('1. O que você precisa resolver')){clearTimeout(atTimer);const y=scrollY;atGravar(true).then(()=>{render();scrollTo(0,y)});return}
+  if(!e.target.closest||!e.target.closest('#at-ed'))return;AT.sujo=true;atStatus('Alterações não salvas');clearTimeout(atTimer);atTimer=setTimeout(()=>atGravar(true),1200)});
 
 /* ---- catálogo e tela ---- */
 const AT_DOCS=[
   {id:'ficha',nome:'Ficha de Atendimento · Divórcio',quem:'Uso interno',desc:'Roteiro completo para a reunião: dados das partes, relacionamento, patrimônio, dívidas, filhos, riscos, plano de ação e honorários.',fn:d=>docFichaAtendimento(d),arq:'Ficha de Atendimento - Divorcio'},
-  {id:'devolutiva',nome:'Ficha Devolutiva · Divórcio e Partilha',quem:'Para o cliente',desc:'Resumo do atendimento para entregar ao cliente: o que ele contou, bens, filhos, próximos passos, honorários e ciência com assinatura.',fn:d=>docDevolutiva(d),arq:'Ficha Devolutiva - Divorcio e Partilha'},
+  {id:'devolutiva',nome:'Ficha Devolutiva · Divórcio e Partilha',quem:'Para o cliente',desc:'Resumo do atendimento para entregar ao cliente: o que ele contou, bens, filhos, próximos passos, honorários e ciência com assinatura.',fn:(d,v)=>docDevolutiva(d,v),arq:'Ficha Devolutiva - Divorcio e Partilha'},
   {id:'rolc',nome:'Rol de Documentos · Divórcio Consensual',quem:'Para o cliente',desc:'Lista separada por blocos: documentos pessoais, procuração, outro cônjuge, filhos, patrimônio e dívidas. Marque só o que este cliente precisa mandar.',fn:d=>docRol(d,false),arq:'Rol de Documentos - Divorcio Consensual',wpp:false},
   {id:'roll',nome:'Rol de Documentos · Divórcio Litigioso',quem:'Para o cliente',desc:'Tudo do consensual, mais dados da outra parte, provas em papel, provas em fotos e prints, e testemunhas. Marque só o que este cliente precisa mandar.',fn:d=>docRol(d,true),arq:'Rol de Documentos - Divorcio Litigioso',wpp:true}];
 const atCli=()=>(D.clientes||[]).find(y=>y.id===AT.cli)||null;
