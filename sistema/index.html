@@ -761,6 +761,7 @@ html,body{overflow-x:clip}
 .ct-parcs{display:flex;flex-direction:column;gap:6px;margin-top:8px}.ct-l{display:grid;grid-template-columns:90px minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:center;font-size:13px;color:var(--mut)}.ct-l .inp{min-width:0;width:100%}
 .ct-sec{display:block;margin:12px 0 4px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ouro);font-weight:700}.hon-proc{font-size:12px;color:var(--mut)}.btn.perigo{color:var(--perigo)}
 .fin-vinc{font-size:12px}.fin-vinc .lnk{font-size:12px;padding:0}
+.at-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-top:14px}.at-card{display:flex;flex-direction:column}.at-card .acoes{margin-top:auto!important}.at-cab{display:flex;gap:10px;align-items:flex-start}.at-cab b{display:block;margin-bottom:4px}.at-ic{font-size:24px;line-height:1}
 .hon-prev{display:block;min-height:16px;margin-top:6px;font-size:13px;font-weight:600;color:var(--fg)}.hon-ptit{display:block}.hon-verpg{margin-top:8px}
 #novidade .nv-balao{background:#FFFDF8;color:#14213D;max-width:min(580px,94vw);padding:22px 24px}
 #novidade .nv-balao h3{font-family:var(--f);font-variant:normal;text-transform:none;letter-spacing:-.01em;font-size:24px;line-height:1.25;font-weight:800;color:#14213D;margin:4px 0 16px}
@@ -1215,7 +1216,7 @@ const FOTOS={theo:'data:image/webp;base64,UklGRgAwAABXRUJQVlA4WAoAAAAQAAAAxwAAxw
 function av(k,s=48){const a=AGENTES[k];if(FOTOS[k])return '<img class="av" src="'+FOTOS[k]+'" width="'+s+'" height="'+s+'" alt="" style="background:'+a.cor+';object-fit:cover">';const hair=a.curto?'<path d="M17 28c0-10 6-17 15-17s15 7 15 17c-2-3-5-6-8-7-5 3-12 3-17 1-2 2-4 4-5 6z" fill="'+a.cab+'"/>':'<path d="M14 30c0-12 7-20 18-20s18 8 18 20v14c-3-6-5-14-6-18-6 4-16 6-24 5-2 5-4 9-6 13z" fill="'+a.cab+'"/>';
   return '<svg class="av" width="'+s+'" height="'+s+'" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="'+a.cor+'"/><path d="M12 64c2-12 10-18 20-18s18 6 20 18z" fill="#24201D"/><circle cx="32" cy="31" r="13" fill="'+a.pele+'"/>'+hair+'<circle cx="27" cy="31" r="1.6" fill="#24201D"/><circle cx="37" cy="31" r="1.6" fill="#24201D"/><path d="M28 37q4 3 8 0" stroke="#24201D" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>'}
 const WPP='<svg viewBox="0 0 24 24" fill="currentColor" class="wi" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.6-.3Z"/></svg>';
-const ICO={certidoes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"/><path d="M14 3v5h5"/><path d="M14 3l5 5v3"/><circle cx="16.5" cy="16.5" r="3.5"/><path d="M19 19l2.5 2.5"/></svg>',tarefas:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="10" rx="1.5"/><rect x="17" y="4" width="4" height="13" rx="1.5"/></svg>',clientes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.4 3-5.4 6-5.4s5.4 2 6 5.4"/><path d="M16 4.6a3.2 3.2 0 0 1 0 6.2M18 14.8c1.7.7 2.8 2.4 3 5.2"/></svg>',config:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',agenda:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M8 14h3v3H8z"/></svg>',financeiro:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="6" width="19" height="13" rx="3"/><circle cx="12" cy="12.5" r="2.6"/><path d="M6 9.5v6M18 9.5v6"/></svg>',mais:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>',processos:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><circle cx="11.5" cy="13.5" r="2.5"/><path d="M13.5 15.5L16 18"/></svg>',conteudo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>',ferramentas:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M16 12h0M8 16h2M12 16h2M16 16h0"/></svg>',equipe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2 20c0-3.3 2.7-6 6-6s6 2.7 6 6M14 20c.2-2.4 1.6-4.5 3.5-4.5S21 17.6 21 20"/></svg>',leads:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',colar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4h6v3H9z"/></svg>',painel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>'};
+const ICO={atendimento:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v2h6V3M8.5 10h7M8.5 14h7M8.5 18h4"/></svg>',certidoes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"/><path d="M14 3v5h5"/><path d="M14 3l5 5v3"/><circle cx="16.5" cy="16.5" r="3.5"/><path d="M19 19l2.5 2.5"/></svg>',tarefas:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="10" rx="1.5"/><rect x="17" y="4" width="4" height="13" rx="1.5"/></svg>',clientes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.4 3-5.4 6-5.4s5.4 2 6 5.4"/><path d="M16 4.6a3.2 3.2 0 0 1 0 6.2M18 14.8c1.7.7 2.8 2.4 3 5.2"/></svg>',config:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',agenda:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M8 14h3v3H8z"/></svg>',financeiro:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="6" width="19" height="13" rx="3"/><circle cx="12" cy="12.5" r="2.6"/><path d="M6 9.5v6M18 9.5v6"/></svg>',mais:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>',processos:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><circle cx="11.5" cy="13.5" r="2.5"/><path d="M13.5 15.5L16 18"/></svg>',conteudo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>',ferramentas:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M16 12h0M8 16h2M12 16h2M16 16h0"/></svg>',equipe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2 20c0-3.3 2.7-6 6-6s6 2.7 6 6M14 20c.2-2.4 1.6-4.5 3.5-4.5S21 17.6 21 20"/></svg>',leads:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',colar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4h6v3H9z"/></svg>',painel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>'};
 const pillTema=l=>'<span class="pill" style="--c:'+AGENTES[agDe(l)].cor+'">'+esc(TEMAS[l.tema].nome)+'</span>';
 function stTxt(l){if(travado(l))return'<span class="trava">🔒 NÃO ENVIAR RETORNO</span>';const s=STATUS.find(x=>x[0]===l.status)[1];
   if(l.status==='novo'&&l.etapa==='retorno')return'<span class="st ret">Aguardando · retorno em '+dataBR(l.prox)+'</span>';
@@ -1224,16 +1225,16 @@ function stTxt(l){if(travado(l))return'<span class="trava">🔒 NÃO ENVIAR RETO
 const dataBR=iso=>iso?new Date(iso+(iso.length===10?'T12:00:00':'')).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'';
 const horaBR=iso=>new Date(iso).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
 
-const MAIS_TELAS=()=>[['tarefas','Tarefas'],['conteudo','Conteúdo e anúncios'],['ferramentas','Calcular'],['certidoes','Certidões e consultas'],['config','Configurações']];
+const MAIS_TELAS=()=>[['tarefas','Tarefas'],['conteudo','Conteúdo e anúncios'],['ferramentas','Calcular'],['certidoes','Certidões e consultas'],['atendimento','Atendimento'],['config','Configurações']];
 function render(){
   if(!UI.logado){$('#app').innerHTML=UI.onboard?telaOnboarding():telaLogin();return}
   if(UI.tela==='leads'){UI.tela='painel';UI.pab='contatos'}
   if(UI.tela!==UI._ult){UI._ult=UI.tela;if(REAL&&USUARIO){if(UI.tela==='agenda'&&AGD.carregado)carregarAgenda().then(()=>{if(UI.tela==='agenda'&&!AGD.novo)render()});if(UI.tela==='financeiro'&&FIN.carregado&&!FIN.novo&&!FIN.editar)carregarFin().then(()=>{if(UI.tela==='financeiro'&&!FIN.novo&&!FIN.editar)render()})}}
-  const tabs=[['painel','Painel'],['agenda','Agenda'],['tarefas','Tarefas'],['clientes','Clientes'],['processos','Processos']].concat(podeFinanceiro()?[['financeiro','Financeiro']]:[]).concat([['conteudo','Conteúdo'],['ferramentas','Calcular'],['certidoes','Certidões']]);
+  const tabs=[['painel','Painel'],['agenda','Agenda'],['tarefas','Tarefas'],['clientes','Clientes'],['processos','Processos']].concat(podeFinanceiro()?[['financeiro','Financeiro']]:[]).concat([['conteudo','Conteúdo'],['ferramentas','Calcular'],['certidoes','Certidões'],['atendimento','Atendimento']]);
   $('#app').innerHTML='<header class="top"><div class="in"><button class="marca marca-bt" data-conta="1" aria-haspopup="menu" aria-expanded="'+(UI.conta?'true':'false')+'" title="Minha conta e configurações">'+(temMono()?'<img class="mono" src="'+MONO+'" alt="" width="40" height="40">':'')+'<svg class="logo-vidro" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="var(--ouro)"/><path d="M16 7v18M9 12h14M9 12l-3 7h6zM23 12l-3 7h6zM11 25h10" stroke="var(--tinta-btn)" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><div>'+esc(ESCRITORIO.nome)+'<small>'+(REAL?esc(USUARIO.email):'Sistema interno · só você vê')+'</small></div><svg class="marca-seta" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>'+menuConta()+
     '<nav class="tabs" aria-label="Seções">'+tabs.map(t=>'<button data-tela="'+t[0]+'" class="'+(UI.tela===t[0]||(t[0]==='equipe'&&UI.tela==='agente')?'on':'')+'">'+t[1]+'</button>').join('')+'</nav>'+
     '<div class="dir">'+(REAL?'':'<span class="demo">Modo demonstração</span>')+'<button class="btn sm" data-a="colar">+ Colar contatos</button><button class="btn sm" data-a="novo">+ Novo contato</button>'+botaoPedro()+'</div></div></header>'+
-    '<main><div class="wrap">'+({tarefas:telaTarefas,equipe:telaEquipe,agente:telaAgente,leads:telaLeads,agenda:telaAgenda,financeiro:telaFinanceiro,config:telaConfig,clientes:telaClientes,ferramentas:telaFerramentas,certidoes:telaCertidoes,conteudo:telaConteudo,processos:telaProcessos,painel:telaPainel}[UI.tela])()+'</div></main>'+
+    '<main><div class="wrap">'+({tarefas:telaTarefas,equipe:telaEquipe,agente:telaAgente,leads:telaLeads,agenda:telaAgenda,financeiro:telaFinanceiro,config:telaConfig,clientes:telaClientes,ferramentas:telaFerramentas,certidoes:telaCertidoes,atendimento:telaAtendimento,conteudo:telaConteudo,processos:telaProcessos,painel:telaPainel}[UI.tela])()+'</div></main>'+
     '<nav class="mbar" aria-label="Seções">'+[['painel','Painel'],['agenda','Agenda'],['clientes','Clientes'],['processos','Processos']].concat(podeFinanceiro()?[['financeiro','Financeiro']]:[]).map(t=>'<button data-tela="'+t[0]+'" class="'+(UI.tela===t[0]||(t[0]==='equipe'&&UI.tela==='agente')?'on':'')+'">'+ICO[t[0]]+t[1]+'</button>').join('')+
       '<button data-a="mais" class="'+(MAIS_TELAS().some(t=>t[0]===UI.tela)?'on':'')+'" aria-expanded="'+(UI.mais?'true':'false')+'">'+ICO.mais+'Mais</button></nav>'+
     (UI.mais?'<div class="mais-menu" role="menu">'+MAIS_TELAS().map(t=>'<button role="menuitem" data-tela="'+t[0]+'">'+ICO[t[0]]+t[1]+'</button>').join('')+'</div>':'')+(UI.logado?botaoEquipe()+gavetaEquipe():'');
@@ -3525,6 +3526,264 @@ function msgCertidoes(c){const pn=(c.nome||'').split(' ')[0];return 'Olá, '+pn+
 document.addEventListener('click',e=>{const b=e.target.closest('[data-certcopia]');if(!b)return;const c=(D.clientes||[]).find(x=>x.id===b.dataset.certcopia);if(!c)return;
   copiar([c.nome,c.cpf?'CPF '+fmtCPF(c.cpf):'',c.rg?'RG '+c.rg:'',c.nascimento?'Nascimento '+dataBR(c.nascimento):''].filter(Boolean).join('\n'))});
 
+
+/* =================== Atendimento: fichas e rol de documentos (timbre oficial, Word e PDF) =================== */
+/* Blocos simples que viram HTML (prévia e impressão) e Word (no modelo com o timbre).
+   Texto: **negrito**, //itálico//, [[campo]] = campo a preencher (amarelo, entre parênteses). */
+const AT={cli:null};
+const AT_COR={azul:'14213D',ouro:'B98A45',bege:'F5EFE4',linha:'D9CBB0',cinza:'6B6B6B'};
+const AT_LARG=9752; // largura útil da folha do modelo (dxa)
+const atB={
+  tit:(t,sub)=>({k:'tit',t,sub}),sec:t=>({k:'sec',t}),sub:t=>({k:'subsec',t}),p:t=>({k:'p',t}),nota:t=>({k:'nota',t}),
+  tab:(rows,w)=>({k:'tab',rows,w}),chk:(t,o,m)=>({k:'chk',t,o,m:m||[]}),lin:n=>({k:'lin',n:n||3}),lista:(itens,marca)=>({k:'lista',itens,marca:marca||'☐'}),
+  ass:pares=>({k:'ass',pares}),esp:()=>({k:'esp'})};
+const L_=t=>({l:t}),V_=t=>({v:t==null?'':String(t)}),H_=t=>({h:t});
+/* ---- dados do cliente para preencher ---- */
+function atIdade(iso){if(!iso)return '';const n=new Date(iso+'T12:00'),h=new Date();let a=h.getFullYear()-n.getFullYear();if(h.getMonth()<n.getMonth()||(h.getMonth()===n.getMonth()&&h.getDate()<n.getDate()))a--;return a>0&&a<120?a+' anos':''}
+function atDados(c){c=c||{};const P=c.id?procsDoCli(c.id):[],pf=P.find(p=>p.parte_contraria)||P[0]||{};
+  const end=[c.endereco,c.numero_end?'nº '+c.numero_end:'',c.complemento,c.bairro,c.cidade?c.cidade+(c.uf?'/'+c.uf:''):'',c.cep?'CEP '+fmtCEP(c.cep):''].filter(Boolean).join(', ');
+  const Lc=c.id?lancDe(c).filter(l=>l.tipo==='entrada'&&!l.exemplo):[],ex=Lc.filter(pendExito),fx=Lc.filter(l=>!pendExito(l)),ent=fx.filter(ehEnt),parc=fx.filter(l=>!ehEnt(l)).sort(porVenc);
+  return {nome:c.nome||'',nasc:c.nascimento?dataBRano(c.nascimento):'',idade:atIdade(c.nascimento),cpf:c.cpf?fmtCPF(c.cpf):'',rg:c.rg||'',civil:c.estado_civil||'',nac:c.nacionalidade||'',prof:c.profissao||'',
+    tel:c.telefone?fmtTel(c.telefone):'',end,contraria:pf.parte_contraria||'',proc:pf.numero?numCNJ(pf.numero):'',
+    honTot:fx.length?brl(somaV(fx)):'',honEnt:ent.length?brl(somaV(ent)):'',honParc:parc.length?parc.length+(parc.length===1?' parcela de ':' parcelas de ')+(parc.every(x=>Math.abs(+x.valor-+parc[0].valor)<0.005)?brl(+parc[0].valor):'valores variados')+', com 1º vencimento em '+dataBRano(parc[0].vencimento):'',
+    honEx:ex.length?ex.map(x=>String(x.descricao).replace(/^no êxito da ação · /i,'')).join('; '):''}}
+const dataBRano=iso=>iso?new Date(iso+(iso.length===10?'T12:00:00':'')).toLocaleDateString('pt-BR'):'';
+const atAdv=()=>{const bea=SITE_BEA||!REAL||String(ESCRITORIO.oab_numero||'').replace(/\D/g,'')==='555397';return bea?{nome:'BEATRIZ ALVES ARAUJO',oab:'OAB/SP nº 555.397'}:{nome:outorgadaTxt()[0],oab:oabTxt()}};
+
+/* ---- 1 · Ficha de atendimento (uso interno) ---- */
+function docFichaAtendimento(d){const lin2=(a,b)=>[L_(a),V_(''),L_(b),V_('')],w4=[22,28,22,28];
+  return [atB.tit('Ficha de Atendimento','Divórcio e dissolução de união estável · uso interno do escritório'),
+  atB.nota('Preencher durante a reunião. Este documento é interno: não entregar ao cliente.'),
+  atB.sec('1. Atendimento'),
+  atB.tab([[L_('Data'),V_(dataBRano(hojeISO())),L_('Horário'),V_('')],[L_('Forma'),V_('☐ Presencial   ☐ Vídeo   ☐ Telefone'),L_('Retorno marcado'),V_('')]],w4),
+  atB.chk('Como conheceu o escritório',['Instagram','Facebook','Google','Site','Anúncio','Indicação','Outro']),
+  atB.tab([[L_('Indicado por'),V_('')]],[22,78]),
+  atB.sec('2. Dados do(a) cliente'),
+  atB.tab([[L_('Nome completo'),V_(d.nome)],[L_('Endereço'),V_(d.end)],[L_('Local de trabalho'),V_('')]],[22,78]),
+  atB.tab([[L_('Nascimento'),V_(d.nasc),L_('Idade'),V_(d.idade)],[L_('CPF'),V_(d.cpf),L_('RG'),V_(d.rg)],[L_('Estado civil'),V_(d.civil),L_('Nacionalidade'),V_(d.nac)],
+    [L_('Profissão'),V_(d.prof),L_('Renda mensal'),V_('')],[L_('Telefone / WhatsApp'),V_(d.tel),L_('Outro contato'),V_('')]],w4),
+  atB.chk('Pedido de justiça gratuita',['Sim','Não','A analisar']),
+  atB.chk('Depende financeiramente da outra parte',['Sim','Não','Em parte']),
+  atB.sec('3. Dados da outra parte'),
+  atB.tab([[L_('Nome completo'),V_(d.contraria)],[L_('Endereço (para citação)'),V_('')],[L_('Local de trabalho / empresa'),V_('')]],[22,78]),
+  atB.tab([[L_('Idade'),V_(''),L_('CPF'),V_('')],[L_('Profissão'),V_(''),L_('Renda aproximada'),V_('')],[L_('Telefone / WhatsApp'),V_(''),L_('Redes sociais'),V_('')]],w4),
+  atB.chk('Já tem advogado(a)',['Sim','Não','Não sabe']),
+  atB.sec('4. Relacionamento'),
+  atB.chk('Tipo',['Casamento','União estável com escritura','União estável sem escritura']),
+  atB.tab([[L_('Início real da relação'),V_(''),L_('Data do casamento / união'),V_('')],[L_('Cartório'),V_(''),L_('Separação de fato'),V_('')],[L_('Ainda moram juntos'),V_('☐ Sim   ☐ Não'),L_('Quem saiu de casa'),V_('')]],w4),
+  atB.chk('Regime de bens',['Comunhão parcial','Comunhão universal','Separação total','Participação final nos aquestos','Não sabe']),
+  atB.chk('Pacto antenupcial',['Sim','Não','Não sabe']),
+  atB.chk('Nome após o divórcio',['Volta ao nome de solteiro(a)','Mantém o nome de casado(a)','Não alterou o nome']),
+  atB.sec('5. Objeto e modalidade'),
+  atB.chk('O que precisa ser resolvido',['Divórcio','Dissolução de união estável','Partilha de bens','Guarda','Convivência','Alimentos dos filhos','Alimentos entre ex-cônjuges','Uso do imóvel','Medida protetiva']),
+  atB.chk('A outra parte concorda com o divórcio',['Sim','Não','Não sabe']),
+  atB.chk('Modalidade',['Consensual','Litigioso','A definir']),
+  atB.tab([[L_('Processo já existente'),V_(d.proc)]],[22,78]),
+  atB.sec('6. Patrimônio'),
+  atB.sub('Imóveis'),
+  atB.tab([[H_('Descrição / endereço'),H_('Aquisição'),H_('Valor aproximado'),H_('Em nome de'),H_('Situação')],...[1,2,3].map(()=>[V_(''),V_(''),V_(''),V_(''),V_('')])],[32,14,18,16,20]),
+  atB.sub('Veículos'),
+  atB.tab([[H_('Marca / modelo / ano'),H_('Aquisição'),H_('Valor aproximado'),H_('Em nome de'),H_('Situação')],...[1,2,3].map(()=>[V_(''),V_(''),V_(''),V_(''),V_('')])],[32,14,18,16,20]),
+  atB.nota('Situação: quitado, financiado (com saldo devedor), consórcio, contrato de gaveta.'),
+  atB.sub('Outros bens e direitos'),
+  atB.tab([[L_('Empresas (nome, CNPJ, participação)'),V_('')],[L_('Contas e investimentos (bancos)'),V_('')],[L_('Previdência privada (instituição)'),V_('')],
+    [L_('FGTS (cliente e outra parte)'),V_('')],[L_('Consórcios'),V_('')],[L_('Ações trabalhistas e créditos a receber'),V_('')],[L_('Bens em nome de terceiros ou da empresa'),V_('')],
+    [L_('Móveis e eletrodomésticos'),V_('')],[L_('Animais de estimação'),V_('')],[L_('Bens de antes da união, herança ou doação'),V_('')]],[36,64]),
+  atB.sec('7. Dívidas'),
+  atB.tab([[H_('Dívida'),H_('Credor'),H_('Saldo aproximado'),H_('Em nome de'),H_('Feita para')],...[1,2,3,4].map(()=>[V_(''),V_(''),V_(''),V_(''),V_('')])],[26,20,18,16,20]),
+  atB.nota('Feita para: despesas da família ou despesa pessoal de um dos dois.'),
+  atB.sec('8. Filhos'),
+  atB.tab([[H_('Nome'),H_('Nascimento / idade'),H_('Escola e turno'),H_('Atividades'),H_('Saúde / necessidades')],...[1,2,3].map(()=>[V_(''),V_(''),V_(''),V_(''),V_('')])],[24,16,20,20,20]),
+  atB.tab([[L_('Com quem moram hoje'),V_('')],[L_('Guarda pretendida'),V_('☐ Compartilhada   ☐ Unilateral   ☐ A definir')],[L_('O outro genitor ajuda'),V_('☐ Sim, R$ ________ por mês   ☐ Não   ☐ Às vezes')],[L_('Filhos maiores estudando'),V_('')]],[30,70]),
+  atB.p('**Como a convivência vem acontecendo:**'),atB.lin(3),
+  atB.p('**Convivência pretendida** (dias da semana, fins de semana, férias, datas comemorativas, aniversários):'),atB.lin(3),
+  atB.sub('Despesas mensais dos filhos'),
+  atB.tab([[L_('Escola / material'),V_(''),L_('Saúde / plano'),V_('')],[L_('Alimentação'),V_(''),L_('Atividades extras'),V_('')],[L_('Transporte'),V_(''),L_('Vestuário'),V_('')],[L_('Moradia (parte)'),V_(''),L_('Total'),V_('')]],w4),
+  atB.chk('Alimentos para o(a) ex-cônjuge',['Não','Sim','A analisar']),
+  atB.sec('9. Violência doméstica e situação de risco'),
+  atB.chk('Há relato de violência ou risco',['Não','Sim']),
+  atB.tab([[L_('Boletim de ocorrência'),V_(''),L_('Medida protetiva'),V_('')],[L_('Nº do processo'),V_(''),L_('Contato seguro'),V_('')]],w4),
+  atB.sec('10. Como o(a) cliente está'),
+  atB.nota('Questões emocionais, receios e o que mais pesa para a pessoa neste momento.'),atB.lin(4),
+  atB.sec('11. O que é mais importante para o(a) cliente'),
+  atB.tab([[L_('Principal preocupação'),V_('')],[L_('Prioridade'),V_('')],[L_('Ponto que não aceita negociar'),V_('')],[L_('Aceita acordo'),V_('☐ Sim   ☐ Não   ☐ Depende')]],[30,70]),
+  atB.sec('12. Análise do escritório (interno)'),
+  atB.tab([[L_('Valor da causa (estimativa)'),V_('')],[L_('Custas judiciais'),V_('☐ Justiça gratuita   ☐ Pagas pelo cliente   Valor: R$ ________')]],[30,70]),
+  atB.p('**Plano de ação:**'),atB.lin(4),
+  atB.p('**Riscos identificados:**'),atB.lin(3),
+  atB.p('**Documentos pendentes:**'),atB.lin(2),
+  atB.sec('13. Honorários e fechamento'),
+  atB.tab([[L_('Proposta consensual'),V_(''),L_('Proposta litigiosa'),V_('')],[L_('Valor fechado'),V_(d.honTot),L_('Entrada'),V_(d.honEnt)],[L_('Parcelas'),V_(d.honParc),L_('Êxito'),V_(d.honEx)]],w4),
+  atB.chk('Assinados',['Contrato de honorários','Procuração','Declaração de hipossuficiência','Rol de documentos enviado','Ficha devolutiva entregue']),
+  atB.tab([[L_('Próximo contato'),V_('')],[L_('Observações'),V_('')]],[22,78])]}
+
+/* ---- 2 · Ficha devolutiva (entregue ao cliente) ---- */
+function docDevolutiva(d){const a=atAdv(),w4=[22,28,22,28],lin=(t)=>[L_(t),V_('')];
+  return [atB.tit('Ficha Devolutiva','Divórcio e partilha de bens'),
+  atB.tab([[L_('Cliente'),V_(d.nome),L_('Atendimento em'),V_(dataBRano(hojeISO()))]],w4),
+  atB.p('Este documento resume o que conversamos no nosso atendimento. Confira com calma: se alguma informação estiver diferente, me avise para que tudo fique certo antes de darmos andamento.'),
+  atB.sec('1. O que você precisa resolver'),
+  atB.lista(['Divórcio','Dissolução de união estável','Partilha de bens','Guarda dos filhos','Convivência com os filhos','Pensão alimentícia dos filhos','Outro: [[descrever]]']),
+  atB.sec('2. Seus dados'),
+  atB.tab([[L_('Nome'),V_(d.nome),L_('Idade'),V_(d.idade)],[L_('Estado civil'),V_(d.civil),L_('Profissão'),V_(d.prof)],[L_('Local de trabalho'),V_(''),L_('Renda aproximada'),V_('')],[L_('Justiça gratuita'),V_('☐ Sim   ☐ Não   ☐ A analisar'),L_('Depende financeiramente'),V_('☐ Sim   ☐ Não   ☐ Em parte')]],w4),
+  atB.sec('3. Dados da outra parte'),
+  atB.tab([[L_('Nome'),V_(d.contraria),L_('Idade'),V_('')],[L_('Profissão'),V_(''),L_('Renda aproximada'),V_('')],[L_('Local de trabalho'),V_(''),L_('Empresa'),V_('')]],w4),
+  atB.sec('4. Sobre o relacionamento'),
+  atB.tab([[L_('Início da relação'),V_(''),L_('Casamento / união'),V_('')],[L_('Regime de bens'),V_(''),L_('Separação de fato'),V_('')]],w4),
+  atB.p('**Situação atual:**'),atB.lin(3),
+  atB.sec('5. O que você nos contou'),
+  atB.lin(5),
+  atB.sec('6. Patrimônio informado'),
+  atB.tab([[H_('Bem'),H_('Valor aproximado'),H_('Em nome de'),H_('Situação')],[V_('Imóvel: '),V_(''),V_(''),V_('')],[V_('Imóvel: '),V_(''),V_(''),V_('')],[V_('Veículo: '),V_(''),V_(''),V_('')],[V_('Veículo: '),V_(''),V_(''),V_('')],
+    [V_('Empresa: '),V_(''),V_(''),V_('')],[V_('Contas e investimentos'),V_(''),V_(''),V_('')],[V_('FGTS'),V_(''),V_(''),V_('')],[V_('Previdência privada'),V_(''),V_(''),V_('')],[V_('Consórcio'),V_(''),V_(''),V_('')],[V_('Móveis e outros bens'),V_(''),V_(''),V_('')]],[36,20,20,24]),
+  atB.nota('Valores aproximados, informados por você. Serão conferidos com os documentos.'),
+  atB.sec('7. Dívidas informadas'),
+  atB.tab([[H_('Dívida'),H_('Valor aproximado'),H_('Em nome de')],[V_(''),V_(''),V_('')],[V_(''),V_(''),V_('')],[V_(''),V_(''),V_('')]],[46,27,27]),
+  atB.sec('8. Filhos'),
+  atB.tab([[H_('Nome'),H_('Idade'),H_('Escola e turno'),H_('Atividades')],[V_(''),V_(''),V_(''),V_('')],[V_(''),V_(''),V_(''),V_('')],[V_(''),V_(''),V_(''),V_('')]],[32,14,27,27]),
+  atB.tab([lin('Guarda'),lin('Convivência'),lin('Pensão alimentícia')],[24,76]),
+  atB.sec('9. O que é mais importante para você'),
+  atB.tab([lin('Principal preocupação'),lin('Prioridade'),lin('Ponto que não abre mão'),[L_('Aceita acordo'),V_('☐ Sim   ☐ Não   ☐ Depende')]],[30,70]),
+  atB.sec('10. Próximos passos'),
+  atB.lista(['Assinatura do contrato de honorários, da procuração e da declaração de hipossuficiência (quando for o caso).','Envio dos documentos da lista que vou te mandar, separados por item.','Análise dos documentos e preparo do pedido.','Envio do pedido para você conferir antes de protocolar.','Protocolo e acompanhamento do processo até o final.'],'▪'),
+  atB.p('Os prazos dependem do Judiciário e não do escritório. Por isso não prometo datas, mas você será avisado(a) de cada novidade importante.'),
+  atB.sec('11. Como vamos trabalhar juntos'),
+  atB.lista(['Atendimento presencial no Parque do Carmo, em São Paulo, ou online, para clientes de todo o Brasil.','Contato direto comigo pelo WhatsApp, em horário comercial.','Você recebe o pedido para conferir antes do protocolo.','Aviso sobre cada movimentação importante, explicado em linguagem simples.','Audiências por videoconferência, sempre que o juízo permitir.','Reunião de alinhamento antes de cada audiência ou decisão importante.'],'▪'),
+  atB.sec('12. Cuidados durante o processo'),
+  atB.lista(['Não assine documentos nem feche acordos sem falar comigo antes.','Não exponha o caso nas redes sociais.','Mantenha a rotina dos filhos e não os envolva nas discussões do casal.','Guarde recibos e comprovantes de pagamentos e despesas da família.','Me avise se mudar de endereço, telefone ou emprego.'],'▪'),
+  atB.sec('13. Honorários advocatícios'),
+  atB.tab([[L_('Modalidade'),V_('☐ Consensual   ☐ Litigioso')],[L_('Valor total'),V_(d.honTot)],[L_('Entrada'),V_(d.honEnt)],[L_('Forma de pagamento'),V_(d.honParc)],[L_('Honorários de êxito'),V_(d.honEx)],[L_('O que está incluído'),V_('')],[L_('Validade da proposta'),V_('')]],[30,70]),
+  atB.nota('Custas do processo, taxas de cartório, certidões e perícias não estão incluídas nos honorários, salvo se combinado de outra forma.'),
+  atB.sec('14. Quem sou eu'),
+  atB.p('Sou **'+a.nome+'**, advogada inscrita na '+a.oab.replace('OAB/SP nº','OAB/SP sob o nº')+', com escritório na Rua Malmequer do Campo, nº 876, Parque do Carmo, São Paulo/SP, e atendimento online para todo o Brasil. [[apresentação profissional: formação, experiência e propósito]]'),
+  atB.sec('Ciência'),
+  atB.p('Declaro que recebi esta ficha e que as informações acima correspondem ao que relatei no atendimento.'),
+  atB.p(cidadeEsc()+', [[data]].'),
+  atB.ass([[d.nome||'[[nome do(a) cliente]]','Cliente'],[a.nome,a.oab]])]}
+
+/* ---- 3 e 4 · Rol de documentos ---- */
+function docRol(d,lit){const it=(t,itens)=>[atB.sub(t),atB.lista(itens)];
+  return [atB.tit('Rol de Documentos','Divórcio '+(lit?'litigioso':'consensual')),
+  atB.tab([[L_('Cliente'),V_(d.nome),L_('Data'),V_(dataBRano(hojeISO()))]],[16,52,12,20]),
+  atB.p('Para darmos andamento ao seu caso, preciso dos documentos abaixo. Pode mandar fotos bem nítidas ou arquivos em PDF pelo WhatsApp, **separados por item**. Se não tiver algum, me avise: verificamos juntos a melhor forma de conseguir.'),
+  atB.sec('1. Seus documentos pessoais'),
+  atB.lista(['RG ou CNH','CPF','Certidão de casamento atualizada, emitida há menos de 90 dias, ou escritura de união estável','Comprovante de residência atualizado (até 3 meses)','Carteira de trabalho (quando tiver)','Comprovante de renda: holerites, pró-labore, DECORE ou extratos bancários dos últimos 3 meses','Última declaração de Imposto de Renda completa, com o recibo de entrega (se declarar)']),
+  atB.nota('Os comprovantes de renda também servem para o pedido de justiça gratuita, quando for o caso.'),
+  atB.sec('2. Informações para a procuração'),
+  atB.lista(['Estado civil','Profissão','Nacionalidade','Endereço completo com CEP','Dados bancários para receber pensão ou outros valores: banco, agência, conta (corrente ou poupança) e chave Pix']),
+  ...(lit?[atB.sec('3. Dados da outra parte'),
+    atB.lista(['Nome completo','CPF (se souber)','Endereço completo onde ele(a) mora hoje, com CEP','Telefone e WhatsApp','Local de trabalho e endereço da empresa','Profissão e renda aproximada'])]
+   :[atB.sec('3. Documentos do(a) outro(a) cônjuge'),
+    atB.lista(['RG ou CNH','CPF','Comprovante de residência atualizado','Profissão e endereço completo com CEP'])]),
+  atB.sec('4. Filhos (se houver)'),
+  atB.lista(['Certidão de nascimento de cada filho','RG e CPF dos filhos (se tiverem)','Comprovantes das despesas mensais: escola, material, plano de saúde, remédios, atividades, transporte']),
+  atB.sec('5. Patrimônio'),
+  ...it('Imóveis',['Matrícula atualizada do cartório de registro de imóveis (até 30 dias)','Escritura, contrato de compra e venda ou de cessão','Carnê do IPTU','Contrato de financiamento e extrato do saldo devedor (se financiado)']),
+  ...it('Veículos',['Documento do veículo (CRLV)','Contrato de financiamento e saldo devedor (se financiado)']),
+  ...it('Empresas',['Contrato social e alterações','Cartão do CNPJ']),
+  ...it('Contas e aplicações financeiras',['Extratos de contas, poupança e investimentos','Extrato do FGTS','Extrato de previdência privada (se tiver)']),
+  ...it('Outros bens',['Contratos de consórcio','Documentos de outros bens de valor (motos, máquinas, terrenos)','Comprovantes de bens recebidos por herança ou doação']),
+  atB.sec('6. Dívidas'),
+  atB.lista(['Contratos de empréstimos','Financiamentos','Consórcios','Faturas ou comprovantes de dívidas','Comprovantes das parcelas pagas']),
+  ...(lit?[atB.sec('7. Provas em papel'),
+    atB.lista(['Recibos e comprovantes de pagamento das despesas da casa e dos filhos','Comprovantes de pensão paga ou recebida','Documentos que mostrem a renda da outra parte (holerite, declaração, contrato)','Boletim de ocorrência e decisão de medida protetiva (se houver)','Relatórios escolares, médicos ou psicológicos dos filhos (se houver)']),
+    atB.sec('8. Provas em fotos e prints'),
+    atB.lista(['Prints de conversas importantes, mostrando a data e o número de quem enviou','Fotos que ajudem a mostrar a situação relatada','Prints de redes sociais da outra parte que mostrem bens, viagens ou gastos']),
+    atB.nota('Não apague as conversas originais do celular, mesmo depois de mandar os prints.'),
+    atB.sec('9. Testemunhas'),
+    atB.p('Pessoas que conhecem a situação do casal e podem confirmar o que aconteceu. De preferência, que não sejam parentes próximos. Para cada uma:'),
+    atB.tab([[H_('Nome completo'),H_('Telefone'),H_('Endereço'),H_('O que a pessoa sabe')],[V_(''),V_(''),V_(''),V_('')],[V_(''),V_(''),V_(''),V_('')],[V_(''),V_(''),V_(''),V_('')]],[28,18,26,28])]:[]),
+  atB.p('Qualquer dúvida, estou à disposição.'),
+  atB.p('**'+atAdv().nome+'**  ·  '+atAdv().oab)]}
+/* texto do rol para mandar no WhatsApp */
+function rolTexto(d,lit){const B=docRol(d,lit);let t='';
+  B.forEach(b=>{if(b.k==='tit')t+='*'+b.t.toUpperCase()+' · '+b.sub.toUpperCase()+'*\n';else if(b.k==='sec')t+='\n*'+b.t+'*\n';else if(b.k==='subsec')t+='_'+b.t+'_\n';
+    else if(b.k==='lista')t+=b.itens.map(x=>'▫️ '+x).join('\n')+'\n';else if(b.k==='p'&&!/^\*\*/.test(b.t))t+='\n'+b.t.replace(/\*\*/g,'*')+'\n';else if(b.k==='nota')t+='_'+b.t+'_\n'});
+  return t.trim()+'\n\n'+(ESCRITORIO.primeiro||'')}
+
+/* ---- motor: HTML ---- */
+function atRunsH(t){return String(t).split(/(\[\[[^\]]+\]\])/).filter(Boolean).map(x=>x.startsWith('[[')?'<mark>( '+esc(x.slice(2,-2))+' )</mark>':runsHTML(x)).join('')}
+function atCelH(c){if(c.h!=null)return '<th>'+atRunsH(c.h)+'</th>';if(c.l!=null)return '<td class="l">'+atRunsH(c.l)+'</td>';return '<td class="v">'+(c.v?atRunsH(c.v):'&nbsp;')+'</td>'}
+function atHTML(B){return B.map(b=>{switch(b.k){
+  case 'tit':return '<div class="at-tit"><h1>'+esc(b.t)+'</h1>'+(b.sub?'<div class="at-subt">'+esc(b.sub)+'</div>':'')+'</div>';
+  case 'sec':return '<h2>'+esc(b.t)+'</h2>';case 'subsec':return '<h3>'+esc(b.t)+'</h3>';
+  case 'p':return '<p>'+atRunsH(b.t)+'</p>';case 'nota':return '<p class="nota">'+atRunsH(b.t)+'</p>';
+  case 'tab':return '<table><colgroup>'+b.w.map(x=>'<col style="width:'+x+'%">').join('')+'</colgroup>'+b.rows.map(r=>'<tr>'+r.map(atCelH).join('')+'</tr>').join('')+'</table>';
+  case 'chk':return '<p class="chk"><b>'+esc(b.t)+':</b> '+b.o.map(o=>'<span>'+(b.m.includes(o)?'☒':'☐')+' '+esc(o)+'</span>').join('')+'</p>';
+  case 'lin':return '<div class="lin"></div>'.repeat(b.n);
+  case 'lista':return '<ul class="at-l">'+b.itens.map(x=>'<li><span class="mk">'+b.marca+'</span>'+atRunsH(x)+'</li>').join('')+'</ul>';
+  case 'ass':return '<table class="ass"><tr>'+b.pares.map(p=>'<td><div class="ln"></div><b>'+atRunsH(String(p[0]).toUpperCase())+'</b><br><small>'+esc(p[1])+'</small></td>').join('')+'</tr></table>';
+  default:return ''}}).join('')}
+const AT_CSS='body{font-family:Calibri,Carlito,Arial,sans-serif;font-size:11pt;line-height:1.4;color:#1d1d1d;max-width:17.5cm;margin:.6cm auto}.tim{width:100%;display:block}'+
+  '.at-tit{text-align:center;margin:14pt 0 12pt}.at-tit h1{font-size:17pt;letter-spacing:.12em;text-transform:uppercase;color:#14213D;margin:0}.at-subt{color:#B98A45;font-size:10.5pt;letter-spacing:.14em;text-transform:uppercase;margin-top:3pt}'+
+  'h2{font-size:11.5pt;text-transform:uppercase;letter-spacing:.06em;color:#14213D;border-bottom:1.5px solid #B98A45;padding-bottom:2pt;margin:16pt 0 6pt;page-break-after:avoid}h3{font-size:10.5pt;color:#B98A45;margin:8pt 0 3pt;text-transform:uppercase;letter-spacing:.05em}'+
+  'p{margin:0 0 6pt;text-align:justify}p.nota{font-size:9.5pt;color:#6B6B6B;font-style:italic}p.chk span{display:inline-block;margin-right:12pt;white-space:nowrap}'+
+  'table{width:100%;border-collapse:collapse;margin:3pt 0 8pt;table-layout:fixed;page-break-inside:avoid}td,th{border:1px solid #D9CBB0;padding:4pt 6pt;font-size:10pt;vertical-align:top;text-align:left;height:15pt}td.l{background:#F5EFE4;color:#14213D;font-weight:bold}th{background:#14213D;color:#fff;font-weight:bold}'+
+  '.lin{border-bottom:1px solid #D9CBB0;height:20pt}ul.at-l{list-style:none;padding:0;margin:0 0 6pt}ul.at-l li{margin:0 0 3pt;padding-left:18pt;text-indent:-18pt}.mk{display:inline-block;width:18pt;text-indent:0;color:#B98A45}'+
+  'mark{background:#FFF200;color:inherit}table.ass{margin-top:46pt}table.ass td{border:0;text-align:center;font-size:10.5pt;height:auto}table.ass .ln{border-top:1px solid #1d1d1d;margin:0 14pt 4pt}'+
+  '@media print{@page{size:A4;margin:.6cm 1.2cm}}';
+
+/* ---- motor: Word (no modelo com o timbre) ---- */
+function atRunsW(t,rp){rp=rp||'';return String(t).split(/(\[\[[^\]]+\]\])/).filter(Boolean).map(x=>{
+  if(x.startsWith('[['))return '<w:r><w:rPr>'+rp+'<w:highlight w:val="yellow"/></w:rPr><w:t xml:space="preserve">( '+xe(x.slice(2,-2))+' )</w:t></w:r>';
+  return String(x).split(/(\*\*[^*]+\*\*)/).filter(Boolean).map(seg=>{const b=seg.startsWith('**'),inner=b?seg.slice(2,-2):seg;
+    return inner.split(/(\/\/[^/]+\/\/)/).filter(Boolean).map(y=>{const i=y.startsWith('//');return '<w:r><w:rPr>'+rp+(b?'<w:b/>':'')+(i?'<w:i/>':'')+'</w:rPr><w:t xml:space="preserve">'+xe(i?y.slice(2,-2):y)+'</w:t></w:r>'}).join('')}).join('')}).join('')}
+const atRp=(o)=>{o=o||{};return (o.b?'<w:b/>':'')+(o.i?'<w:i/>':'')+(o.cor?'<w:color w:val="'+o.cor+'"/>':'')+(o.sp?'<w:spacing w:val="'+o.sp+'"/>':'')+(o.sz?'<w:sz w:val="'+o.sz+'"/><w:szCs w:val="'+o.sz+'"/>':'')+(o.caps?'<w:caps/>':'')};
+function atPW(runs,o){o=o||{};return '<w:p><w:pPr>'+(o.keep?'<w:keepNext/>':'')+(o.borda?'<w:pBdr><w:bottom w:val="single" w:sz="'+(o.borda.sz||8)+'" w:space="1" w:color="'+o.borda.cor+'"/></w:pBdr>':'')+
+  '<w:spacing w:before="'+(o.before||0)+'" w:after="'+(o.after==null?100:o.after)+'" w:line="'+(o.line||264)+'" w:lineRule="auto"/>'+(o.ind?'<w:ind w:left="'+o.ind+'" w:hanging="'+o.ind+'"/>':'')+'<w:jc w:val="'+(o.jc||'both')+'"/></w:pPr>'+runs+'</w:p>'}
+function atCelW(c,w,kp){const cor=c.h!=null?AT_COR.azul:c.l!=null?AT_COR.bege:null,t=c.h!=null?c.h:c.l!=null?c.l:c.v;
+  const rp=c.h!=null?atRp({b:1,cor:'FFFFFF',sz:19}):c.l!=null?atRp({b:1,cor:AT_COR.azul,sz:19}):atRp({sz:19});
+  return '<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/>'+(cor?'<w:shd w:val="clear" w:color="auto" w:fill="'+cor+'"/>':'')+'</w:tcPr>'+atPW(t?atRunsW(t,rp):'',{after:0,jc:'left',line:240,keep:kp})+'</w:tc>'}
+function atTabW(b){const ws=b.w.map(x=>Math.round(AT_LARG*x/100)),bd=k=>'<w:'+k+' w:val="single" w:sz="4" w:space="0" w:color="'+AT_COR.linha+'"/>';
+  return '<w:tbl><w:tblPr><w:tblW w:w="'+AT_LARG+'" w:type="dxa"/><w:tblBorders>'+['top','left','bottom','right','insideH','insideV'].map(bd).join('')+'</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="50" w:type="dxa"/><w:left w:w="90" w:type="dxa"/><w:bottom w:w="50" w:type="dxa"/><w:right w:w="90" w:type="dxa"/></w:tblCellMar></w:tblPr>'+
+    '<w:tblGrid>'+ws.map(w=>'<w:gridCol w:w="'+w+'"/>').join('')+'</w:tblGrid>'+b.rows.map((r,j)=>'<w:tr><w:trPr><w:cantSplit/>'+(j===0&&r[0].h!=null?'<w:tblHeader/>':'')+'<w:trHeight w:val="340"/></w:trPr>'+r.map((c,i)=>atCelW(c,ws[i],b.rows.length<=12&&j<b.rows.length-1)).join('')+'</w:tr>').join('')+'</w:tbl>'+atPW('',{after:60,line:240})}
+function atWord(B){return B.map(b=>{switch(b.k){
+  case 'tit':return atPW(atRunsW(b.t.toUpperCase(),atRp({b:1,cor:AT_COR.azul,sz:34,sp:40})),{jc:'center',before:120,after:20})+(b.sub?atPW(atRunsW(b.sub.toUpperCase(),atRp({cor:AT_COR.ouro,sz:20,sp:20})),{jc:'center',after:200}):'');
+  case 'sec':return atPW(atRunsW(b.t.toUpperCase(),atRp({b:1,cor:AT_COR.azul,sz:23,sp:10})),{keep:1,before:280,after:100,jc:'left',borda:{cor:AT_COR.ouro,sz:10}});
+  case 'subsec':return atPW(atRunsW(b.t.toUpperCase(),atRp({b:1,cor:AT_COR.ouro,sz:20})),{keep:1,before:120,after:40,jc:'left'});
+  case 'p':return atPW(atRunsW(b.t),{after:100});
+  case 'nota':return atPW(atRunsW(b.t,atRp({i:1,cor:AT_COR.cinza,sz:19})),{after:100});
+  case 'tab':return atTabW(b);
+  case 'chk':return atPW(atRunsW(b.t+': ',atRp({b:1}))+b.o.map(o=>atRunsW((b.m.includes(o)?'☒\u00a0':'☐\u00a0')+String(o).replace(/ /g,'\u00a0')+'    ')).join(''),{after:100,jc:'left'});
+  case 'lin':return '<w:tbl><w:tblPr><w:tblW w:w="'+AT_LARG+'" w:type="dxa"/><w:tblBorders><w:bottom w:val="single" w:sz="4" w:space="0" w:color="'+AT_COR.linha+'"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="'+AT_COR.linha+'"/></w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="'+AT_LARG+'"/></w:tblGrid>'+
+    Array.from({length:b.n},()=>'<w:tr><w:trPr><w:cantSplit/><w:trHeight w:val="420" w:hRule="exact"/></w:trPr><w:tc><w:tcPr><w:tcW w:w="'+AT_LARG+'" w:type="dxa"/></w:tcPr>'+atPW('',{after:0,line:240})+'</w:tc></w:tr>').join('')+'</w:tbl>'+atPW('',{after:60,line:240});
+  case 'lista':return b.itens.map(x=>atPW(atRunsW(b.marca+'\t',atRp({cor:AT_COR.ouro}))+atRunsW(x),{after:60,ind:360,jc:'left'})).join('');
+  case 'ass':{const w=Math.round(AT_LARG/b.pares.length);return atPW('',{before:900,after:0})+'<w:tbl><w:tblPr><w:tblW w:w="'+AT_LARG+'" w:type="dxa"/><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+b.pares.map(()=>'<w:gridCol w:w="'+w+'"/>').join('')+'</w:tblGrid><w:tr><w:trPr><w:cantSplit/></w:trPr>'+
+    b.pares.map(p=>'<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/></w:tcPr>'+atPW(atRunsW('______________________________'),{jc:'center',after:0})+atPW(atRunsW(String(p[0]).toUpperCase(),atRp({b:1})),{jc:'center',after:0})+atPW(atRunsW(p[1],atRp({sz:19,cor:AT_COR.cinza})),{jc:'center',after:0})+'</w:tc>').join('')+'</w:tr></w:tbl>'}
+  default:return ''}}).join('')}
+
+/* ---- catálogo e tela ---- */
+const AT_DOCS=[
+  {id:'ficha',nome:'Ficha de Atendimento · Divórcio',quem:'Uso interno',desc:'Roteiro completo para a reunião: dados das partes, relacionamento, patrimônio, dívidas, filhos, riscos, plano de ação e honorários.',fn:d=>docFichaAtendimento(d),arq:'Ficha de Atendimento - Divorcio'},
+  {id:'devolutiva',nome:'Ficha Devolutiva · Divórcio e Partilha',quem:'Para o cliente',desc:'Resumo do atendimento para entregar ao cliente: o que ele contou, bens, filhos, próximos passos, honorários e ciência com assinatura.',fn:d=>docDevolutiva(d),arq:'Ficha Devolutiva - Divorcio e Partilha'},
+  {id:'rolc',nome:'Rol de Documentos · Divórcio Consensual',quem:'Para o cliente',desc:'Lista separada por blocos: documentos pessoais, procuração, outro cônjuge, filhos, patrimônio e dívidas.',fn:d=>docRol(d,false),arq:'Rol de Documentos - Divorcio Consensual',wpp:false},
+  {id:'roll',nome:'Rol de Documentos · Divórcio Litigioso',quem:'Para o cliente',desc:'Tudo do consensual, mais dados da outra parte, provas em papel, provas em fotos e prints, e testemunhas.',fn:d=>docRol(d,true),arq:'Rol de Documentos - Divorcio Litigioso',wpp:true}];
+function telaAtendimento(){
+  if(!CLI.carregado){Promise.all([carregarClientes(),podeFinanceiro()&&!FIN.carregado?carregarFin():null]).then(render);return '<div class="lead"><div class="carregando"><span></span><span></span><span></span></div></div>'}
+  const cl=(D.clientes||[]).filter(c=>!c.exemplo||!REAL).slice().sort((a,b)=>String(a.nome).localeCompare(String(b.nome),'pt-BR')),c=cl.find(x=>x.id===AT.cli)||null;
+  return '<div class="lead"><h3 style="margin:0">Atendimento</h3><p class="mut" style="margin:2px 0 8px">Modelos com o seu timbre. Escolha o cliente para os dados já virem preenchidos, ou deixe em branco para imprimir a ficha vazia.</p>'+
+    '<label class="f" style="max-width:520px">Cliente (opcional)<select class="inp" id="at-cli"><option value="">Ficha em branco</option>'+cl.map(x=>'<option value="'+x.id+'"'+(c&&x.id===c.id?' selected':'')+'>'+esc(x.nome)+'</option>').join('')+'</select></label></div>'+
+    '<div class="at-grade">'+AT_DOCS.map(x=>'<div class="lead at-card"><div class="at-cab"><span class="at-ic">'+(x.id==='ficha'?'📝':x.id==='devolutiva'?'📄':'📋')+'</span><div><b>'+esc(x.nome)+'</b><small class="pill" style="--c:'+(x.quem==='Uso interno'?'var(--ret)':'var(--ok)')+'">'+x.quem+'</small></div></div>'+
+      '<p class="mut" style="margin:6px 0 10px;font-size:13.5px">'+esc(x.desc)+'</p><div class="acoes" style="margin:0"><button class="btn sm pri" data-at="ver" data-id="'+x.id+'">Ver e imprimir</button><button class="btn sm" data-at="word" data-id="'+x.id+'">Baixar Word</button>'+
+      (x.wpp!=null?'<button class="btn sm" data-at="copiar" data-id="'+x.id+'">Copiar para WhatsApp</button>':'')+'</div></div>').join('')+'</div>'+
+    '<p class="nota">A ficha de atendimento é interna e traz plano de ação e riscos: não entregue ao cliente. A devolutiva e o rol podem ser entregues. Revise sempre antes de usar.</p>'}
+document.addEventListener('change',e=>{if(e.target.id==='at-cli'){AT.cli=e.target.value||null;render()}});
+async function atAbrir(x){const c=(D.clientes||[]).find(y=>y.id===AT.cli),d=atDados(c);let cab='',rod='';try{const m=await modeloTimbre();cab=m.cab;rod=m.rod}catch(e){}
+  const corpo='<style>'+AT_CSS+'</style>'+(cab?'<img class="tim" src="'+cab+'" alt="">':'')+atHTML(x.fn(d))+(rod?'<img class="tim" src="'+rod+'" alt="" style="margin-top:20pt">':'');
+  abrirDoc_(x.nome,corpo,x.arq+(c?' - '+nomeArq(c.nome):''));const el=document.getElementById('docprev');if(el)el._at=x.id}
+async function atBaixarWord(x){const c=(D.clientes||[]).find(y=>y.id===AT.cli),d=atDados(c);
+  try{const m=await modeloTimbre();const z=await JSZip.loadAsync(m.buf);let doc=await z.file('word/document.xml').async('string');
+    const ini=doc.indexOf('<w:body>')+8,sect=doc.slice(doc.lastIndexOf('<w:sectPr'));doc=doc.slice(0,ini)+atWord(x.fn(d))+sect;z.file('word/document.xml',doc);
+    const blob=await z.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+    const u=URL.createObjectURL(blob),l=document.createElement('a');l.href=u;l.download=x.arq+(c?' - '+c.nome:'')+'.docx';document.body.appendChild(l);l.click();setTimeout(()=>{URL.revokeObjectURL(u);l.remove()},800)}
+  catch(e){console.warn(e);toast('Não consegui abrir o modelo com o timbre. Confira a internet e tente de novo.')}}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-at]');if(!b)return;const x=AT_DOCS.find(y=>y.id===b.dataset.id);if(!x)return;
+  if(b.dataset.at==='ver')atAbrir(x);else if(b.dataset.at==='word')atBaixarWord(x);
+  else if(b.dataset.at==='copiar'){const c=(D.clientes||[]).find(y=>y.id===AT.cli);copiar(rolTexto(atDados(c),x.id==='roll'))}},true);
+/* no visualizador, "Baixar Word" dos documentos do Atendimento usa o modelo com o timbre */
+document.addEventListener('click',e=>{const b=e.target.closest('[data-doc="word"]');if(!b)return;const el=document.getElementById('docprev');if(!el||!el._at)return;
+  e.stopImmediatePropagation();const x=AT_DOCS.find(y=>y.id===el._at);if(x)atBaixarWord(x)},true);
+
 /* =================== Comemoração: alguém tocou no WhatsApp do site =================== */
 /* Sem dado pessoal: o site só conta página, assunto e origem. O agente do assunto comemora com fogos.
    Violência doméstica é diferente: aviso discreto da Sofia, sem fogos, lembrando a regra do sigilo. */
@@ -4218,7 +4477,15 @@ const ehEnt=l=>/^entrada · /i.test((l&&l.descricao)||'');
 const CT={cli:null,proc:null,T:'',E:'',entData:null,entPago:true,forma:'pix',n:4,v1:null,datas:[],vals:[],apagar:null};
 const procsDoCli=cid=>(D.processos||[]).filter(p=>p.cliente_id===cid&&!p.exemplo);
 const titProc=id=>{const p=(D.processos||[]).find(x=>x.id===id);return p?p.titulo:''};
-function ctReset(cid){Object.assign(CT,{modo:'fixo',exdesc:'',cli:cid||null,proc:null,T:'',E:'',entData:hojeISO(),entPago:true,forma:'pix',n:4,v1:addDias(hojeISO(),30),datas:[],vals:[]});ctCalc(true)}
+function ctReset(cid){Object.assign(CT,{subst:null,modo:'fixo',exdesc:'',cli:cid||null,proc:null,T:'',E:'',entData:hojeISO(),entPago:true,forma:'pix',n:4,v1:addDias(hojeISO(),30),datas:[],vals:[]});ctCalc(true)}
+/* traz para o contrato os honorários que o cliente já tem (para reorganizar no formato novo) */
+function ctPrefill(cid){const c=(D.clientes||[]).find(x=>x.id===cid);if(!c)return false;
+  const L=lancDe(c).filter(l=>l.tipo==='entrada'&&!l.exemplo&&!pendExito(l)&&/honor/i.test(l.categoria||''));if(!L.length)return false;
+  const procs=[...new Set(L.map(l=>l.processo_id||''))];if(procs.length>1)return false;
+  const pagos=L.filter(l=>l.pago_em||ehEnt(l)).sort(porVenc),ab=L.filter(l=>!l.pago_em&&!ehEnt(l)).sort(porVenc);
+  CT.subst=L.map(l=>l.id);CT.nPagos=pagos.length;CT.proc=procs[0]||null;CT.T=fmtDin(somaV(L));const E=somaV(pagos);CT.E=E?fmtDin(E):'';
+  if(pagos.length){CT.entData=pagos[0].pago_em||pagos[0].vencimento;CT.entPago=pagos.every(x=>x.pago_em);CT.forma=pagos[0].forma||'pix'}
+  CT.n=ab.length;CT.datas=ab.map(l=>l.vencimento);CT.vals=ab.map(l=>r2(+l.valor));if(ab[0])CT.v1=ab[0].vencimento;return true}
 function ctCalc(novasDatas){const T=numDin(CT.T),E=numDin(CT.E),n=Math.max(0,Math.min(60,parseInt(CT.n)||0)),R=r2(T-E);
   if(novasDatas||CT.datas.length!==n){const v=CT.v1||addDias(hojeISO(),30);CT.datas=[];for(let i=0;i<n;i++)CT.datas.push(somaMesISO(v,i))}
   const base=n?Math.floor(Math.max(0,R)/n*100)/100:0;CT.vals=[];for(let i=0;i<n;i++)CT.vals.push(i===n-1?r2(Math.max(0,R)-base*(n-1)):base)}
@@ -4227,7 +4494,8 @@ function ctOpsProc(cid){const P=cid?procsDoCli(cid):[];const sel=CT.proc||(P.len
 function ctLinhas(){return CT.datas.map((d,i)=>'<div class="ct-l"><span>'+(i+1)+'ª parcela</span><input class="inp" type="date" data-ctd="'+i+'" value="'+esc(d)+'" aria-label="Vencimento da '+(i+1)+'ª parcela"><input class="inp" inputmode="decimal" data-ctv="'+i+'" value="'+fmtDin(CT.vals[i])+'" aria-label="Valor da '+(i+1)+'ª parcela"></div>').join('')}
 function formContrato(cFix){const cid=cFix?cFix.id:CT.cli,ex=CT.modo==='exito';
   const cls=(D.clientes||[]).filter(c=>!c.exemplo).slice().sort((a,b)=>String(a.nome).localeCompare(String(b.nome),'pt-BR'));
-  return '<form class="hon-form plano ct" id="ct-form"'+(cFix?' data-cli="'+cFix.id+'"':'')+'><b class="hon-ptit">📄 Novo contrato de honorários</b>'+
+  return '<form class="hon-form plano ct" id="ct-form"'+(cFix?' data-cli="'+cFix.id+'"':'')+'><b class="hon-ptit">📄 '+(CT.subst?'Contrato de honorários':'Novo contrato de honorários')+'</b>'+
+    (CT.subst?'<div class="aviso" style="margin:8px 0 0;font-size:13px">Trouxe para cá os <b>'+CT.subst.length+' lançamentos</b> de honorários que este cliente já tem'+(CT.nPagos>1?' (os '+CT.nPagos+' valores já recebidos viraram a entrada)':'')+'. Confira e ajuste. Ao salvar, este contrato <b>substitui</b> esses lançamentos. <button type="button" class="lnk" data-ct="zerar">Prefiro começar um contrato novo, sem mexer nos antigos</button></div>':'')+
     '<div class="seg" style="margin:8px 0 4px"><button type="button" data-ctmodo="fixo" class="'+(ex?'':'on')+'">💰 Valor combinado</button><button type="button" data-ctmodo="exito" class="'+(ex?'on':'')+'">🏆 No êxito da ação</button></div>'+
     '<div class="hon-campos" style="margin-top:8px">'+(cFix?'':'<label>Cliente<select class="inp" id="ct-cli"><option value="">Escolha o cliente</option>'+cls.map(c=>'<option value="'+c.id+'"'+(c.id===cid?' selected':'')+'>'+esc(c.nome)+'</option>').join('')+'</select></label>')+
       '<label>Processo<select class="inp" id="ct-proc">'+ctOpsProc(cid)+'</select></label>'+(ex?'':'<label>Valor total (R$)<input class="inp" id="ct-T" inputmode="decimal" placeholder="2.500,00" value="'+esc(CT.T)+'" autocomplete="off"></label>')+'</div>'+
@@ -4256,11 +4524,12 @@ document.addEventListener('input',e=>{const t=e.target;if(!t.closest||!t.closest
   if(t.id==='ct-n'||t.id==='ct-v1'){CT[t.id.slice(3)]=t.value;ctCalc(true);ctRedesenha();return}
   if(t.id==='ct-entData')CT.entData=t.value;if(t.id==='ct-exdesc'){CT.exdesc=t.value;ctPrev()}if(t.id==='ct-E'&&CT.modo==='exito')ctPrev()});
 document.addEventListener('change',e=>{const t=e.target;if(!t.closest||!t.closest('#ct-form'))return;
-  if(t.id==='ct-cli'){CT.cli=t.value||null;CT.proc=null;const s=$('#ct-proc');if(s)s.innerHTML=ctOpsProc(CT.cli);return}
+  if(t.id==='ct-cli'){const v=t.value||null,md=CT.modo;ctReset(v);CT.modo=md;if(v&&md!=='exito')ctPrefill(v);render();return}
   if(t.id==='ct-proc')CT.proc=t.value||null;if(t.id==='ct-entPago')CT.entPago=t.checked;if(t.id==='ct-forma')CT.forma=t.value;if(t.id==='ct-entData')CT.entData=t.value;
   if(t.dataset.ctv!=null){t.value=fmtDin(CT.vals[+t.dataset.ctv])}});
 document.addEventListener('click',e=>{const t=e.target.closest('[data-ct]');if(!t)return;
-  if(t.dataset.ct==='cancela'){HON.modo=null;HON.id=null;FIN.novo=false;render()}});
+  if(t.dataset.ct==='cancela'){HON.modo=null;HON.id=null;FIN.novo=false;render()}
+  if(t.dataset.ct==='zerar'){const f=$('#ct-form'),cid=(f&&f.dataset.cli)||CT.cli;ctReset(cid);render()}});
 document.addEventListener('click',e=>{const t=e.target.closest('[data-ctmodo]');if(!t)return;const s=$('#ct-cli');if(s)CT.cli=s.value||null;const p=$('#ct-proc');if(p)CT.proc=p.value||null;CT.modo=t.dataset.ctmodo;render();const f=$('#ct-form');if(f)f.scrollIntoView({block:'nearest'})});
 async function salvarContrato(f){const cid=f.dataset.cli||(($('#ct-cli')||{}).value||'');const c=(D.clientes||[]).find(x=>x.id===cid);
   if(!c){toast('Escolha o cliente.');return}
@@ -4278,8 +4547,8 @@ async function salvarContrato(f){const cid=f.dataset.cli||(($('#ct-cli')||{}).va
   CT.vals.forEach((v,i)=>rows.push(Object.assign({},base,{descricao:('Honorários · '+tit).slice(0,120),categoria:'Parcela de honorários',valor:r2(v),vencimento:CT.datas[i],pago_em:null,forma:null,parcela:n>1?i+1:null,parcelas:n>1?n:null})));
   const btn=f.querySelector('[type=submit]');if(btn)btn.disabled=true;
   try{if((D.fin||[]).some(l=>l.exemplo)){const ex=D.fin.filter(l=>l.exemplo).map(l=>l.id);if(!REAL)D.fin=D.fin.filter(l=>!l.exemplo);else await STORE.del('lancamentos',ex)}
-    await STORE.ins('lancamentos',rows);HON.modo=null;HON.id=null;FIN.novo=false;render();
-    toast('Contrato salvo: '+brl(T)+(E?' · entrada '+brl(E):'')+(n?' · '+n+(n===1?' parcela':' parcelas'):'')+'.')}
+    await STORE.ins('lancamentos',rows);const sub=(CT.subst||[]).filter(id=>(D.fin||[]).some(x=>x.id===id));if(sub.length)await STORE.del('lancamentos',sub);CT.subst=null;HON.modo=null;HON.id=null;FIN.novo=false;render();
+    toast((sub.length?'Contrato reorganizado: ':'Contrato salvo: ')+brl(T)+(E?' · entrada '+brl(E):'')+(n?' · '+n+(n===1?' parcela':' parcelas'):'')+'.')}
   catch(x){console.error(x);toast('Não consegui salvar agora.');if(btn)btn.disabled=false}}
 async function salvarExito(f,c){const E=numDin(CT.E),pid=($('#ct-proc')||{}).value||null,p=pid?(D.processos||[]).find(x=>x.id===pid):null;
   const tit=p?p.titulo:((TEMAS[c.tema]||{}).nome||'ação'),comb=String(CT.exdesc||'').trim(),nome=String(c.nome).slice(0,80),entData=CT.entData||hojeISO();
@@ -4288,7 +4557,7 @@ async function salvarExito(f,c){const E=numDin(CT.E),pid=($('#ct-proc')||{}).val
   rows.push(Object.assign({},base,{descricao:('No êxito da ação · '+(comb||tit)).slice(0,120),categoria:CAT_EXITO,valor:0.01,vencimento:hojeISO(),pago_em:null,forma:null,grupo:null}));
   const btn=f.querySelector('[type=submit]');if(btn)btn.disabled=true;
   try{if((D.fin||[]).some(l=>l.exemplo)){const ex=D.fin.filter(l=>l.exemplo).map(l=>l.id);if(!REAL)D.fin=D.fin.filter(l=>!l.exemplo);else await STORE.del('lancamentos',ex)}
-    await STORE.ins('lancamentos',rows);normExito(D.fin);HON.modo=null;HON.id=null;FIN.novo=false;render();toast('Contrato no êxito salvo'+(E?', com entrada de '+brl(E):'')+'.')}
+    await STORE.ins('lancamentos',rows);normExito(D.fin);const sub=(CT.subst||[]).filter(id=>(D.fin||[]).some(x=>x.id===id));if(sub.length)await STORE.del('lancamentos',sub);CT.subst=null;HON.modo=null;HON.id=null;FIN.novo=false;render();toast('Contrato no êxito salvo'+(E?', com entrada de '+brl(E):'')+'.')}
   catch(x){console.error(x);toast('Não consegui salvar agora.');if(btn)btn.disabled=false}}
 document.addEventListener('submit',e=>{if(e.target.id!=='ct-form')return;e.preventDefault();salvarContrato(e.target)});
 /* excluir uma parcela (ou a entrada) e renumerar as que sobram */
@@ -4351,7 +4620,7 @@ document.addEventListener('change',e=>{if(e.target.closest('#hon-form'))previaHo
 document.addEventListener('click',async e=>{const t=e.target.closest('[data-hon]');if(!t)return;const a=t.dataset.hon,id=t.dataset.id;
   if(a==='cancela'){HON.modo=null;HON.id=null;render();return}
   if(a==='verpagos'){HON.verPagos=!HON.verPagos;render();return}
-  if(a==='novo'){const fecha=HON.modo==='novo'&&HON.id===id;HON.modo=fecha?null:'novo';HON.id=fecha?null:id;if(!fecha)ctReset(id);render();if(!fecha){const f=$('#ct-T');if(f){f.focus();f.scrollIntoView({behavior:'smooth',block:'center'})}}return}
+  if(a==='novo'){const fecha=HON.modo==='novo'&&HON.id===id;HON.modo=fecha?null:'novo';HON.id=fecha?null:id;if(!fecha){ctReset(id);ctPrefill(id)}render();if(!fecha){const f=$('#ct-T');if(f){f.focus();f.scrollIntoView({behavior:'smooth',block:'center'})}}return}
   if(a==='apagar'||a==='apagagrupo'){const k=a==='apagar'?id:'g'+id;if(CT.apagar!==k){CT.apagar=k;render();setTimeout(()=>{if(CT.apagar===k){CT.apagar=null;render()}},5000);return}
     CT.apagar=null;try{if(a==='apagar'){await excluirLanc(id);toast('Lançamento excluído.')}else{const l=(D.fin||[]).find(x=>x.id===id),G=doGrupo(l);await STORE.del('lancamentos',G.map(x=>x.id));HON.modo=null;HON.id=null;toast('Contrato excluído ('+G.length+(G.length===1?' lançamento':' lançamentos')+').')}}
     catch(x){console.error(x);toast('Não consegui excluir agora.')}render();return}
