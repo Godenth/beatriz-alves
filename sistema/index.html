@@ -4311,6 +4311,7 @@ function formPlano(l){const G=doGrupo(l),pagos=G.filter(x=>x.pago_em||ehEnt(x)),
   const v1=ab.length?ab[0].vencimento:somaMesISO(hojeISO(),1);
   return '<form class="hon-form plano" id="hon-form" data-hontipo="plano" data-id="'+l.id+'"><b class="hon-ptit">Editar o contrato'+(G.length>1?' · '+esc(String(l.descricao).replace(/\s*\(\d+\/\d+\)$/,'')):'')+'</b>'+
     '<p class="mut" style="margin:2px 0 8px;font-size:13px">Já recebido ou entrada: <b>'+brl(somaV(pagos))+'</b> em '+pagos.length+(pagos.length===1?' lançamento':' lançamentos')+'. O que faltar é dividido igualmente nas parcelas em aberto, e você ajusta mês a mês ao tocar em Recebi.</p>'+
+    '<label class="f" style="margin-bottom:8px">Nome dos honorários (vale para todas as parcelas)<input class="inp" id="hf-nome" maxlength="110" value="'+esc(String((G.find(x=>!ehEnt(x))||l).descricao||'').replace(/^entrada · /i,''))+'"></label>'+
     '<div class="hon-campos"><label>Total do contrato (R$)<input class="inp" id="hf-total" inputmode="decimal" value="'+fmtDin(somaV(G))+'" autocomplete="off"></label>'+
     '<label>Parcelas em aberto<input class="inp" id="hf-n" type="number" min="0" max="'+Math.max(1,120-pagos.length)+'" value="'+ab.length+'"></label>'+
     '<label>1º vencimento em aberto<input class="inp" type="date" id="hf-venc" value="'+v1+'"></label></div>'+
@@ -4349,7 +4350,11 @@ document.addEventListener('submit',async e=>{const f=e.target;if(f.id!=='hon-for
       await STORE.upd('lancamentos',l.id,c);const p=red&&red.checked?await redistribuir(doGrupo(l),total,[l.id]):null;toast('Parcela salva. '+txtRedis(p))}
     else if(tipo==='plano'){const tot=numDin($('#hf-total').value),n=Math.max(0,Math.min(120,Math.floor(+$('#hf-n').value||0))),v1=$('#hf-venc').value;
       if(!(tot>0)){toast('Digite o total do contrato.');btn.disabled=false;return}
-      const p=await salvarPlano(l,tot,n,v1);toast('Contrato atualizado: total de '+brl(tot)+'. '+txtRedis(p))}
+      const nome=(($('#hf-nome')||{}).value||'').trim().slice(0,110);
+      const p=await salvarPlano(l,tot,n,v1);
+      if(nome){const G2=l.grupo?(D.fin||[]).filter(x=>x.grupo===((D.fin||[]).find(y=>y.id===l.id)||l).grupo):doGrupo((D.fin||[]).find(y=>y.id===l.id)||l);
+        for(const x of G2){const d=ehEnt(x)?'Entrada · '+nome:nome;if(x.descricao!==d)await STORE.upd('lancamentos',x.id,{descricao:d.slice(0,120)})}}
+      toast('Contrato atualizado: total de '+brl(tot)+'. '+txtRedis(p))}
   }catch(x){console.error(x);toast('Não consegui salvar agora. Recarreguei os dados.');if(REAL)await carregarFin()}
   HON.modo=null;HON.id=null;render()});
 
