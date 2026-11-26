@@ -3668,10 +3668,11 @@ function docFichaAtendimento(d){const lin2=(a,b)=>[L_(a),V_(''),L_(b),V_('')],w4
   atB.p('**Plano de ação:**'),atB.lin(4),
   atB.p('**Riscos identificados:**'),atB.lin(3),
   atB.p('**Documentos pendentes:**'),atB.lin(2),
-  atB.sec('13. Honorários e fechamento'),
-  atB.tab([[L_('Proposta consensual'),V_(''),L_('Proposta litigiosa'),V_('')],[L_('Valor fechado'),V_(d.honTot),L_('Entrada'),V_(d.honEnt)],[L_('Parcelas'),V_(d.honParc),L_('Êxito'),V_(d.honEx)]],w4),
+  atB.sec('13. Fechamento'),
   atB.chk('Assinados',['Contrato de honorários','Procuração','Declaração de hipossuficiência','Rol de documentos enviado','Ficha devolutiva entregue']),
-  atB.tab([[L_('Próximo contato'),V_('')],[L_('Observações'),V_('')]],[22,78])]}
+  atB.tab([[L_('Próximo contato'),V_('')],[L_('Observações'),V_('')]],[22,78]),
+  atB.sec('14. Honorários'),
+  atB.tab([[L_('Proposta consensual'),V_(''),L_('Proposta litigiosa'),V_('')],[L_('Valor fechado'),V_(d.honTot),L_('Entrada'),V_(d.honEnt)],[L_('Parcelas'),V_(d.honParc),L_('Êxito'),V_(d.honEx)]],w4)]}
 
 /* ---- 2 · Ficha devolutiva (entregue ao cliente) ---- */
 /* "Quem sou eu": texto fixo que muda conforme o que foi marcado no item 1 da devolutiva */
@@ -3879,10 +3880,10 @@ function atPadroes(B,her){her=her||{};const o={};atChaves(B).forEach(b=>{
   else if(b.k==='lin')o[b.key]=her[b.key]!=null?her[b.key]:'';
   else if(b.campos)b.campos.forEach(c=>o[c.key]=her[c.key]!=null?her[c.key]:'')});return o}
 /* tudo o que a ficha de atendimento tem (padrões + o que foi salvo) */
-function atValoresFicha(c){const f=atSalva(c.id,'ficha'),B=docFichaAtendimento(atDados(c));return Object.assign(atPadroes(B),f?f.dados:{})}
+function atValoresFicha(c){const f=atSalva(c.id,'ficha'),B=docFichaAtendimento(atDados(c));return Object.assign(atPadroes(B),f?atMigra('ficha',f.dados):{})}
 /* a devolutiva puxa da ficha de atendimento */
 function atHerda(id,c){if(id!=='devolutiva'||!c)return {};const F=atValoresFicha(c),h={},t=k=>String(F[k]==null?'':F[k]).trim(),a=k=>Array.isArray(F[k])?F[k]:[];
-  const S2='2. Dados do(a) cliente||',S3='3. Dados da outra parte||',S4='4. Relacionamento||',S8='8. Filhos||',S11='11. O que é mais importante para o(a) cliente||',S13='13. Honorários e fechamento||';
+  const S2='2. Dados do(a) cliente||',S3='3. Dados da outra parte||',S4='4. Relacionamento||',S8='8. Filhos||',S11='11. O que é mais importante para o(a) cliente||',S13='14. Honorários||';
   const p=(dk,v)=>{if(Array.isArray(v)?v.length:String(v||'').trim())h[dk]=v};
   p('||Atendimento em',t('1. Atendimento||Data'));
   const res=a('5. Objeto e modalidade|O que precisa ser resolvido'),mapa={'Divórcio':'Divórcio','Dissolução de união estável':'Dissolução de união estável','Partilha de bens':'Partilha de bens','Guarda':'Guarda dos filhos','Convivência':'Convivência com os filhos','Alimentos dos filhos':'Pensão alimentícia dos filhos'};
@@ -3916,7 +3917,7 @@ function atHerda(id,c){if(id!=='devolutiva'||!c)return {};const F=atValoresFicha
   p('13. Honorários advocatícios||Valor total',t(S13+'Valor fechado'));p('13. Honorários advocatícios||Entrada',t(S13+'Entrada'));p('13. Honorários advocatícios||Forma de pagamento',t(S13+'Parcelas'));p('13. Honorários advocatícios||Honorários de êxito',t(S13+'Êxito'));
   return h}
 /* valores efetivos de um documento: padrões (cadastro + herança) por baixo do que foi salvo */
-function atEfetivos(x,c){const d=atDados(c);let B=x.fn(d);const f=c?atSalva(c.id,x.id):null;const defs=atPadroes(B,atHerda(x.id,c)),vals=Object.assign({},defs,f?f.dados:{});if(x.id==='devolutiva')B=x.fn(d,vals);return {B,defs,vals,f}}
+function atEfetivos(x,c){const d=atDados(c);let B=x.fn(d);const f=c?atSalva(c.id,x.id):null;const defs=atPadroes(B,atHerda(x.id,c)),vals=Object.assign({},defs,f?atMigra(x.id,f.dados):{});if(x.id==='devolutiva')B=x.fn(d,vals);return {B,defs,vals,f}}
 const atIgual=(a,b)=>JSON.stringify(Array.isArray(a)?a.slice().sort():a)===JSON.stringify(Array.isArray(b)?b.slice().sort():b);
 
 /* ---- formulário na tela ---- */
@@ -3941,6 +3942,44 @@ function atLerForm(){const v={};document.querySelectorAll('#at-ed [data-atk]').f
 
 /* ---- fichas salvas ---- */
 const atSalva=(cid,mod)=>(D.fichas||[]).find(f=>f.cliente_id===cid&&f.modelo===mod);
+/* fichas salvas antes da mudança: "13. Honorários e fechamento" virou "13. Fechamento" + "14. Honorários" (no final) */
+const AT_HON=['Proposta consensual','Proposta litigiosa','Valor fechado','Entrada','Parcelas','Êxito'];
+function atMigra(mod,d){d=d||{};if(mod!=='ficha')return d;const P='13. Honorários e fechamento|',o={};
+  Object.keys(d).forEach(k=>{if(!k.startsWith(P)){o[k]=d[k];return}const r=k.slice(P.length);o[(AT_HON.includes(r.replace(/^\|/,''))?'14. Honorários|':'13. Fechamento|')+r]=d[k]});return o}
+/* opções de impressão da ficha de atendimento (salvas com a ficha de cada cliente) */
+const AT_OPC={hon:'_impressao|honorarios',dados:'_impressao|ocultar_dados'};
+const atOcultando=x=>{const c=atCli();return !!(c&&x.id==='ficha'&&atVal(atEfetivos(x,c).vals,AT_OPC.dados,false))};
+const atRefArq=c=>'cliente-'+String(c.id||'').replace(/[^A-Za-z0-9]/g,'').slice(0,6);
+const atIniciais=t=>String(t||'').trim().split(/\s+/).filter(p=>p.length>2).map(p=>p[0].toUpperCase()+'.').join(' ')||'dado reservado';
+const AT_RESERVA=['Endereço','Endereço (para citação)','Local de trabalho','Local de trabalho / empresa','Nascimento','CPF','RG','Telefone / WhatsApp','Outro contato','Redes sociais',
+  'Cartório','Processo já existente','Nº do processo','Contato seguro','Empresas (nome, CNPJ, participação)','Bens em nome de terceiros ou da empresa','Descrição / endereço','Escola e turno'];
+function atPrivacidade(x,R,vals){if(x.id!=='ficha')return R;let out=R;
+  if(!atVal(vals,AT_OPC.hon,true)){out=[];let pula=false;R.forEach(b=>{if(b.k==='sec')pula=/^14\. Honorários/.test(b.t);else if(b.k==='fim')pula=false;if(!pula)out.push(b)})}
+  if(!atVal(vals,AT_OPC.dados,false))return out;
+  /* nomes das pessoas da ficha viram iniciais em qualquer lugar do texto */
+  const nomes=['2. Dados do(a) cliente||Nome completo','3. Dados da outra parte||Nome completo','1. Atendimento||Indicado por','8. Filhos||Nome|1','8. Filhos||Nome|2','8. Filhos||Nome|3']
+    .map(k=>String(vals[k]||'').trim()).filter(n=>n.length>2);const c=atCli();if(c&&c.nome)nomes.push(String(c.nome).trim());
+  const trocas=[];nomes.forEach(n=>{const ini=atIniciais(n),pri=n.split(/\s+/)[0];trocas.push([n,ini]);if(pri.length>2)trocas.push([pri,ini])});
+  trocas.sort((a,b)=>b[0].length-a[0].length);
+  const er=t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const mascara=t=>{t=String(t==null?'':t);if(!t)return t;
+    trocas.forEach(([n,ini])=>{t=t.replace(new RegExp('(^|[^\\p{L}])'+er(n)+'(?=$|[^\\p{L}])','giu'),(m,a)=>a+ini)});
+    return t.replace(/\b\d{7}-?\d{2}\.?\d{4}\.?\d\.?\d{2}\.?\d{4}\b/g,'dado reservado')
+      .replace(/\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g,'dado reservado')
+      .replace(/[\w.+-]+@[\w-]+\.[\w.-]+/g,'dado reservado')
+      .replace(/(\(?\b\d{2}\)?\s?)?\b9?\d{4}[-\s]?\d{4}\b/g,'dado reservado')};
+  const cel=(c,lab)=>{if(c.v==null||!String(c.v).trim())return c;
+    if(AT_RESERVA.includes(lab))return Object.assign({},c,{v:'dado reservado'});
+    if(lab==='Nascimento / idade')return Object.assign({},c,{v:String(c.v).replace(/\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/g,'dado reservado')});
+    if(lab==='Nome completo'||lab==='Indicado por'||lab==='Nome')return Object.assign({},c,{v:atIniciais(c.v)});
+    return Object.assign({},c,{v:mascara(c.v)})};
+  return out.map(b=>{
+    if(b.k==='tab'){const hd=b.rows[0]&&b.rows[0].some(c=>c.h!=null)?b.rows[0]:null;
+      return Object.assign({},b,{rows:b.rows.map(r=>r.map((c,ci)=>c.v==null?c:cel(c,ci>0&&r[ci-1].l!=null?r[ci-1].l:hd&&hd[ci]?hd[ci].h:'')))})}
+    if(b.k==='p'||b.k==='txt'||b.k==='nota')return Object.assign({},b,{t:mascara(b.t)});
+    if(b.k==='lista')return Object.assign({},b,{itens:b.itens.map(o=>typeof o==='object'?Object.assign({},o,{t:mascara(o.t)}):mascara(o))});
+    if(b.k==='chk')return Object.assign({},b,{m:(b.m||[]).map(mascara),o:(b.o||[]).map(mascara)});
+    return b})}
 async function atCarregarFichas(){try{if(REAL)await STORE.load('fichas','atualizado_em');else if(!D.fichas)D.fichas=[]}catch(e){console.warn(e);D.fichas=D.fichas||[]}AT.carregado=true}
 async function atGravar(silencioso){if(!AT.edit||!AT.cli)return;const x=AT_DOCS.find(y=>y.id===AT.edit);const lido=atLerForm(),defs=atEfetivos(x,atCli()).defs,dados={};Object.keys(lido).forEach(k=>{if(!atIgual(lido[k],defs[k]))dados[k]=lido[k]});const agora=new Date().toISOString(),f=atSalva(AT.cli,AT.edit);
   AT.salvando=true;atStatus('Salvando…');
@@ -3960,7 +3999,7 @@ const AT_DOCS=[
   {id:'rolc',nome:'Rol de Documentos · Divórcio Consensual',quem:'Para o cliente',desc:'Lista separada por blocos: documentos pessoais, procuração, outro cônjuge, filhos, patrimônio e dívidas. Marque só o que este cliente precisa mandar.',fn:d=>docRol(d,false),arq:'Rol de Documentos - Divorcio Consensual',wpp:false},
   {id:'roll',nome:'Rol de Documentos · Divórcio Litigioso',quem:'Para o cliente',desc:'Tudo do consensual, mais dados da outra parte, provas em papel, provas em fotos e prints, e testemunhas. Marque só o que este cliente precisa mandar.',fn:d=>docRol(d,true),arq:'Rol de Documentos - Divorcio Litigioso',wpp:true}];
 const atCli=()=>(D.clientes||[]).find(y=>y.id===AT.cli)||null;
-const atBlocos=(x,completo)=>{const c=atCli();if(!c)return atResolver(x.fn(atDados(null)),{});const E=atEfetivos(x,c);return (E.f||x.id==='devolutiva')&&!completo?atResolver(E.B,E.vals,true):atResolver(E.B,E.vals,false)};
+const atBlocos=(x,completo)=>{const c=atCli();if(!c)return atResolver(x.fn(atDados(null)),{});const E=atEfetivos(x,c);return atPrivacidade(x,(E.f||x.id==='devolutiva')&&!completo?atResolver(E.B,E.vals,true):atResolver(E.B,E.vals,false),E.vals)};
 function telaAtendimento(){
   if(!CLI.carregado||!AT.carregado){Promise.all([CLI.carregado?null:carregarClientes(),podeFinanceiro()&&!FIN.carregado?carregarFin():null,AT.carregado?null:atCarregarFichas()]).then(render);return '<div class="lead"><div class="carregando"><span></span><span></span><span></span></div></div>'}
   const cl=(D.clientes||[]).filter(c=>!c.exemplo||!REAL).slice().sort((a,b)=>String(a.nome).localeCompare(String(b.nome),'pt-BR')),c=atCli();
@@ -3978,17 +4017,20 @@ function telaAtEditor(c){const x=AT_DOCS.find(y=>y.id===AT.edit),f=atSalva(c.id,
   return '<div class="lead at-edtopo"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn sm" data-at="voltar" data-id="'+x.id+'">‹ Voltar</button><div style="margin-right:auto;min-width:0"><b style="font-size:17px">'+esc(x.nome)+'</b><div class="mut" style="font-size:13px">'+esc(c.nome)+' · <span id="at-st">'+(f?'Salvo em '+esc(new Date(f.atualizado_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})):'Ainda não salva')+'</span></div></div>'+
     '<button class="btn sm" data-at="salvar" data-id="'+x.id+'">Salvar</button><button class="btn sm pri" data-at="salvarver" data-id="'+x.id+'">Salvar e imprimir</button><button class="btn sm" data-at="salvarword" data-id="'+x.id+'">Salvar e baixar Word</button></div>'+
     (x.id==='devolutiva'?'<div class="aviso" style="margin:8px 0 0;font-size:13px">Os dados já vêm da <b>Ficha de Atendimento</b> deste cliente'+(atSalva(c.id,'ficha')?'':' (ela ainda não foi preenchida)')+'. Preencha só o que faltar ou mudar. Se depois você alterar a ficha de atendimento, o que você não mexeu aqui acompanha a mudança.</div>':'')+'<p class="nota" style="margin:6px 0 0">Salva sozinho enquanto você preenche. Na impressão sai <b>só o que foi preenchido</b>: partes em branco e opções não marcadas não aparecem. '+(x.id==='rolc'||x.id==='roll'?'<b>Marque os documentos que este cliente precisa mandar</b>: só eles saem na impressão e no WhatsApp (sem nenhum marcado, sai a lista completa). ':'')+'<button class="lnk" data-at="vercompleta" data-id="'+x.id+'">Imprimir a ficha completa</button></p></div>'+
-    '<div class="lead at-ed" id="at-ed">'+atForm(E.B,vivo||E.vals)+'</div>'+
+    '<div class="lead at-ed" id="at-ed">'+(x.id==='ficha'?(v=>'<div class="at-fchk"><b>Opções de impressão</b><span class="at-ops">'+
+      '<label class="at-op"><input type="checkbox" data-atk="'+AT_OPC.hon+'" data-bool="1"'+(atVal(v,AT_OPC.hon,true)?' checked':'')+'><span>Incluir os honorários na impressão</span></label>'+
+      '<label class="at-op"><input type="checkbox" data-atk="'+AT_OPC.dados+'" data-bool="1"'+(atVal(v,AT_OPC.dados,false)?' checked':'')+'><span>Ocultar os dados pessoais (LGPD)</span></label></span></div>'+
+      '<p class="nota" style="margin:2px 0 8px">Ocultar os dados pessoais: na impressão e no Word, os nomes viram iniciais e somem CPF, RG, nascimento, endereços, telefones, e-mails, local de trabalho, cartório, empresas, escola e números de processo. Confira os textos livres antes de enviar.</p>')(vivo||E.vals):'')+atForm(E.B,vivo||E.vals)+'</div>'+
     '<div class="acoes" style="justify-content:flex-end"><button class="btn" data-at="salvar" data-id="'+x.id+'">Salvar</button><button class="btn pri" data-at="salvarver" data-id="'+x.id+'">Salvar e imprimir</button></div>'}
 document.addEventListener('change',e=>{if(e.target.id==='at-cli'){AT.cli=e.target.value||null;AT.edit=null;render()}});
 async function atAbrir(x,completo){const c=atCli();let cab='',rod='';try{const m=await modeloTimbre();cab=m.cab;rod=m.rod}catch(e){}
   const corpo='<style>'+AT_CSS+'</style>'+(cab?'<img class="tim" src="'+cab+'" alt="">':'')+atHTML(atBlocos(x,completo))+(rod?'<img class="tim" src="'+rod+'" alt="" style="margin-top:20pt">':'');
-  abrirDoc_(x.nome,corpo,x.arq+(c?' - '+nomeArq(c.nome):''));const el=document.getElementById('docprev');if(el)el._at=x.id}
+  abrirDoc_(x.nome,corpo,x.arq+(c?' - '+(atOcultando(x)?atRefArq(c):nomeArq(c.nome)):''));const el=document.getElementById('docprev');if(el)el._at=x.id}
 async function atBaixarWord(x){const c=atCli();
   try{const m=await modeloTimbre();const z=await JSZip.loadAsync(m.buf);let doc=await z.file('word/document.xml').async('string');
     const ini=doc.indexOf('<w:body>')+8,sect=doc.slice(doc.lastIndexOf('<w:sectPr'));doc=doc.slice(0,ini)+atWord(atBlocos(x))+sect;z.file('word/document.xml',doc);
     const blob=await z.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
-    const u=URL.createObjectURL(blob),l=document.createElement('a');l.href=u;l.download=x.arq+(c?' - '+c.nome:'')+'.docx';document.body.appendChild(l);l.click();setTimeout(()=>{URL.revokeObjectURL(u);l.remove()},800)}
+    const u=URL.createObjectURL(blob),l=document.createElement('a');l.href=u;l.download=x.arq+(c?' - '+(atOcultando(x)?atRefArq(c):c.nome):'')+'.docx';document.body.appendChild(l);l.click();setTimeout(()=>{URL.revokeObjectURL(u);l.remove()},800)}
   catch(e){console.warn(e);toast('Não consegui abrir o modelo com o timbre. Confira a internet e tente de novo.')}}
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-at]');if(!b)return;const x=AT_DOCS.find(y=>y.id===b.dataset.id);if(!x)return;const a=b.dataset.at;
   if(a==='preencher'){AT.edit=x.id;render();scrollTo(0,0);return}
