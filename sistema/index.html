@@ -140,6 +140,10 @@ h2{font-size:24px;font-weight:700}
 .fg-bars i{display:block;width:min(22px,38%);border-radius:5px 5px 2px 2px;min-height:2px}
 .fg-bars i.e,.fg-leg i.e{background:var(--ok)}.fg-bars i.s,.fg-leg i.s{background:var(--graf2)}
 .fg-leg{display:flex;gap:16px;font-size:12.5px;color:var(--mut);margin-top:8px}.fg-leg span{display:flex;align-items:center;gap:6px}.fg-leg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.ga-graf{display:grid;gap:6px;height:200px;align-items:end;padding-top:8px;overflow-x:auto}
+.ga-pilha{flex:1;width:min(30px,70%);display:flex;flex-direction:column;justify-content:flex-end;border-radius:5px 5px 2px 2px;overflow:hidden}
+.ga-pilha i{display:block;width:100%}
+.ga-pilha i.r{background:var(--ok)}.ga-pilha i.a{background:var(--perigo)}.ga-pilha i.p{background:var(--ouro)}
 tr.atr td{background:color-mix(in srgb,var(--perigo) 7%,transparent)}
 .ag-leg{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--mut);margin:10px 0 0}.ag-leg span{display:flex;align-items:center;gap:6px}.ag-leg i{width:10px;height:10px;border-radius:3px}
 .ag-ev{display:flex;flex-direction:column;gap:1px;width:100%;text-align:left;border:0;cursor:pointer;font:inherit;color:var(--fg);background:color-mix(in srgb,var(--c) 16%,var(--card));border-left:3px solid var(--c);border-radius:8px;padding:6px 9px;margin:0 0 6px}
@@ -2443,7 +2447,7 @@ const somaMes=(ym,n)=>{const [y,m]=ym.split('-').map(Number);const d=new Date(y,
 const CATS={entrada:['Honorários','Parcela de honorários','Honorários de êxito','Consulta','Reembolso de custas','Outras entradas'],
   saida:['Aluguel e condomínio','Anúncios','Custas processuais','Sistemas e assinaturas','Salários e pró-labore','Impostos','Anuidade OAB','Contador','Material e escritório','Transporte','Outras despesas']};
 const FORMAS=[['pix','Pix'],['boleto','Boleto'],['cartao','Cartão'],['dinheiro','Dinheiro'],['transferencia','Transferência'],['outro','Outro']];
-const FIN={mes:null,filtro:'tudo',novo:false,tipo:'entrada',carregado:false,apagar:null,modoEnt:'contrato',cli:''};
+const FIN={mes:null,filtro:'tudo',novo:false,tipo:'entrada',carregado:false,apagar:null,modoEnt:'contrato',cli:'',visao:'mes',de:null,ate:null};
 const opsClientes=sel=>(D.clientes||[]).filter(c=>!c.exemplo).slice().sort((a,b)=>String(a.nome).localeCompare(String(b.nome),'pt-BR')).map(c=>'<option value="'+c.id+'"'+(c.id===sel?' selected':'')+'>'+esc(c.nome)+'</option>').join('');
 const opsProcsCli=(cid,sel)=>{const P=cid?procsDoCli(cid):[];return '<option value="">'+(P.length?'Sem processo':'Nenhum processo')+'</option>'+P.map(p=>'<option value="'+p.id+'"'+(p.id===sel?' selected':'')+'>'+esc(p.titulo)+'</option>').join('')};
 function seedFin(){const L=[],h=hojeISO(),ym=mesISO(h);
@@ -2493,6 +2497,7 @@ function catsFin(ym){const L=(D.fin||[]).filter(l=>l.tipo==='saida'&&mesISO(l.ve
 function telaFinanceiro(){
   if(!podeFinanceiro())return '<div class="lead"><p>O financeiro é visto só pela dona do escritório.</p></div>';
   if(!FIN.carregado||!CLI.carregado){Promise.all([FIN.carregado?null:carregarFin(),CLI.carregado?null:carregarClientes()]).then(render);return '<div class="lead"><div class="carregando"><span></span><span></span><span></span></div></div>'}
+  if(FIN.visao==='ano')return telaGanhosAno();
   const ym=FIN.mes||(FIN.mes=mesISO(hojeISO()));const r=resumoFin(ym);
   const k=(ic,rot,val,sub,cor)=>'<div class="ik"'+(cor?' style="--k:'+cor+'"':'')+'><span class="ik-i">'+ic+'</span><small>'+rot+'</small><b'+(cor?' style="color:'+cor+'"':'')+'>'+val+'</b>'+(sub?'<em>'+sub+'</em>':'')+'</div>';
   const L=(D.fin||[]).filter(l=>mesISO(l.vencimento)===ym||(l.pago_em&&mesISO(l.pago_em)===ym)).filter(l=>({tudo:1,entrada:l.tipo==='entrada',saida:l.tipo==='saida',aberto:!l.pago_em})[FIN.filtro]).filter(l=>!FIN.cli||(cliDoLanc(l)||{}).id===FIN.cli).sort((a,b)=>a.vencimento<b.vencimento?-1:1);
@@ -2502,7 +2507,7 @@ function telaFinanceiro(){
     '<td style="white-space:nowrap;text-align:right">'+(l.pago_em&&l.tipo==='entrada'?'<button class="btn sm" data-recibo="'+l.id+'" title="Recibo" aria-label="Recibo">🧾</button> ':'')+(pendExito(l)?'':l.pago_em?'<button class="btn sm" data-fin="desfaz" data-id="'+l.id+'">Desfazer</button>':'<button class="btn sm pri" data-fin="pago" data-id="'+l.id+'">'+(l.tipo==='entrada'?'Recebi':'Paguei')+'</button>')+
     ' <button class="btn sm" data-fin="editar" data-id="'+l.id+'" aria-label="Editar" title="Editar">✎</button> <button class="btn sm perigo" data-fin="apagar" data-id="'+l.id+'" aria-label="Excluir" title="Excluir">'+(FIN.apagar===l.id?'Excluir?':'🗑')+'</button></td></tr>'}).join('');
   return '<div class="ds">'+((D.fin||[]).some(l=>l.exemplo)?'<div class="aviso" style="margin-bottom:12px">Lançamentos de <b>exemplo</b>. Quando a '+esc(ESCRITORIO.primeiro||'você')+' cadastrar o primeiro de verdade, os exemplos somem.</div>':'')+
-    '<div class="balao" style="margin-bottom:14px">'+veraAv(48)+'<div class="tx"><b>Dona Vera:</b> '+falaVeraFin(r,ym)+'</div></div>'+cartaoCobrancas()+
+    segVisaoFin()+'<div class="balao" style="margin-bottom:14px">'+veraAv(48)+'<div class="tx"><b>Dona Vera:</b> '+falaVeraFin(r,ym)+'</div></div>'+cartaoCobrancas()+
     '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><button class="btn sm" data-fin="mes" data-n="-1" aria-label="Mês anterior">‹</button><b style="font-size:18px;min-width:170px;text-align:center">'+nomeMes(ym)+'</b><button class="btn sm" data-fin="mes" data-n="1" aria-label="Próximo mês">›</button>'+(ym!==mesISO(hojeISO())?'<button class="btn sm" data-fin="hoje">Mês atual</button>':'')+
       '<span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" data-fin="csv">Baixar planilha (CSV)</button><button class="btn sm pri" data-fin="novo">+ Lançamento</button></span></div>'+
     (FIN.novo||FIN.editar?formLanc():'')+
@@ -2511,6 +2516,53 @@ function telaFinanceiro(){
     '<div class="lead" style="margin-top:14px"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><h4 style="margin-right:auto">Lançamentos de '+nomeMes(ym).toLowerCase()+'</h4><select class="inp sm" id="fin-cli" aria-label="Filtrar por cliente" style="width:auto;max-width:230px"><option value="">Todos os clientes</option>'+opsClientes(FIN.cli)+'</select><div class="seg">'+[['tudo','Tudo'],['entrada','Entradas'],['saida','Saídas'],['aberto','Em aberto']].map(f=>'<button data-finfil="'+f[0]+'" class="'+(FIN.filtro===f[0]?'on':'')+'">'+f[1]+'</button>').join('')+'</div></div>'+
     (linhas?'<div class="tbl"><table><tr><th>Vence</th><th>Descrição</th><th class="num">Valor</th><th>Situação</th><th></th></tr>'+linhas+'</table></div>':'<p class="mut">Nada neste filtro.</p>')+'</div>'+
     '<p class="nota">Só a dona do escritório vê o financeiro. Valores e nomes ficam no banco protegido do escritório; não anote detalhes do caso na descrição.</p></div>'}
+/* ===== Ganhos do período (aba anual): recebidos, em atraso e a receber ===== */
+const segVisaoFin=()=>'<div class="seg" style="margin-bottom:14px"><button data-finvis="mes" class="'+(FIN.visao!=='ano'?'on':'')+'">📅 Mês a mês</button><button data-finvis="ano" class="'+(FIN.visao==='ano'?'on':'')+'">📊 Ganhos do ano</button></div>';
+function periodoGA(){const y=hojeISO().slice(0,4);if(!FIN.de)FIN.de=y+'-01';if(!FIN.ate)FIN.ate=y+'-12';if(FIN.de>FIN.ate){const t=FIN.de;FIN.de=FIN.ate;FIN.ate=t}
+  const M=[];for(let m=FIN.de;m<=FIN.ate&&M.length<120;m=somaMes(m,1))M.push(m);return M}
+function dadosGA(){const M=periodoGA(),h=hojeISO(),de=FIN.de,ate=FIN.ate,dentro=ym=>ym>=de&&ym<=ate;
+  const E=(D.fin||[]).filter(l=>l.tipo==='entrada');
+  const rec=E.filter(l=>l.pago_em&&dentro(mesISO(l.pago_em)));
+  const ab=E.filter(l=>!l.pago_em&&!pendExito(l)&&+l.valor>0&&dentro(mesISO(l.vencimento)));
+  const atr=ab.filter(l=>l.vencimento<h),arec=ab.filter(l=>l.vencimento>=h);
+  const exi=E.filter(l=>pendExito(l)).length;
+  const soma=a=>a.reduce((t,l)=>t+ +l.valor,0);
+  const por=M.map(m=>({m,r:soma(rec.filter(l=>mesISO(l.pago_em)===m)),a:soma(atr.filter(l=>mesISO(l.vencimento)===m)),p:soma(arec.filter(l=>mesISO(l.vencimento)===m))}));
+  return {M,rec,atr,arec,exi,R:soma(rec),A:soma(atr),P:soma(arec),por}}
+function telaGanhosAno(){const d=dadosGA(),y=+hojeISO().slice(0,4),tot=d.R+d.A+d.P;
+  const k=(ic,rot,val,sub,cor)=>'<div class="ik"'+(cor?' style="--k:'+cor+'"':'')+'><span class="ik-i">'+ic+'</span><small>'+rot+'</small><b'+(cor?' style="color:'+cor+'"':'')+'>'+val+'</b>'+(sub?'<em>'+sub+'</em>':'')+'</div>';
+  const nm=m=>{const t=nomeMes(m);return t.charAt(0).toUpperCase()+t.slice(1)};const mc=m=>{const t=new Date(m+'-15T12:00').toLocaleDateString('pt-BR',{month:'short'}).replace('.','');return t.charAt(0).toUpperCase()+t.slice(1)+'/'+m.slice(0,4)};
+  const opM=sel=>{const o=[];for(let a=y-3;a<=y+2;a++)for(let m=1;m<=12;m++){const v=a+'-'+String(m).padStart(2,'0');o.push('<option value="'+v+'"'+(v===sel?' selected':'')+'>'+nm(v)+'</option>')}return o.join('')};
+  const mx=Math.max(1,...d.por.map(x=>x.r+x.a+x.p)),hm=mesISO(hojeISO());
+  const graf='<div class="ga-graf" style="grid-template-columns:repeat('+d.por.length+',minmax(22px,1fr))" role="img" aria-label="Recebidos, em atraso e a receber por mês">'+d.por.map(x=>{const lab=new Date(x.m+'-15T12:00').toLocaleDateString('pt-BR',{month:'short'}).replace('.','')+(d.por.length>12||FIN.de.slice(0,4)!==FIN.ate.slice(0,4)?'/'+x.m.slice(2,4):'');
+    return '<div class="fg-col'+(x.m===hm?' on':'')+'" data-tip="'+nm(x.m)+': recebido '+brl(x.r)+', em atraso '+brl(x.a)+', a receber '+brl(x.p)+'"><div class="ga-pilha"><i class="p" style="height:'+(x.p/mx*100)+'%"></i><i class="a" style="height:'+(x.a/mx*100)+'%"></i><i class="r" style="height:'+(x.r/mx*100)+'%"></i></div><small>'+lab+'</small></div>'}).join('')+'</div>'+
+    '<div class="fg-leg"><span><i style="background:var(--ok)"></i>Recebido</span><span><i style="background:var(--perigo)"></i>Em atraso</span><span><i style="background:var(--ouro)"></i>A receber</span></div>';
+  const linhas=d.por.map(x=>'<tr'+(x.m===hm?' style="background:color-mix(in srgb,var(--ouro) 9%,transparent)"':'')+'><td style="white-space:nowrap"><b>'+mc(x.m)+'</b></td><td class="num" style="color:var(--ok)">'+(x.r?brl(x.r):'·')+'</td><td class="num" style="color:'+(x.a?'var(--perigo)':'inherit')+'">'+(x.a?brl(x.a):'·')+'</td><td class="num">'+(x.p?brl(x.p):'·')+'</td><td class="num"><b>'+brl(x.r+x.a+x.p)+'</b></td></tr>').join('')+
+    '<tr style="border-top:2px solid var(--rule)"><td><b>Total</b></td><td class="num" style="color:var(--ok)"><b>'+brl(d.R)+'</b></td><td class="num" style="color:var(--perigo)"><b>'+brl(d.A)+'</b></td><td class="num"><b>'+brl(d.P)+'</b></td><td class="num"><b>'+brl(tot)+'</b></td></tr>';
+  const atrCli={};d.atr.forEach(l=>{const c=cliDoLanc(l),n=c?c.nome:(l.cliente||'Sem cliente'),key=c?c.id:'t:'+n;(atrCli[key]=atrCli[key]||{n,id:c?c.id:null,v:0,q:0,mais:l.vencimento}).v+= +l.valor;atrCli[key].q++;if(l.vencimento<atrCli[key].mais)atrCli[key].mais=l.vencimento});
+  const AC=Object.values(atrCli).sort((a,b)=>b.v-a.v);
+  const listaAtr=AC.length?'<div class="tbl"><table><tr><th>Cliente</th><th class="num">Em atraso</th><th>Desde</th></tr>'+AC.map(c=>'<tr><td>'+(c.id?'<button class="lnk" data-fincli="'+c.id+'">'+esc(c.n)+'</button>':esc(c.n))+(c.q>1?' <span class="mut">('+c.q+' parcelas)</span>':'')+'</td><td class="num" style="color:var(--perigo)"><b>'+brl(c.v)+'</b></td><td class="num">'+dataBR(c.mais)+'</td></tr>').join('')+'</table></div>':'<p class="mut" style="margin:0">✓ Nenhum honorário em atraso neste período.</p>';
+  const atalho=(rot,de,ate)=>'<button class="btn sm'+(FIN.de===de&&FIN.ate===ate?' pri':'')+'" data-finper="'+de+'|'+ate+'">'+rot+'</button>';
+  const sem=hojeISO().slice(5,7)<='06';
+  return '<div class="ds">'+segVisaoFin()+
+    '<div class="lead" style="margin-bottom:14px"><div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap"><label class="f" style="margin:0">De<select class="inp" id="ga-de">'+opM(FIN.de)+'</select></label><label class="f" style="margin:0">Até<select class="inp" id="ga-ate">'+opM(FIN.ate)+'</select></label>'+
+      '<span style="display:flex;gap:6px;flex-wrap:wrap">'+atalho('Ano de '+y,y+'-01',y+'-12')+atalho('Ano de '+(y-1),(y-1)+'-01',(y-1)+'-12')+atalho(sem?'1º semestre':'2º semestre',y+(sem?'-01':'-07'),y+(sem?'-06':'-12'))+'</span>'+
+      '<button class="btn sm" data-fin="csvper" style="margin-left:auto">Baixar planilha (CSV)</button></div>'+
+      '<p class="nota" style="margin:8px 0 0">Mostrando de <b>'+nm(FIN.de)+'</b> até <b>'+nm(FIN.ate)+'</b>. Recebido conta pela data em que o cliente pagou. Em atraso e a receber contam pela data de vencimento.</p></div>'+
+    '<div class="iks">'+k('✅','Recebidos',brl(d.R),d.rec.length+' pagamento'+(d.rec.length!==1?'s':''),'var(--ok)')+k('⚠️','Em atraso',brl(d.A),d.atr.length?d.atr.length+' parcela'+(d.atr.length>1?'s':'')+' vencida'+(d.atr.length>1?'s':''):'nenhum',d.atr.length?'var(--perigo)':null)+k('📅','A receber',brl(d.P),d.arec.length+' parcela'+(d.arec.length!==1?'s':'')+' a vencer')+k('💰','Total do período',brl(tot),d.exi?d.exi+' no êxito, sem valor ainda':'recebido + atraso + a receber')+'</div>'+
+    '<div class="lead" style="margin-top:14px"><h4>Ganhos mês a mês</h4>'+graf+'</div>'+
+    '<div class="igrade" style="margin-top:14px"><div class="lead"><h4>Tabela do período</h4><div class="tbl"><table><tr><th>Mês</th><th class="num">Recebido</th><th class="num">Em atraso</th><th class="num">A receber</th><th class="num">Total</th></tr>'+linhas+'</table></div></div>'+
+      '<div class="lead"><h4>Quem está em atraso</h4>'+listaAtr+'</div></div>'+
+    '<p class="nota">Aqui entram só as entradas (honorários, consultas, reembolsos). As despesas continuam na visão mês a mês.</p></div>'}
+function csvPeriodo(){const d=dadosGA(),q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"',v=x=>(+x).toFixed(2).replace('.',',');
+  const L=[].concat(d.rec.map(l=>['Recebido',l]),d.atr.map(l=>['Em atraso',l]),d.arec.map(l=>['A receber',l])).sort((a,b)=>((a[1].pago_em||a[1].vencimento)<(b[1].pago_em||b[1].vencimento)?-1:1));
+  const csv='﻿'+['Situação;Descrição;Categoria;Cliente;Valor;Vencimento;Pago em;Parcela'].concat(L.map(([st,l])=>{const c=cliDoLanc(l);return [st,l.descricao,l.categoria,c?c.nome:(l.cliente||''),v(l.valor),dataBR(l.vencimento),l.pago_em?dataBR(l.pago_em):'',l.parcelas?l.parcela+'/'+l.parcelas:''].map(q).join(';')}),
+    ['','','','','','','',''].join(';'),'Resumo;;;;;;;',['Recebidos',v(d.R)].map(q).join(';'),['Em atraso',v(d.A)].map(q).join(';'),['A receber',v(d.P)].map(q).join(';'),['Total',v(d.R+d.A+d.P)].map(q).join(';')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='ganhos-'+FIN.de+'-a-'+FIN.ate+'.csv';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+document.addEventListener('change',e=>{if(e.target.id==='ga-de'||e.target.id==='ga-ate'){FIN[e.target.id==='ga-de'?'de':'ate']=e.target.value;render()}});
+document.addEventListener('click',e=>{const v=e.target.closest('[data-finvis]');if(v){FIN.visao=v.dataset.finvis;FIN.novo=false;FIN.editar=null;render();return}
+  const p=e.target.closest('[data-finper]');if(p){const [a,b]=p.dataset.finper.split('|');FIN.de=a;FIN.ate=b;render();return}
+  const c=e.target.closest('[data-fin="csvper"]');if(c){csvPeriodo()}});
 function formLanc(){const ed=FIN.editar?(D.fin||[]).find(x=>x.id===FIN.editar):null;if(ed)return formEditLanc(ed);const t=FIN.tipo,h=hojeISO();
   const topo='<div class="seg" style="margin-bottom:10px"><button data-fintipo="entrada" class="'+(t==='entrada'?'on':'')+'">⬆️ Entrada</button><button data-fintipo="saida" class="'+(t==='saida'?'on':'')+'">⬇️ Saída / despesa</button></div>'+
     (t==='entrada'?'<div class="seg" style="margin:0 0 10px 0"><button data-finmodo="contrato" class="'+(FIN.modoEnt==='contrato'?'on':'')+'">📄 Contrato de honorários</button><button data-finmodo="avulso" class="'+(FIN.modoEnt!=='contrato'?'on':'')+'">➕ Valor avulso</button></div>':'');
