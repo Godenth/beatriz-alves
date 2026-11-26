@@ -3950,29 +3950,35 @@ function atMigra(mod,d){d=d||{};if(mod!=='ficha')return d;const P='13. Honorári
 const AT_OPC={hon:'_impressao|honorarios',dados:'_impressao|ocultar_dados'};
 const atOcultando=x=>{const c=atCli();return !!(c&&x.id==='ficha'&&atVal(atEfetivos(x,c).vals,AT_OPC.dados,false))};
 const atRefArq=c=>'cliente-'+String(c.id||'').replace(/[^A-Za-z0-9]/g,'').slice(0,6);
-const atIniciais=t=>String(t||'').trim().split(/\s+/).filter(p=>p.length>2).map(p=>p[0].toUpperCase()+'.').join(' ')||'dado reservado';
-const AT_RESERVA=['Endereço','Endereço (para citação)','Local de trabalho','Local de trabalho / empresa','Nascimento','CPF','RG','Telefone / WhatsApp','Outro contato','Redes sociais',
-  'Cartório','Processo já existente','Nº do processo','Contato seguro','Empresas (nome, CNPJ, participação)','Bens em nome de terceiros ou da empresa','Descrição / endereço','Escola e turno'];
+const atPrimeiro=t=>String(t||'').trim().split(/\s+/)[0]||'';
+/* mantém os primeiros caracteres e troca o resto das letras e números por * (pontuação continua) */
+const atParcial=(t,k)=>{let n=0;return String(t||'').replace(/[A-Za-zÀ-ÿ0-9]/g,ch=>++n>k?'*':ch)};
+const atCidade=t=>{const m=String(t||'').match(/([^,]+\/\s?[A-Z]{2})\b/);return m?'*** '+m[1].trim():'***'};
+const AT_PARCIAL={'CPF':3,'RG':2,'Telefone / WhatsApp':3,'Outro contato':3,'Nascimento':0,'Processo já existente':7,'Nº do processo':7,'Contato seguro':3};
+const AT_CIDADE=['Endereço','Endereço (para citação)'];
+const AT_INICIO=['Local de trabalho','Local de trabalho / empresa','Redes sociais','Cartório','Empresas (nome, CNPJ, participação)','Bens em nome de terceiros ou da empresa','Descrição / endereço','Escola e turno'];
 function atPrivacidade(x,R,vals){if(x.id!=='ficha')return R;let out=R;
   if(!atVal(vals,AT_OPC.hon,true)){out=[];let pula=false;R.forEach(b=>{if(b.k==='sec')pula=/^14\. Honorários/.test(b.t);else if(b.k==='fim')pula=false;if(!pula)out.push(b)})}
   if(!atVal(vals,AT_OPC.dados,false))return out;
-  /* nomes das pessoas da ficha viram iniciais em qualquer lugar do texto */
+  /* nome completo das pessoas da ficha vira só o primeiro nome, em qualquer lugar do texto */
   const nomes=['2. Dados do(a) cliente||Nome completo','3. Dados da outra parte||Nome completo','1. Atendimento||Indicado por','8. Filhos||Nome|1','8. Filhos||Nome|2','8. Filhos||Nome|3']
-    .map(k=>String(vals[k]||'').trim()).filter(n=>n.length>2);const c=atCli();if(c&&c.nome)nomes.push(String(c.nome).trim());
-  const trocas=[];nomes.forEach(n=>{const ini=atIniciais(n),pri=n.split(/\s+/)[0];trocas.push([n,ini]);if(pri.length>2)trocas.push([pri,ini])});
-  trocas.sort((a,b)=>b[0].length-a[0].length);
+    .map(k=>String(vals[k]||'').trim()).filter(n=>/\s/.test(n));const c=atCli();if(c&&c.nome&&/\s/.test(String(c.nome).trim()))nomes.push(String(c.nome).trim());
+  const trocas=nomes.map(n=>[n,atPrimeiro(n)]).sort((a,b)=>b[0].length-a[0].length);
   const er=t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   const mascara=t=>{t=String(t==null?'':t);if(!t)return t;
-    trocas.forEach(([n,ini])=>{t=t.replace(new RegExp('(^|[^\\p{L}])'+er(n)+'(?=$|[^\\p{L}])','giu'),(m,a)=>a+ini)});
-    return t.replace(/\b\d{7}-?\d{2}\.?\d{4}\.?\d\.?\d{2}\.?\d{4}\b/g,'dado reservado')
-      .replace(/\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g,'dado reservado')
-      .replace(/[\w.+-]+@[\w-]+\.[\w.-]+/g,'dado reservado')
-      .replace(/(\(?\b\d{2}\)?\s?)?\b9?\d{4}[-\s]?\d{4}\b/g,'dado reservado')};
-  const cel=(c,lab)=>{if(c.v==null||!String(c.v).trim())return c;
-    if(AT_RESERVA.includes(lab))return Object.assign({},c,{v:'dado reservado'});
-    if(lab==='Nascimento / idade')return Object.assign({},c,{v:String(c.v).replace(/\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/g,'dado reservado')});
-    if(lab==='Nome completo'||lab==='Indicado por'||lab==='Nome')return Object.assign({},c,{v:atIniciais(c.v)});
-    return Object.assign({},c,{v:mascara(c.v)})};
+    trocas.forEach(([n,pri])=>{t=t.replace(new RegExp('(^|[^\\p{L}])'+er(n)+'(?=$|[^\\p{L}])','giu'),(m,a)=>a+pri)});
+    return t.replace(/\b\d{7}-?\d{2}\.?\d{4}\.?\d\.?\d{2}\.?\d{4}\b/g,m=>atParcial(m,7))
+      .replace(/\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g,m=>atParcial(m,3))
+      .replace(/[\w.+-]+@[\w-]+\.[\w.-]+/g,m=>atParcial(m,2))
+      .replace(/(\(?\b\d{2}\)?\s?)?\b9?\d{4}[-\s]?\d{4}\b/g,m=>atParcial(m,3))};
+  const cel=(c,lab)=>{if(c.v==null||!String(c.v).trim())return c;const v=String(c.v);let nv;
+    if(Object.prototype.hasOwnProperty.call(AT_PARCIAL,lab))nv=atParcial(v,AT_PARCIAL[lab]);
+    else if(AT_CIDADE.includes(lab))nv=atCidade(v);
+    else if(AT_INICIO.includes(lab))nv=atPrimeiro(mascara(v))+' ***';
+    else if(lab==='Nascimento / idade')nv=v.replace(/\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/g,m=>atParcial(m,0));
+    else if(lab==='Nome completo'||lab==='Indicado por'||lab==='Nome')nv=atPrimeiro(v);
+    else nv=mascara(v);
+    return Object.assign({},c,{v:nv})};
   return out.map(b=>{
     if(b.k==='tab'){const hd=b.rows[0]&&b.rows[0].some(c=>c.h!=null)?b.rows[0]:null;
       return Object.assign({},b,{rows:b.rows.map(r=>r.map((c,ci)=>c.v==null?c:cel(c,ci>0&&r[ci-1].l!=null?r[ci-1].l:hd&&hd[ci]?hd[ci].h:'')))})}
@@ -4020,7 +4026,7 @@ function telaAtEditor(c){const x=AT_DOCS.find(y=>y.id===AT.edit),f=atSalva(c.id,
     '<div class="lead at-ed" id="at-ed">'+(x.id==='ficha'?(v=>'<div class="at-fchk"><b>Opções de impressão</b><span class="at-ops">'+
       '<label class="at-op"><input type="checkbox" data-atk="'+AT_OPC.hon+'" data-bool="1"'+(atVal(v,AT_OPC.hon,true)?' checked':'')+'><span>Incluir os honorários na impressão</span></label>'+
       '<label class="at-op"><input type="checkbox" data-atk="'+AT_OPC.dados+'" data-bool="1"'+(atVal(v,AT_OPC.dados,false)?' checked':'')+'><span>Ocultar os dados pessoais (LGPD)</span></label></span></div>'+
-      '<p class="nota" style="margin:2px 0 8px">Ocultar os dados pessoais: na impressão e no Word, os nomes viram iniciais e somem CPF, RG, nascimento, endereços, telefones, e-mails, local de trabalho, cartório, empresas, escola e números de processo. Confira os textos livres antes de enviar.</p>')(vivo||E.vals):'')+atForm(E.B,vivo||E.vals)+'</div>'+
+      '<p class="nota" style="margin:2px 0 8px">Ocultar os dados pessoais: na impressão e no Word, sai só o primeiro nome das pessoas, só o começo do CPF, RG, telefone, e-mail e número de processo (o resto vira *), só a cidade nos endereços e só a primeira palavra de local de trabalho, empresa, cartório e escola. Confira os textos livres antes de enviar.</p>')(vivo||E.vals):'')+atForm(E.B,vivo||E.vals)+'</div>'+
     '<div class="acoes" style="justify-content:flex-end"><button class="btn" data-at="salvar" data-id="'+x.id+'">Salvar</button><button class="btn pri" data-at="salvarver" data-id="'+x.id+'">Salvar e imprimir</button></div>'}
 document.addEventListener('change',e=>{if(e.target.id==='at-cli'){AT.cli=e.target.value||null;AT.edit=null;render()}});
 async function atAbrir(x,completo){const c=atCli();let cab='',rod='';try{const m=await modeloTimbre();cab=m.cab;rod=m.rod}catch(e){}
